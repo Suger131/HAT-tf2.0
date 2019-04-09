@@ -1,2 +1,6 @@
 
 .vscode/settings.json
+*.pyc
+*.h5
+*.trace
+*.v2
