@@ -30,8 +30,8 @@ class MLP(Model):
 
     self.model = self.model or Sequential([
       Flatten(input_shape=(i_s, i_s, i_d)),
-      Dense(MBP_LOCAL_SIZE, activation='relu'),
-      Dropout(MBP_DROP_RATE),
+      Dense(self.LOCAL_SIZE, activation='relu'),
+      Dropout(self.DROP_RATE),
       Dense(n_s, activation='softmax')
     ])
 
