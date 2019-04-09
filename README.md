@@ -91,7 +91,7 @@ fashion_mnist
 >>测试：test-only(test-o, test)<br>
 >>生成图像：gimage(gimg)
 
-## 创建模型
+## 创建模型 已过时!!!等待修改
 
 创建自己的模型非常简单，只需要创建一个文件，放在models文件夹。该文件夹内有一些模型，可供使用和参考
 
@@ -164,7 +164,7 @@ from .MLP import *
 ```
 注：`.`不能漏写，相对引包的标志
 
-## 创建数据集
+## 创建数据集 已过时!!!等待修改
 
 >使用Tensorflow官方的Datasets创建
 
