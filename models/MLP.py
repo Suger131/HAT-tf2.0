@@ -23,10 +23,10 @@ class MLP(Model):
     self.DROP_RATE = 0.5
 
     # for test
-    self.BATCH_SIZE = 128
-    self.EPOCHS = 150
-    self.OPT = 'sgd'
-    self.OPT_EXIST = True
+    # self.BATCH_SIZE = 128
+    # self.EPOCHS = 150
+    # self.OPT = 'sgd'
+    # self.OPT_EXIST = True
 
     self.model = self.model or Sequential([
       Flatten(input_shape=(i_s, i_s, i_d)),
