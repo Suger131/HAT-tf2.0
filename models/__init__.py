@@ -3,3 +3,4 @@
 '''
 
 from .MLP import MLP
+from .LeNet import LeNet
