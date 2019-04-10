@@ -3,11 +3,14 @@ import time
 
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard
+from tensorflow.python.keras.optimizers import *
 from tensorflow.python.framework.config import (set_gpu_per_process_memory_fraction,
                                                 set_gpu_per_process_memory_growth)
 # 设置显存使用上限50%，按需申请
 # set_gpu_per_process_memory_fraction(0.5)
 set_gpu_per_process_memory_growth(True)
+# 无用代码，作用使让tensorflow打印完信息再输入指令
+SGD()
 
 from datasets import *
 from models import *
