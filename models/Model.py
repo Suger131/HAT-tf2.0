@@ -1,6 +1,6 @@
 from tensorflow.python.keras.models import load_model
 
-class Model:
+class BasicModel:
 
   def __init__(self, Args):
     self.ARGS = Args
