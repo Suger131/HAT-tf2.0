@@ -7,12 +7,12 @@
     Non-trainable params:   0
 '''
 
-from .Model import Model
+from .Model import BasicModel
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import *
 
 
-class MLP(Model):
+class MLP(BasicModel):
 
   def __init__(self, i_s, i_d, n_s, Args):
     super(MLP, self).__init__(Args)
