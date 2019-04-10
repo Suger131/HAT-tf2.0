@@ -4,7 +4,6 @@ class Model:
 
   def __init__(self, Args):
     self.ARGS = Args
-    self.check_save()
 
   def check_save(self):
     self.model = self.ARGS.SAVE_EXIST and load_model(self.ARGS.LOAD_NAME) or None
