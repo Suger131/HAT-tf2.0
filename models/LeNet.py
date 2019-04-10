@@ -44,5 +44,5 @@ class LeNet(BasicModel):
 
 # test part
 if __name__ == "__main__":
-  mod = MLP(32, 3, 10, None)
+  mod = LeNet(32, 3, 10, None)
   print(mod.model.summary())
