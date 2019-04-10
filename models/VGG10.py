@@ -38,7 +38,8 @@ class VGG10(BasicModel):
     # self.OPT_EXIST = True
 
     self.model = Sequential([
-      Conv2D(self.FA, self.S, padding='same', activation='relu', input_shape=(i_s, i_s, i_d)),
+      Conv2D(self.FA, self.S, padding='same', activation='relu',
+             input_shape=(self.INPUT_SHAPE, self.INPUT_SHAPE, self.INPUT_DEPTH)),
       Conv2D(self.FA, self.S, padding='same', activation='relu'),
       MaxPool2D(self.P, self.ST, padding='same'),
       Conv2D(self.FB, self.S, padding='same', activation='relu'),
@@ -47,7 +48,7 @@ class VGG10(BasicModel):
       Conv2D(self.FC, self.S, padding='same', activation='relu'),
       Conv2D(self.FC, self.S, padding='same', activation='relu'),
       Conv2D(self.FC, self.S, padding='same', activation='relu'),
-      GlobalMaxPool2D(),
+      GlobalAvgPool2D(),
       Flatten(),
       Dense(self.LOCAL_A, activation='relu'),
       Dropout(self.DROP_RATE),
@@ -55,7 +56,7 @@ class VGG10(BasicModel):
       Dropout(self.DROP_RATE),
       Dense(self.LOCAL_C, activation='relu'),
       Dropout(self.DROP_RATE),
-      Dense(n_s, activation='softmax')
+      Dense(self.NUM_CLASSES, activation='softmax')
     ])
     self.check_save()
 
