@@ -28,12 +28,13 @@ class MLP(Model):
     # self.OPT = 'sgd'
     # self.OPT_EXIST = True
 
-    self.model = self.model or Sequential([
-      Flatten(input_shape=(i_s, i_s, i_d)),
+    self.model = Sequential([
+      Flatten(input_shape=(self.INPUT_SHAPE, self.INPUT_SHAPE, self.INPUT_DEPTH)),
       Dense(self.LOCAL_SIZE, activation='relu'),
       Dropout(self.DROP_RATE),
-      Dense(n_s, activation='softmax')
+      Dense(self.NUM_CLASSES, activation='softmax')
     ])
+    self.check_save()
 
 # test part
 if __name__ == "__main__":
