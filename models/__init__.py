@@ -4,3 +4,4 @@
 
 from .MLP import MLP
 from .LeNet import LeNet
+from .VGG10 import VGG10
