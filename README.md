@@ -167,7 +167,7 @@ if __name__ == "__main__":
   from .MLP import MLP
   ```
   注：`.`不能漏写，相对引包的标志
-  
+
 ### 以MLP模型为例，第二种模型构建方法
 
 ```
@@ -257,7 +257,7 @@ class mnist(Packer):
     * 训练集图像：`train_images` 
     * 训练集标签：`train_labels` 
     * 测试集图像：`test_images` 
-    * 测试集图像：`test_labels` 
+    * 测试集标签：`test_labels` 
   * 图像数字处理成 0~1之间的数
   * 注：暂时还未考虑非正方形图像，故`INPUT_SHAPE`为正方形的边长，有待后续修改相关接口
 
