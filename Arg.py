@@ -223,7 +223,9 @@ class Args:
 
     from tensorflow.python.keras.utils import plot_model
 
-    plot_model(self.MODEL.model, to_file=f'{self.MODEL_IMG_DIR}\{self.MODELS_NAME}_model.png')
+    plot_model(self.MODEL.model,
+               to_file=f'{self.MODEL_IMG_DIR}\{self.MODELS_NAME}_model.png',
+               show_shapes=True)
 
     print(f'[logs] Successfully save model image: {self.MODEL_IMG_DIR}\{self.MODELS_NAME}_model.png')
   
