@@ -61,9 +61,9 @@ class Args:
         else:
           self.WARNING_ARGS.append(temp[0])
 
-      elif (self.check_args(i, ['gimage', 'gimg'], 'RUN_MODE', 'Mode') or
-            self.check_args(i, ['train-only', 'train-o', 'train'], 'RUN_MODE', 'Mode') or
-            self.check_args(i, ['test-only', 'test-o', 'test'], 'RUN_MODE', 'Mode')): pass
+      elif (self.check_args(i, ['gimage', 'gimg'], 'RUN_MODE', 'Mode', data='gimage') or
+            self.check_args(i, ['train-only', 'train-o', 'train'], 'RUN_MODE', 'Mode', data='train') or
+            self.check_args(i, ['test-only', 'test-o', 'test'], 'RUN_MODE', 'Mode', data='test')): pass
 
       else:
         self.WARNING_ARGS.append(i)
@@ -174,6 +174,7 @@ class Args:
                              metrics=['accuracy'])
 
   def check_args(self, item, lists, args_name, args_type, data='', isdigit=False):
+    '''check'''
     if item not in lists:
       return False
     elif self.__dict__[args_name]:
