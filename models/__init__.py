@@ -12,3 +12,4 @@ from .David import David
 from .GoogleNet import GoogleNet
 from .WRN_28_10 import WRN_28_10
 from .MobileNet import MobileNet
+from .MobileWRN import MobileWRN
