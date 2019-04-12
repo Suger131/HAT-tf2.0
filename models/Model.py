@@ -6,7 +6,8 @@ class BasicModel:
     self.ARGS = Args
 
   def check_save(self):
-    self.model = self.ARGS.SAVE_EXIST and load_model(self.ARGS.LOAD_NAME) or self.model
+    if self.ARGS:
+      self.model = self.ARGS.SAVE_EXIST and load_model(self.ARGS.LOAD_NAME) or self.model
 
   def ginfo(self):
     for i in self.__dict__:
