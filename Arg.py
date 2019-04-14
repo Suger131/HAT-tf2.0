@@ -229,6 +229,16 @@ class Args:
 
     print(f'[logs] Successfully save model image: {self.MODEL_IMG_DIR}\{self.MODELS_NAME}_model.png')
   
+  def run(self):
+
+    self.gimage()
+
+    self.train()
+
+    self.test()
+
+    self.save()
+
   def user(self):
     '''user train args'''
     self.USER_DICT={'DATASETS_NAME': 'mnist',
