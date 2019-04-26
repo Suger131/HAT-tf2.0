@@ -18,27 +18,21 @@ class LeNet(BasicModel):
     self.INPUT_DEPTH = i_d
     self.NUM_CLASSES = n_s
 
-    self.F1 = 20
-    self.S1 = 5
-    self.P1 = 3
-    self.PS1 = 2
-    self.F2 = 50
-    self.S2 = 5
-    self.P2 = 3
-    self.PS2 = 2
+    self.S = 5
+    self.P = 3
     self.LOCAL_SIZE = 128
     self.DROP_RATE = .5
 
     self.model = Sequential()
-    self.model.add(Conv2D(self.F1, self.S1, padding='same', activation='relu',
+    self.model.add(Conv2D(20, self.S, padding='same', activation='relu',
                           input_shape=(self.INPUT_SHAPE, self.INPUT_SHAPE, self.INPUT_DEPTH)))
-    self.model.add(MaxPool2D(self.P1, self.PS1, padding='same'))
-    self.model.add(Conv2D(self.F2, self.S2, padding='same', activation='relu'))
-    self.model.add(MaxPool2D(self.P2, self.PS2, padding='same'))
+    self.model.add(MaxPool2D(self.P, 2, padding='same'))
+    self.model.add(Conv2D(50, self.S, padding='same', activation='relu'))
+    self.model.add(MaxPool2D(self.P, 2, padding='same'))
     self.model.add(Flatten())
     self.model.add(Dense(self.LOCAL_SIZE, activation='relu'))
     self.model.add(Dropout(self.DROP_RATE))
-    self.model.add(Dense(self.NUM_CLASSES, activation='softmax'))
+    self.model.add(Dense(self.NUM_CLASSES, activation='softmax', name='softmax'))
 
     self.check_save()
 
