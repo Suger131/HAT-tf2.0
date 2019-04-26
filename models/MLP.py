@@ -14,10 +14,10 @@ from tensorflow.python.keras.layers import *
 
 class MLP(BasicModel):
 
-  def __init__(self, i_shape, n_s):
+  def __init__(self, input_shape, num_classes):
     super(MLP, self).__init__()
-    self.INPUT_SHAPE = i_shape
-    self.NUM_CLASSES = n_s
+    self.INPUT_SHAPE = input_shape
+    self.NUM_CLASSES = num_classes
     self.LOCAL_SIZE = 128
     self.DROP_RATE = 0.5
 
