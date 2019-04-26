@@ -14,10 +14,9 @@ from tensorflow.python.keras.layers import *
 
 class MLP(BasicModel):
 
-  def __init__(self, i_s, i_d, n_s, Args):
-    super(MLP, self).__init__(Args)
-    self.INPUT_SHAPE = i_s
-    self.INPUT_DEPTH = i_d
+  def __init__(self, i_shape, n_s):
+    super(MLP, self).__init__()
+    self.INPUT_SHAPE = i_shape
     self.NUM_CLASSES = n_s
     self.LOCAL_SIZE = 128
     self.DROP_RATE = 0.5
@@ -29,15 +28,14 @@ class MLP(BasicModel):
     # self.OPT_EXIST = True
 
     self.model = Sequential([
-      Flatten(input_shape=(self.INPUT_SHAPE, self.INPUT_SHAPE, self.INPUT_DEPTH)),
+      Flatten(input_shape=self.INPUT_SHAPE),
       Dense(self.LOCAL_SIZE, activation='relu'),
       Dropout(self.DROP_RATE),
       Dense(self.NUM_CLASSES, activation='softmax')
     ])
-    self.check_save()
 
 # test part
 if __name__ == "__main__":
-  mod = MLP(32, 3, 10, None)
+  mod = MLP((32, 32, 3), 10)
   print(mod.INPUT_SHAPE)
   print(mod.model.summary())
