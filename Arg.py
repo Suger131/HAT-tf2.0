@@ -55,12 +55,16 @@ class Args:
       self.__dict__[args_name] = isdigit and (int(data) or int(item)) or data or item
       return True
 
-  def _get_args(self, dicts, cover=True):
+  def _get_args(self, dicts, cover=False):
     """Built-in method."""
     if cover:
       self.__dict__ = {**self.__dict__, **dicts}
-    else:
-      for i in dicts: self.__dict__[i] = self.__dict__[i] or dicts[i]
+    else:     
+      for i in dicts:
+        try:
+          self.__dict__[i] = self.__dict__[i] or dicts[i]
+        except:
+          self.__dict__[i] = dicts[i]
 
   def input_processing(self):
 
@@ -103,8 +107,7 @@ class Args:
       self.IS_SAVE = False
 
     # load user datasets & models (don't cover)
-    self.DATASETS_NAME = self.DATASETS_NAME or self.USER_DICT_N['DATASETS_NAME']
-    self.MODELS_NAME = self.MODELS_NAME or self.USER_DICT_N['MODELS_NAME']
+    self._get_args(self.USER_DICT_N)
 
     # dir args
     self.SAVE_DIR = f'logs\{self.DATASETS_NAME}_{self.MODELS_NAME}'
@@ -150,17 +153,13 @@ class Args:
       self.MODEL = eval(self.MODELS_NAME + '(self.IMAGE_SHAPE, self.NUM_CLASSES)')
     except:
       raise NameError(f"No such model '{self.MODELS_NAME}' in Models.")
-    self._get_args(self.MODEL.ginfo(), cover=False)
+    self._get_args(self.MODEL.ginfo())
     
     # check save
     self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME) or self.MODEL.model
 
     # load user args (don't cover)
-    for i in self.USER_DICT:
-      try:
-        self.__dict__[i] = self.__dict__[i] or self.USER_DICT[i]
-      except:
-        self.__dict__[i] = self.USER_DICT[i]
+    self._get_args(self.USER_DICT)
 
     # compile model
     self.MODEL.model.compile(optimizer=self.OPT,
