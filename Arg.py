@@ -36,6 +36,7 @@ class Args:
     self.OPT_EXIST = False
     self.LOSS_MODE = None
     self.WARNING_ARGS = []
+    self.DIR_LIST = []
     self.IN_ARGS = input('=>').split(' ')
     self.user()
 
@@ -115,7 +116,7 @@ class Args:
     self.H5_NAME = f'{self.SAVE_DIR}\{self.DATASETS_NAME}_{self.MODELS_NAME}'
     
     # make dir
-    self.DIR_LIST = [self.SAVE_DIR, self.MODEL_IMG_DIR]
+    self.DIR_LIST.extend([self.SAVE_DIR, self.MODEL_IMG_DIR])
     for i in self.DIR_LIST:
       if not os.path.exists(i):
         os.makedirs(i)
@@ -142,17 +143,15 @@ class Args:
   def gargs(self):
 
     # get dataset object
-    try:
-      self.DATASET = eval(self.DATASETS_NAME + '()')
-    except:
-      raise NameError(f"No such dataset '{self.DATASETS_NAME}' in Datasets.")
-    self._get_args(self.DATASET.ginfo()) 
+    call_dataset = globals().get(self.DATASETS_NAME)
+    assert callable(call_dataset), f"No such dataset '{self.DATASETS_NAME}' in Datasets."
+    self.DATASET = call_dataset()
+    self._get_args(self.DATASET.ginfo())
 
     # get model object
-    try:
-      self.MODEL = eval(self.MODELS_NAME + '(self.IMAGE_SHAPE, self.NUM_CLASSES)')
-    except:
-      raise NameError(f"No such model '{self.MODELS_NAME}' in Models.")
+    call_model = globals().get(self.MODELS_NAME)
+    assert callable(call_model), f"No such model '{self.MODELS_NAME}' in Models."
+    self.MODEL = call_model(DATAINFO=self.DATAINFO)
     self._get_args(self.MODEL.ginfo())
     
     # check save
@@ -245,7 +244,7 @@ class Args:
   def user(self):
     '''user train args'''
     self.USER_DICT_N = {'DATASETS_NAME': 'mnist',
-                        'MODELS_NAME': 'MLP'}
+                        'MODELS_NAME': 'mlp'}
     self.USER_DICT = {'BATCH_SIZE': 128,
                       'EPOCHS': 5,
                       'OPT': 'adam',
