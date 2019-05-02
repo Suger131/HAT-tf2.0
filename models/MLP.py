@@ -7,28 +7,25 @@
     Non-trainable params:   0
 '''
 
-from .Model import BasicModel
+from .network import NetWork
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import *
 
 
-class MLP(BasicModel):
-
-  def __init__(self, input_shape, num_classes):
-    super(MLP, self).__init__()
-    self.INPUT_SHAPE = input_shape
-    self.NUM_CLASSES = num_classes
+class mlp(NetWork):
+  
+  def args(self):
     self.LOCAL_SIZE = 128
     self.DROP_RATE = 0.5
-
     # for test
     # self.BATCH_SIZE = 128
     # self.EPOCHS = 150
     # self.OPT = 'sgd'
     # self.OPT_EXIST = True
 
+  def build_model(self):
     self.model = Sequential([
-      Flatten(input_shape=self.INPUT_SHAPE),
+      Flatten(input_shape=self.IMAGE_SHAPE),
       Dense(self.LOCAL_SIZE, activation='relu'),
       Dropout(self.DROP_RATE),
       Dense(self.NUM_CLASSES, activation='softmax')
@@ -36,6 +33,6 @@ class MLP(BasicModel):
 
 # test part
 if __name__ == "__main__":
-  mod = MLP((32, 32, 3), 10)
-  print(mod.INPUT_SHAPE)
+  mod = mlp(DATAINFO={'IMAGE_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
+  print(mod.IMAGE_SHAPE)
   print(mod.model.summary())
