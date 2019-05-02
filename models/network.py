@@ -2,6 +2,18 @@ from tensorflow.python.keras.models import load_model
 
 class NetWork(object):
 
+  """
+  这是一个网络模型基类。
+
+  你需要重写的方法是: 
+  
+    args()\n\n 定义模型需要的各种参数
+
+    build_model()\n\n 构建网络模型
+
+    build_model里应当包含self.model的定义
+  """
+
   def __init__(self, *args, **kwargs):
     self.kwargs = kwargs
     self._check_kwargs()
