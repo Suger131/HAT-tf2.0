@@ -1,11 +1,14 @@
-from .Packer import Packer
+from .Dataset import Dataset
 import tensorflow.keras.datasets as ds
 
 
-class cifar10(Packer):
+class cifar10(Dataset):
+  """
+  cifar10 数据集
+  """
 
-  def __init__(self):
-    super(cifar10, self).__init__()
+  def args(self):
+    self._MISSION_LIST = ['classfication']
     self.NUM_TRAIN = 50000
     self.NUM_TEST = 10000
     self.NUM_CLASSES = 10
