@@ -23,7 +23,11 @@ Hust Artificial intelligence Trainer.
 
 ## 部署
 
-下载本项目文件，放在任意文件夹内即可
+有三种可选的部署方式：
+
+* 将本项目的文件夹添加到系统环境`PYTHONPATH`中，并重启计算机
+* 在`*/Lib/site-packages`(*为python目录)中添加一个`*.pth`(*为任意文件名)文件，文件里添加项目所在文件夹的绝对路径
+* 将本项目文件夹直接放在`*/Lib/site-packages`(*为python目录)文件夹内
 
 ## 开始使用
 
