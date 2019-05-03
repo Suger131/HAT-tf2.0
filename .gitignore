@@ -6,4 +6,5 @@
 *.v2
 *.png
 *.record
-tester.py
+logs/logger/
+test*.py
