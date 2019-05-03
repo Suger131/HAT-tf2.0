@@ -1,6 +1,7 @@
 import os
 import time
 
+import tensorflow as tf
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard
 from tensorflow.python.keras.optimizers import *
@@ -9,6 +10,11 @@ from tensorflow.python.framework.config import (set_gpu_per_process_memory_fract
 # 设置显存使用上限50%，按需申请
 # set_gpu_per_process_memory_fraction(0.5)
 set_gpu_per_process_memory_growth(True)
+# tf1 显存管理
+# config = tf.ConfigProto()
+# config.gpu_options.allow_growth = True
+# sess = tf.Session(config=config)
+
 # 无用代码，作用是让tensorflow打印完信息再输入指令
 SGD()
 
@@ -51,7 +57,7 @@ class Args:
       return False
     elif self.__dict__[args_name]:
       print(f'[logs] [Error] {args_name} more than one.')
-      os._exit(0)
+      os._exit(1)
     else:
       self.__dict__[args_name] = isdigit and (int(data) or int(item)) or data or item
       return True
