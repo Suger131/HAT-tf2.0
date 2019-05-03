@@ -18,6 +18,7 @@ set_gpu_per_process_memory_growth(True)
 # 无用代码，作用是让tensorflow打印完信息再输入指令
 SGD()
 
+from Log import Log
 from datasets import *
 from models import *
 
@@ -45,19 +46,21 @@ class Args:
     self.DIR_LIST = []
     self.IN_ARGS = input('=>').split(' ')
     self.user()
+    self.Log = Log(log_dir='logs/logger')
 
     self.input_processing()
     self.envs_processing()
-    self.gargs()
-    self.logs()
+
+  def _error(self, args, text):
+    self.Log(args, _T=text, _A='Error')
+    os._exit(1)
 
   def _check_args(self, item, lists, args_name, data='', isdigit=False):
     '''check'''
     if item not in lists:
       return False
     elif self.__dict__[args_name]:
-      print(f'[logs] [Error] {args_name} more than one.')
-      os._exit(1)
+      self._error(args_name, 'More than one:')
     else:
       self.__dict__[args_name] = isdigit and (int(data) or int(item)) or data or item
       return True
@@ -96,22 +99,9 @@ class Args:
 
       else:
         self.WARNING_ARGS.append(i)
+    self.Log(self.WARNING_ARGS, _A='Warning', text='Unsupported option:')
 
   def envs_processing(self):
-
-    # mode envs
-    if self.RUN_MODE == 'gimage':
-      self.IS_TRAIN = False
-      self.IS_TEST = False
-      self.IS_SAVE = False
-      self.IS_GIMAGE = True
-
-    elif self.RUN_MODE == 'train':
-      self.IS_TEST = False
-
-    elif self.RUN_MODE == 'test':
-      self.IS_TRAIN = False
-      self.IS_SAVE = False
 
     # load user datasets & models (don't cover)
     self._get_args(self.USER_DICT_N)
@@ -146,61 +136,56 @@ class Args:
                                 f'{self.DATASETS_NAME}_{self.MODELS_NAME}',
                                 f'{self.DATASETS_NAME}_{self.MODELS_NAME}_{self.SAVE_TIME}',)
 
-  def gargs(self):
-
     # get dataset object
     call_dataset = globals().get(self.DATASETS_NAME)
-    assert callable(call_dataset), f"No such dataset '{self.DATASETS_NAME}' in Datasets."
+    callable(call_dataset) and self.Log(self.DATASETS_NAME, _T='Loading Dataset:') or self._error(self.DATASETS_NAME, 'Not in Datasets:')
     self.DATASET = call_dataset()
     self._get_args(self.DATASET.ginfo())
+    self.Log(self.DATASETS_NAME, _T='Loaded Dataset:')
 
     # get model object
     call_model = globals().get(self.MODELS_NAME)
-    assert callable(call_model), f"No such model '{self.MODELS_NAME}' in Models."
+    callable(call_model) and self.Log(self.MODELS_NAME, _T='Loading Model:') or self._error(self.MODELS_NAME, 'Not in Models:')
     self.MODEL = call_model(DATAINFO=self.DATAINFO)
     self._get_args(self.MODEL.ginfo())
-    
-    # check save
-    self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME) or self.MODEL.model
+    self.Log(self.MODELS_NAME, _T='Loaded Model:')
 
     # load user args (don't cover)
     self._get_args(self.USER_DICT)
 
+    # mode envs
+    if self.RUN_MODE == 'gimage':
+      self.IS_TRAIN = False
+      self.IS_TEST = False
+      self.IS_SAVE = False
+      self.IS_GIMAGE = True
+      self.Log('Get model image.')
+    elif self.RUN_MODE == 'train':
+      self.IS_TEST = False
+      self.Log('train only.')
+    elif self.RUN_MODE == 'test':
+      self.IS_TRAIN = False
+      self.IS_SAVE = False
+      self.Log('test only.')
+
+    # log some mode info
+    if self.RUN_MODE in ['', 'train', 'test']:
+      self.Log(self.EPOCHS, _T='Epochs:')
+      self.Log(self.BATCH_SIZE, _T='Batch size:')
+      self.Log('', _L=['Model Optimizer exist.', f'Using Optimizer: {self.OPT}'], _B=self.OPT_EXIST)
+      if self.RUN_MODE == 'test':
+        self.Log('', _L=['h5 exist.', 'h5 not exist, testing a fresh model.'], _B=self.SAVE_EXIST)
+      else:
+        self.Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.SAVE_EXIST)
+      self.Log(self.LOG_DIR + '\\', _T='logs dir:')
+
+    # check save
+    self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME) or self.MODEL.model
+
     # compile model
     self.MODEL.model.compile(optimizer=self.OPT,
                              loss=self.LOSS_MODE,
-                             metrics=['accuracy'])
-
-  def logs(self):
-
-    logs = []
-    logs.append(f'#' * 32)
-    logs.append(f'[logs] {self.START_TIME}')
-    for i in self.WARNING_ARGS:
-      logs.append(f"[logs] [Warning] '{i}' is not a supported option")
-    if self.RUN_MODE in ['', 'train', 'test']:
-      logs.append(f'[logs] Datasets: {self.DATASETS_NAME}')
-    logs.append(f'[logs] Models: {self.MODELS_NAME}')
-    if self.RUN_MODE in ['', 'train']:
-      logs.append(f'[logs] Epochs: {self.EPOCHS}')
-    if self.RUN_MODE in ['', 'train', 'test']:
-      logs.append(f'[logs] Batch_size: {self.BATCH_SIZE}')
-    if self.RUN_MODE in ['', 'train']:
-      logs.append(f'[logs] Model Optimizer exist' if self.OPT_EXIST else f'[logs] Using Optimizer: {self.OPT}')
-    if self.RUN_MODE in ['', 'train']:
-      logs.append(f'[logs] h5 exist: {self.LOAD_NAME}' if self.SAVE_EXIST else f'[logs] h5 not exist, create one')
-    if self.RUN_MODE in ['test']:
-      logs.append(f'[logs] h5 exist: {self.LOAD_NAME}' if self.SAVE_EXIST else f'[logs] [Warning] h5 not exist, testing a fresh model')
-    if self.RUN_MODE in ['', 'train']:
-      logs.append(f'[logs] logs dir: {self.LOG_DIR}\\')
-    if self.RUN_MODE in ['gimage']:
-      logs.append(f'[logs] Get model image')
-    elif self.RUN_MODE in ['train']:
-      logs.append(f'[logs] train only')
-    elif self.RUN_MODE in ['test']:
-      logs.append(f'[logs] test only')
-
-    for i in logs: print(i)
+                             metrics=['accuracy']) 
 
   def train(self):
     
