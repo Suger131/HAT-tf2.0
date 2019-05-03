@@ -13,6 +13,9 @@ from tensorflow.python.keras.layers import *
 
 
 class mlp(NetWork):
+  """
+  MLP 模型
+  """
   
   def args(self):
     self.LOCAL_SIZE = 128
