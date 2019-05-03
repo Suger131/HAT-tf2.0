@@ -7,7 +7,7 @@ class NetWork(object):
 
   你需要重写的方法是: 
   
-    args()\n\n 定义模型需要的各种参数
+    args()\n\n 定义模型需要的各种参数\n\n 另，可定义BATCH_SIZE，EPOCHS和OPT
 
     build_model()\n\n 构建网络模型
 
@@ -36,7 +36,7 @@ class NetWork(object):
     pass
 
   def build_model(self):
-    pass
+    raise NotImplementedError
 
   # public method
 
