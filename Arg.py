@@ -5,18 +5,16 @@ import tensorflow as tf
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard
 from tensorflow.python.keras.optimizers import *
-from tensorflow.python.framework.config import (set_gpu_per_process_memory_fraction,
-                                                set_gpu_per_process_memory_growth)
+# from tensorflow.python.framework.config import (set_gpu_per_process_memory_fraction,
+#                                                 set_gpu_per_process_memory_growth)
 # 设置显存使用上限50%，按需申请
 # set_gpu_per_process_memory_fraction(0.5)
-set_gpu_per_process_memory_growth(True)
+# set_gpu_per_process_memory_growth(True)
 # tf1 显存管理
-# config = tf.ConfigProto()
-# config.gpu_options.allow_growth = True
-# sess = tf.Session(config=config)
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
 
-# 无用代码，作用是让tensorflow打印完信息再输入指令
-SGD()
 
 from Log import Log
 from datasets import *
@@ -31,7 +29,7 @@ class Args:
     self.IS_TRAIN = True
     self.IS_TEST = True
     self.IS_SAVE = True
-    self.IS_GIMAGE = False
+    self.IS_GIMAGE = True
     self.DATASETS_NAME = ''
     self.DATASET = None
     self.MODELS_NAME = ''
@@ -50,6 +48,13 @@ class Args:
 
     self.input_processing()
     self.envs_processing()
+
+  @property
+  def _time(self):
+    return time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
+
+  def _strptime(self, timex):
+    return time.mktime(time.strptime(timex, '%Y-%m-%d-%H-%M-%S'))
 
   def _error(self, args, text):
     self.Log(args, _T=text, _A='Error')
@@ -94,6 +99,7 @@ class Args:
           self.WARNING_ARGS.append(temp[0])
 
       elif (self._check_args(i, ['gimage', 'gimg'], 'RUN_MODE', data='gimage') or
+            self._check_args(i, ['no-gimage', 'n-gimg'], 'RUN_MODE', data='no-gimage') or
             self._check_args(i, ['train-only', 'train-o', 'train'], 'RUN_MODE', data='train') or
             self._check_args(i, ['test-only', 'test-o', 'test'], 'RUN_MODE', data='test')): pass
 
@@ -108,11 +114,10 @@ class Args:
 
     # dir args
     self.SAVE_DIR = f'logs\{self.DATASETS_NAME}_{self.MODELS_NAME}'
-    self.MODEL_IMG_DIR = 'model_img'
     self.H5_NAME = f'{self.SAVE_DIR}\{self.DATASETS_NAME}_{self.MODELS_NAME}'
     
     # make dir
-    self.DIR_LIST.extend([self.SAVE_DIR, self.MODEL_IMG_DIR])
+    self.DIR_LIST.extend([self.SAVE_DIR])
     for i in self.DIR_LIST:
       if not os.path.exists(i):
         os.makedirs(i)
@@ -155,11 +160,13 @@ class Args:
 
     # mode envs
     if self.RUN_MODE == 'gimage':
+      self.IS_GIMAGE = False
+      self.Log('Not get model image.')
+    if self.RUN_MODE == 'gimage':
       self.IS_TRAIN = False
       self.IS_TEST = False
       self.IS_SAVE = False
-      self.IS_GIMAGE = True
-      self.Log('Get model image.')
+      self.Log('Get model image only.')
     elif self.RUN_MODE == 'train':
       self.IS_TEST = False
       self.Log('train only.')
@@ -169,7 +176,7 @@ class Args:
       self.Log('test only.')
 
     # log some mode info
-    if self.RUN_MODE in ['', 'train', 'test']:
+    if self.RUN_MODE not in ['gimage']:
       self.Log(self.EPOCHS, _T='Epochs:')
       self.Log(self.BATCH_SIZE, _T='Batch size:')
       self.Log('', _L=['Model Optimizer exist.', f'Using Optimizer: {self.OPT}'], _B=self.OPT_EXIST)
@@ -180,12 +187,14 @@ class Args:
       self.Log(self.LOG_DIR + '\\', _T='logs dir:')
 
     # check save
+    self.SAVE_EXIST and self.Log(self.LOAD_NAME ,_T='Loading h5:')
     self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME) or self.MODEL.model
+    self.SAVE_EXIST and self.Log(self.LOAD_NAME ,_T='Loaded h5:')
 
     # compile model
     self.MODEL.model.compile(optimizer=self.OPT,
                              loss=self.LOSS_MODE,
-                             metrics=['accuracy']) 
+                             metrics=['accuracy'])
 
   def train(self):
     
@@ -197,6 +206,10 @@ class Args:
                                        write_graph=True,
                                        write_images=True)
 
+    self.START_TIME = self._time
+
+    self.Log(self.START_TIME, _T='Start training:')
+
     self.MODEL.model.fit(self.DATASET.train_images,
                          self.DATASET.train_labels,
                          epochs=self.EPOCHS,
@@ -204,13 +217,26 @@ class Args:
                          validation_data=(self.DATASET.test_images, self.DATASET.test_labels), 
                          callbacks=[tensorboard_callback])
 
+    self.STOP_TIME = self._time
+    self.Log(self.STOP_TIME, _T='Stop training:')
+    self.TRAIN_COST_TIME = self._strptime(self.STOP_TIME) - self._strptime(self.START_TIME)
+    self.Log(self.TRAIN_COST_TIME, _T='Train time (second):')
+
   def test(self):
 
     if not self.IS_TEST: return
 
+    self.START_TIME = self._time
+    self.Log(self.START_TIME, _T='Start testing:')
+
     self.RESULT = self.MODEL.model.evaluate(self.DATASET.test_images, self.DATASET.test_labels)
 
-    print('[logs] total loss: %.4f, accuracy: %.4f' % tuple(self.RESULT))
+    self.STOP_TIME = self._time
+    self.Log(self.STOP_TIME, _T='Stop testing:')
+    self.TEST_COST_TIME = self._strptime(self.STOP_TIME) - self._strptime(self.START_TIME)
+    self.Log(self.TEST_COST_TIME, _T='Test time (second):')
+    self.Log(self.RESULT[0], _T='total loss:')
+    self.Log(self.RESULT[1], _T='accuracy:')
 
   def save(self):
 
@@ -218,19 +244,21 @@ class Args:
 
     self.MODEL.model.save(self.SAVE_NAME, include_optimizer=not self.OPT_EXIST)
 
-    print(f'[logs] Successfully save model: {self.SAVE_NAME}')
+    self.Log(self.SAVE_NAME, _T='Successfully save model:')
 
   def gimage(self):
 
     if not self.IS_GIMAGE: return
 
+    if os.path.exists(f'{self.H5_NAME}_model.png'): return
+
     from tensorflow.python.keras.utils import plot_model
 
     plot_model(self.MODEL.model,
-               to_file=f'{self.MODEL_IMG_DIR}\{self.MODELS_NAME}_model.png',
+               to_file=f'{self.H5_NAME}_model.png',
                show_shapes=True)
 
-    print(f'[logs] Successfully save model image: {self.MODEL_IMG_DIR}\{self.MODELS_NAME}_model.png')
+    self.Log(f'{self.H5_NAME}_model.png', _T='Successfully save model image:')
   
   def user(self):
     '''user train args'''
