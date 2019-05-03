@@ -1,7 +1,7 @@
 '''
   默认模型
   简单三层神经网络[添加了Dropout层]
-  本模型默认总参数量[参考基准：cifar10模型]：
+  本模型默认总参数量[参考基准：cifar10]：
     Total params:           394,634
     Trainable params:       394,634
     Non-trainable params:   0
@@ -32,7 +32,7 @@ class mlp(NetWork):
       Dense(self.LOCAL_SIZE, activation='relu'),
       Dropout(self.DROP_RATE),
       Dense(self.NUM_CLASSES, activation='softmax')
-    ])
+    ], name='mlp')
 
 # test part
 if __name__ == "__main__":
