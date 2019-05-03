@@ -27,7 +27,7 @@ class Dataset(object):
       self.DATAINFO = {'IMAGE_SHAPE': self.IMAGE_SHAPE, 'NUM_CLASSES': self.NUM_CLASSES}
   
   def args(self):
-    pass
+    raise NotImplementedError
 
   # public method
 
