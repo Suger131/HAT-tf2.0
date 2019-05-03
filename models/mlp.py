@@ -7,7 +7,7 @@
     Non-trainable params:   0
 '''
 
-from .network import NetWork
+from models.network import NetWork
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import *
 
