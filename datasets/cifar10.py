@@ -1,5 +1,5 @@
-from .Dataset import Dataset
-import tensorflow.keras.datasets as ds
+from datasets.Dataset import Dataset
+from tensorflow.python.keras import datasets as ds
 
 
 class cifar10(Dataset):
