@@ -6,17 +6,9 @@
 """
 
 
-from tensorflow.python.framework import tensor_shape
-from tensorflow.python.keras.utils import conv_utils
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.engine import Layer
-from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import *
 
 from utils.counter import Counter
-
-
-_COUNT = Counter()
 
 
 class AdvNet(object):
@@ -24,138 +16,138 @@ class AdvNet(object):
   def __init__(self, *args, **kwargs):
     return super().__init__(*args, **kwargs)
 
-  def conv(self, x_in, filters, kernel_size, strides=1, padding='same', use_bias=False, kernel_initializer='he_normal'):
-    '''卷积层'''
-    x = Conv2D(filters,
-               kernel_size,
-               strides=strides,
-               padding=padding,
-               use_bias=use_bias,
-               kernel_initializer=kernel_initializer,
-               name=f"CONV_{_COUNT.get('conv')}_F{filters}_K{type(kernel_size)==int and kernel_size or '%sx%s' % kernel_size}_S{strides}")(x_in)
-    return x
-  
-  def bn(self, x_in, momentum=0.1, epsilon=1e-5, gamma_initializer='uniform'):
-    '''BN层'''
-    x = BatchNormalization(axis=-1,
-                           momentum=momentum,
-                           epsilon=epsilon,
-                           gamma_initializer=gamma_initializer,
-                           name='BN_' + str(_COUNT.get('bn')))(x_in)
+  def repeat(self, func, times, x, *args, **kwargs):
+    for i in range(times):
+      x = func(x, *args, **kwargs)
     return x
 
-  def relu(self, x_in):
-    '''RELU层'''
-    x = Activation('relu', name='RELU_' + str(_COUNT.get('relu')))(x_in)
+  def input(self, shape, batch_size=None, dtype=None, sparse=False, tensor=None,
+            **kwargs):
+    return Input(shape=shape, batch_size=batch_size, dtype=dtype, sparse=sparse,
+                 tensor=tensor, name=f"Input", **kwargs)
+
+  def local(self, x, units, activation='relu', use_bias=True, kernel_initializer='glorot_uniform',
+            bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
+            activity_regularizer=None, kernel_constraint=None, bias_constraint=None, **kwargs):
+    name = f"Softmax" if activation=='softmax' else f"Local_{Counter('local')}"
+    x = Dense(units=units, activation=activation, use_bias=use_bias, kernel_initializer=kernel_initializer,
+              bias_initializer=bias_initializer, kernel_regularizer=kernel_regularizer,
+              bias_regularizer=bias_regularizer, activity_regularizer=activity_regularizer,
+              kernel_constraint=kernel_constraint, bias_constraint=bias_constraint,
+              name=name, **kwargs)(x)
     return x
 
-  def conv_bn(self, x_in, filters, kernel_size, strides=1, padding='same', use_bias=False,
-              kernel_initializer='he_normal', momentum=0.1, epsilon=1e-5, gamma_initializer='uniform'):
-    '''带有bn层的conv'''
-    x = self.conv(x_in, filters, kernel_size, strides, padding, use_bias, kernel_initializer)
-    x = self.bn(x, momentum, epsilon, gamma_initializer)
-    x = self.relu(x)
+  def dropout(self, x, rate, noise_shape=None, seed=None, **kwargs):
+    x = Dropout(rate=rate, noise_shape=noise_shape, seed=seed,
+                name=f"Dropout_{Counter('dropout')}", **kwargs)(x)
     return x
 
-
-class ConvBn(Layer):
-  """
-    2D convolution layer with BatchNormalization (e.g. spatial convolution over images).
-
-    Arguments:\n
-      filters: Integer.\n
-      kernel_size: An integer or tuple/list of n integers.\n
-      strides: An integer or tuple/list of n integers.\n
-      padding: One of `"valid"`,  `"same"`, or `"causal"`.\n
-      data_format: A string, one of `channels_last` (default) or `channels_first`.\n
-      dilation_rate: An integer or tuple/list of n integers.\n
-      activation: Activation function.\n
-      use_bias: Boolean.
-
-    Input shape:
-      4D tensor with shape:
-      `(samples, channels, rows, cols)` if data_format='channels_first'
-      or 4D tensor with shape:
-      `(samples, rows, cols, channels)` if data_format='channels_last'.
-
-    Output shape:
-      4D tensor with shape:
-      `(samples, filters, new_rows, new_cols)` if data_format='channels_first'
-      or 4D tensor with shape:
-      `(samples, new_rows, new_cols, filters)` if data_format='channels_last'.
-      `rows` and `cols` values might have changed due to padding.
-  """
-
-  def __init__(self, filters, kernel_size, strides=1, padding='same', activation='relu',
-               dilation_rate=1, use_bias=False, kernel_initializer='he_normal', momentum=0.1,
-               epsilon=1e-5, gamma_initializer='uniform', axis=-1, data_format=None,**kwargs):
-    self.filters = filters
-    self.kernel_size = kernel_size
-    self.strides = strides
-    self.padding = padding
-    self.activation = activation
-    self.dilation_rate = dilation_rate
-    self.use_bias = use_bias
-    self.kernel_initializer = kernel_initializer
-    self.momentum = momentum
-    self.epsilon = epsilon
-    self.gamma_initializer = gamma_initializer
-    self.axis = axis
-    self.data_format = conv_utils.normalize_data_format(data_format)
-    super(ConvBn, self).__init__(**kwargs)
-
-  def build(self, input_shape):
-    super(ConvBn, self).build(input_shape)
-
-  def call(self, x):
-    conv = Conv2D(self.filters,
-               self.kernel_size,
-               strides=self.strides,
-               padding=self.padding,
-               use_bias=self.use_bias,
-               kernel_initializer=self.kernel_initializer)
-    bn = BatchNormalization(axis=self.axis,
-                           momentum=self.momentum,
-                           epsilon=self.epsilon,
-                           gamma_initializer=self.gamma_initializer)
-    act = Activation(self.activation)
-    self.trainable_weights += conv.trainable_weights + bn.trainable_weights + act.trainable_weights
-    self.non_trainable_weights += conv.non_trainable_weights + bn.non_trainable_weights + act.non_trainable_weights
-    x = conv(x)
-    x = bn(x)
-    x = act(x)
+  def flatten(self, x, data_format=None, **kwargs):
+    x = Flatten(data_format=data_format, name=f"Faltten_{Counter('flatten')}",
+                **kwargs)(x)
     return x
 
-  def compute_output_shape(self, input_shape):
-    input_shape = tensor_shape.TensorShape(input_shape).as_list()
-    if self.data_format == 'channels_last':
-      space = input_shape[1:-1]
-      new_space = []
-      for i in range(len(space)):
-        new_dim = conv_utils.conv_output_length(
-            space[i],
-            self.kernel_size[i],
-            padding=self.padding,
-            stride=self.strides[i],
-            dilation=self.dilation_rate[i])
-        new_space.append(new_dim)
-      return tensor_shape.TensorShape([input_shape[0]] + new_space +
-                                      [self.filters])
+  def maxpool(self, x, pool_size=(2, 2), strides=None, padding='same',
+              data_format=None, **kwargs):
+    if not strides:
+      strides = pool_size
+    x = MaxPool2D(pool_size=pool_size, strides=strides, padding=padding,
+                  data_format=data_format, name=f"MaxPool_{Counter('maxpool')}", **kwargs)(x)
+    return x
+
+  def avgpool(self, x, pool_size=(2, 2), strides=(2, 2), padding='same',
+              data_format=None, **kwargs):
+    x = AvgPool2D(pool_size=pool_size, strides=strides, padding=padding,
+                  data_format=data_format, name=f"AvgPool_{Counter('avgpool')}", **kwargs)(x)
+    return x
+
+  def GAPool(self, x, data_format=None, **kwargs):
+    x = GlobalAvgPool2D(data_format=data_format, name=f"GlobalAvgPool_{Counter('gapool')}", **kwargs)(x)
+    return x
+
+  def GMPool(self, x, data_format=None, **kwargs):
+    x = GlobalMaxPool2D(data_format=data_format, name=f"GlobalMaxPool_{Counter('gmpool')}", **kwargs)(x)
+    return x
+
+  def conv(self, x, filters, kernel_size, strides=(1, 1), padding='same',
+           data_format=None, dilation_rate=(1, 1), activation=None, use_bias=True,
+           kernel_initializer='glorot_uniform', bias_initializer='zeros',
+           kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+           kernel_constraint=None, bias_constraint=None, **kwargs):
+    if type(kernel_size) == int:
+      kernel_size = (kernel_size,) * 2
+    if type(strides) == int:
+      strides = (strides,) * 2
+    x = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides,
+               padding=padding, data_format=data_format, dilation_rate=dilation_rate,
+               activation=activation, use_bias=use_bias, kernel_initializer=kernel_initializer,
+               bias_initializer=bias_initializer, kernel_regularizer=kernel_regularizer,
+               bias_regularizer=bias_regularizer, activity_regularizer=activity_regularizer,
+               kernel_constraint=kernel_constraint, bias_constraint=bias_constraint,
+               name=f"Conv_{Counter('conv')}" +
+                    f"_F{filters}" +
+                    f"_K{'%sx%s' % kernel_size}" +
+                    f"_S{'%sx%s' % strides}", **kwargs)(x)
+    return x
+
+  def bn(self, x, axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True,
+         beta_initializer='zeros', gamma_initializer='ones', moving_mean_initializer='zeros',
+         moving_variance_initializer='ones', beta_regularizer=None, gamma_regularizer=None,
+         beta_constraint=None, gamma_constraint=None, renorm=False, renorm_clipping=None,
+         renorm_momentum=0.99, fused=None, trainable=True, virtual_batch_size=None,
+         adjustment=None, **kwargs):
+    x = BatchNormalization(axis=axis, momentum=momentum, epsilon=epsilon, center=center,
+                           scale=scale, beta_initializer=beta_initializer, gamma_initializer=gamma_initializer,
+                           moving_mean_initializer=moving_mean_initializer, moving_variance_initializer=moving_variance_initializer,
+                           beta_regularizer=beta_regularizer, gamma_regularizer=gamma_regularizer,
+                           beta_constraint=beta_constraint, gamma_constraint=gamma_constraint,
+                           renorm=renorm, renorm_clipping=renorm_clipping, renorm_momentum=renorm_momentum,
+                           fused=fused, trainable=trainable, virtual_batch_size=virtual_batch_size,
+                           adjustment=adjustment, name=f"BN_{Counter('bn')}", **kwargs)(x)
+    return x
+
+  def relu(self, x, **kwargs):
+    x = Activation('relu', name=f"ReLU_{Counter('relu')}", **kwargs)(x)
+    return x
+
+  def activation(self, x, activation, **kwargs):
+    x = Activation(activation=activation, name=f"{activation.capitalize()}_{Counter('relu')}",
+                   **kwargs)(x)
+    return x
+
+  def conv_bn(self, x, filters, kernel_size, strides=(1, 1), padding='same',
+           data_format=None, dilation_rate=(1, 1), activation='relu', use_bias=True,
+           kernel_initializer='glorot_uniform', bias_initializer='zeros',
+           kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+           kernel_constraint=None, bias_constraint=None, axis=-1, momentum=0.99, epsilon=1e-3,
+           center=True, scale=True, beta_initializer='zeros', gamma_initializer='ones',
+           moving_mean_initializer='zeros', moving_variance_initializer='ones', beta_regularizer=None,
+           gamma_regularizer=None, beta_constraint=None, gamma_constraint=None, renorm=False,
+           renorm_clipping=None, renorm_momentum=0.99, fused=None, trainable=True,
+           virtual_batch_size=None, adjustment=None, **kwargs):
+    '''
+      带有bn层的conv, 默认激活函数为ReLU
+    '''
+    x = self.conv(x, filters=filters, kernel_size=kernel_size, strides=strides,
+                  padding=padding, data_format=data_format, dilation_rate=dilation_rate,
+                  activation=None, use_bias=use_bias, kernel_initializer=kernel_initializer,
+                  bias_initializer=bias_initializer, kernel_regularizer=kernel_regularizer,
+                  bias_regularizer=bias_regularizer, activity_regularizer=activity_regularizer,
+                  kernel_constraint=kernel_constraint, bias_constraint=bias_constraint, **kwargs)
+    x = self.bn(x, axis=axis, momentum=momentum, epsilon=epsilon, center=center,
+                scale=scale, beta_initializer=beta_initializer, gamma_initializer=gamma_initializer,
+                moving_mean_initializer=moving_mean_initializer, moving_variance_initializer=moving_variance_initializer,
+                beta_regularizer=beta_regularizer, gamma_regularizer=gamma_regularizer,
+                beta_constraint=beta_constraint, gamma_constraint=gamma_constraint,
+                renorm=renorm, renorm_clipping=renorm_clipping, renorm_momentum=renorm_momentum,
+                fused=fused, trainable=trainable, virtual_batch_size=virtual_batch_size, **kwargs)
+    if activation == 'relu':
+      x = self.relu(x, **kwargs)
     else:
-      space = input_shape[2:]
-      new_space = []
-      for i in range(len(space)):
-        new_dim = conv_utils.conv_output_length(
-            space[i],
-            self.kernel_size[i],
-            padding=self.padding,
-            stride=self.strides[i],
-            dilation=self.dilation_rate[i])
-        new_space.append(new_dim)
-      return tensor_shape.TensorShape([input_shape[0], self.filters] +
-                                      new_space)
+      x = self.activation(x, activation, **kwargs)
+    return x
 
 
 if __name__ == "__main__":
-  print(_COUNT.get('conv'))
-  print(_COUNT.get('conv'))
+  print(Counter('conv'))
+  print(f"{Counter('conv')}")
