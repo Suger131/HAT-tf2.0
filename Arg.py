@@ -53,7 +53,7 @@ class Args:
   def _time(self):
     return time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
 
-  def _strptime(self, timex):
+  def _mktime(self, timex):
     return time.mktime(time.strptime(timex, '%Y-%m-%d-%H-%M-%S'))
 
   def _error(self, args, text):
@@ -219,7 +219,7 @@ class Args:
 
     self.STOP_TIME = self._time
     self.Log(self.STOP_TIME, _T='Stop training:')
-    self.TRAIN_COST_TIME = self._strptime(self.STOP_TIME) - self._strptime(self.START_TIME)
+    self.TRAIN_COST_TIME = self._mktime(self.STOP_TIME) - self._mktime(self.START_TIME)
     self.Log(self.TRAIN_COST_TIME, _T='Train time (second):')
 
   def test(self):
@@ -233,7 +233,7 @@ class Args:
 
     self.STOP_TIME = self._time
     self.Log(self.STOP_TIME, _T='Stop testing:')
-    self.TEST_COST_TIME = self._strptime(self.STOP_TIME) - self._strptime(self.START_TIME)
+    self.TEST_COST_TIME = self._mktime(self.STOP_TIME) - self._mktime(self.START_TIME)
     self.Log(self.TEST_COST_TIME, _T='Test time (second):')
     self.Log(self.RESULT[0], _T='total loss:')
     self.Log(self.RESULT[1], _T='accuracy:')
