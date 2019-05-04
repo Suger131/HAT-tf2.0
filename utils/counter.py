@@ -8,12 +8,14 @@ class Counter(object):
 
   count = {}
 
-  def __init__(self, *args, **kwargs):
-    return super().__init__(*args, **kwargs)
+  def __init__(self, name, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.name = name
 
-  def get(self, name):
-    if name not in Counter.count:
-      Counter.count[name] = 1
+  def __str__(self):
+    if self.name not in Counter.count:
+      Counter.count[self.name] = 1
     else:
-      Counter.count[name] += 1
-    return Counter.count[name]
+      Counter.count[self.name] += 1
+    return str(Counter.count[self.name])
+    
