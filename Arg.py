@@ -16,7 +16,7 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
 
-from Log import Log
+from utils import *
 from datasets import *
 from models import *
 
