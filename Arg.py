@@ -159,7 +159,7 @@ class Args:
     self._get_args(self.USER_DICT)
 
     # mode envs
-    if self.RUN_MODE == 'gimage':
+    if self.RUN_MODE == 'no-gimage':
       self.IS_GIMAGE = False
       self.Log('Not get model image.')
     if self.RUN_MODE == 'gimage':
