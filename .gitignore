@@ -1,12 +1,6 @@
-
 .vscode/settings.json
 *.pyc
-*.h5
-*.trace
-*.v2
-*.png
-*.record
-logs/logger/
-test*.py
-*.DESKTOP-0SLEEE8
 *.csv
+*.record
+logs/
+test*.py
