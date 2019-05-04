@@ -8,3 +8,5 @@
 *.record
 logs/logger/
 test*.py
+*.DESKTOP-0SLEEE8
+*.csv
