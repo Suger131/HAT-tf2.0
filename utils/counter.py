@@ -76,7 +76,7 @@ class Counter(object):
       raise Exception(f"Value must be a int, but got {type(value).__name__}")
     Counter.count[name] = value
 
-  
+
 if __name__ == "__main__":
   a = Counter()
   print(a.get('a'))
