@@ -1,12 +1,7 @@
 import os
 import time
 
-def _writer(func):
-  def _inner(self, *args, **kwargs):
-    with open(self._log_dir, 'a+') as f:
-      for i in args: f.write(i + '\n')
-    func(self, *args, **kwargs)
-  return _inner
+from utils._func import _writer
 
 
 class Log(object):
@@ -14,14 +9,25 @@ class Log(object):
   Logger
   """
 
-  def __init__(self, log_dir, ext='.txt'):
+  def __init__(self, log_dir, log_name=None, ext='.txt'):
     self._ext = ext
+    if not log_dir: raise Exception(f"log_dir must not be a null value.")
     if not os.path.exists(log_dir): os.makedirs(log_dir)
-    self._log_dir = f'{log_dir}/{self._time}{self._ext}'
+    self._log_name = log_name or self._time
+    self._log_dir = f'{log_dir}/{self._log_name}{self._ext}'
     self._log(f'Logger has been Loaded.')
   
   def __call__(self, *args, **kwargs):
-    self._log(*args, **kwargs)
+    _args, _form = self._log(*args, **kwargs)
+    # log
+    for i in _args:
+      self._print(f"{_form} {i}")
+    return True
+
+  def _w(self, *args, **kwargs):
+    _args, _form = self._log(*args, **kwargs)
+    for i in _args:
+      self._write(f"{_form} {i}")
     return True
 
   def _log(self, *args, **kwargs):
@@ -29,13 +35,15 @@ class Log(object):
     _args = self._p_args(args)
     # processing kwargs
     _form = self._p_kwargs(kwargs)
-    # log
-    for i in _args:
-      self._print(f"{_form} {i}")
+    return _args, _form
 
   @_writer
   def _print(self, value):
     print(value)
+
+  @_writer
+  def _write(self, value):
+    pass
 
   @property
   def _time(self):
