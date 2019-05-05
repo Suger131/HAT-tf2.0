@@ -33,6 +33,13 @@ class AdvNet(object):
     x = Add(name=f"Add_{Counter('add')}", **kwargs)(x)
     return x
 
+  def concat(self, x, axis=-1, **kwargs):
+    """
+      x must be a list
+    """
+    x = Concatenate(axis=axis, name=f"Concat_{Counter('concat')}", **kwargs)(x)
+    return x
+
   def local(self, x, units, activation='relu', use_bias=True, kernel_initializer='glorot_uniform',
             bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
             activity_regularizer=None, kernel_constraint=None, bias_constraint=None, **kwargs):
