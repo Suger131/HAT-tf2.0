@@ -19,15 +19,28 @@ Hust Artificial intelligence Trainer.
 * CUDA: 10.0.130
 * cuCNN: 7.5.0
 
-**注：tensorflow 1.13可能也可以使用**
+**注意：**
+* tensorflow 1.13 也可以使用，可能需要自己修改一些地方。
+* tensorflow 1.11 也可能可以使用。
 
 ## 部署
+
+### 项目部署
 
 有三种可选的部署方式：
 
 * 将本项目的文件夹添加到系统环境`PYTHONPATH`中，并重启计算机
 * 在`*/Lib/site-packages`(*为python目录)中添加一个`*.pth`(*为任意文件名)文件，文件里添加项目所在文件夹的绝对路径
 * 将本项目文件夹直接放在`*/Lib/site-packages`(*为python目录)文件夹内
+
+### 第三方库
+
+需要以下第三方库：
+
+* Tensorflow-gpu 2.0/1.13
+  * `pip install tensorflow-gpu==2.0.0-alpha0`
+  * `pip install tensorflow-gpu==1.13`
+* pydot_ng 详情参见`bugs`文件夹
 
 ## 开始使用
 
@@ -224,6 +237,11 @@ self.model = Model(inputs=x_in, outputs=x, name='MLP')
   * 通过在层后面加入`(x)`来输入需要处理的值
   * 本例中的层是直线型的模型，顺序是：`Flatten`, `Dense(128, relu)`, `Dropout`, `Dense(softmax)`
   * 通过`Model`生成模型，需要填写输入输出，`name`可选。
+
+### 第四种模型构建方法
+
+使用`models.advanced`的`AdvNet`来进行更简单的模型构建。使用方法可参考vgg19模型。  
+详细说明待补充
 
 ## 创建数据集
 
