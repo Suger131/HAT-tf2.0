@@ -14,7 +14,6 @@
 from models.network import NetWork
 from models.advanced import AdvNet
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import *
 
 
 class vgg19(NetWork, AdvNet):
