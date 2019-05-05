@@ -11,13 +11,35 @@ class Dataset(object):
   """
 
   def __init__(self, *args, **kwargs):
+
+    self._list = ['mission', 'NUM_TRAIN', 'NUM_TEST', 'NUM_VAL', 'NUM_CLASSES', 'IMAGE_SHAPE']
+    self._dict = {}
+    self._info_list = ['NUM_TRAIN', 'NUM_TEST', 'NUM_VAL', 'DATAINFO']
+    self._info_dict = {}
+
+    self._built = True
     self.mission = 'classfication'
+    self.__dict__ = {**self.__dict__, **kwargs}
     self._MISSION_LIST = []
     self.DATAINFO = {}
-    self.__dict__ = {**self.__dict__, **kwargs}
     self.args()
     self._check_mission()
+    self._built = False
   
+  # built-in method
+
+  def __setattr__(self, name, value):
+    if '_built' not in self.__dict__:
+      return super().__setattr__(name, value)
+    if name == '_built':
+      return super().__setattr__(name, value)
+    if self._built:
+      if name in self._list:
+        self._dict[name] = value
+      if name in self._info_list:
+        self._info_dict[name] = value
+    return super().__setattr__(name, value)
+
   # private method
 
   def _check_mission(self):
@@ -32,7 +54,7 @@ class Dataset(object):
   # public method
 
   def ginfo(self):
-    return {i: self.__dict__[i] for i in ['NUM_TRAIN', 'NUM_TEST', 'DATAINFO']}
+    return self._info_dict, self._dict
     
 if __name__ == "__main__":
   a = Dataset()
