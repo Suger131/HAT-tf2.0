@@ -1,12 +1,12 @@
 '''
   ResNet-101
   本模型默认总参数量[参考基准：cifar10]：
-    Total params:           44,664,578
-    Trainable params:       44,559,234
+    Total params:           44,717,186
+    Trainable params:       44,611,842
     Non-trainable params:   105,344
   本模型默认总参数量[参考基准：ImageNet]：
-    Total params:           44,664,578
-    Trainable params:       44,559,234
+    Total params:           44,717,186
+    Trainable params:       44,611,842
     Non-trainable params:   105,344
 '''
 
@@ -72,17 +72,17 @@ class resnet101(NetWork, AdvNet):
 
   def _bottle(self, x_in, filters1, filters2, strides=1, _t=False):
 
-    x = self.conv(x_in, filters1, 1, strides=strides, use_bias=False)
+    x = self.conv(x_in, filters1, 1, strides=strides)
     x = self.bn(x)
     x = self.relu(x)
-    x = self.conv(x, filters1, 3, use_bias=False)
+    x = self.conv(x, filters1, 3)
     x = self.bn(x)
     x = self.relu(x)
-    x = self.conv(x, filters2, 1, use_bias=False)
+    x = self.conv(x, filters2, 1)
     x = self.bn(x)
 
     if _t:
-      x_ = self.conv(x_in, filters2, 1, strides=strides, use_bias=False)
+      x_ = self.conv(x_in, filters2, 1, strides=strides)
       x_ = self.bn(x_)
     else:
       x_ = x_in
@@ -94,6 +94,6 @@ class resnet101(NetWork, AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = resnet101(DATAINFO={'IMAGE_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
+  mod = resnet101(DATAINFO={'IMAGE_SHAPE': (224, 224, 3), 'NUM_CLASSES': 10})
   print(mod.IMAGE_SHAPE)
   print(mod.model.summary())
