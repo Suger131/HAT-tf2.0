@@ -26,6 +26,13 @@ class AdvNet(object):
     return Input(shape=shape, batch_size=batch_size, dtype=dtype, sparse=sparse,
                  tensor=tensor, name=f"Input", **kwargs)
 
+  def add(self, x, **kwargs):
+    """
+      x must be a list
+    """
+    x = Add(name=f"Add_{Counter('add')}", **kwargs)(x)
+    return x
+
   def local(self, x, units, activation='relu', use_bias=True, kernel_initializer='glorot_uniform',
             bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
             activity_regularizer=None, kernel_constraint=None, bias_constraint=None, **kwargs):
