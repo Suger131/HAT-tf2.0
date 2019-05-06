@@ -3,4 +3,5 @@
 *.csv
 *.record
 logs/
+back_models/
 test*.py
