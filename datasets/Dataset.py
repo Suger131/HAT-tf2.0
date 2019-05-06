@@ -12,7 +12,7 @@ class Dataset(object):
 
   def __init__(self, *args, **kwargs):
 
-    self._list = ['mission', 'NUM_TRAIN', 'NUM_TEST', 'NUM_VAL', 'NUM_CLASSES', 'IMAGE_SHAPE']
+    self._list = ['mission', 'NUM_TRAIN', 'NUM_TEST', 'NUM_VAL', 'NUM_CLASSES', 'INPUT_SHAPE']
     self._dict = {}
     self._info_list = ['NUM_TRAIN', 'NUM_TEST', 'NUM_VAL', 'DATAINFO']
     self._info_dict = {}
@@ -46,7 +46,7 @@ class Dataset(object):
     if self.mission not in self._MISSION_LIST:
       raise Exception(f'Mission Error. The {type(self).__name__} does not have {self.mission} mission.') 
     elif self.mission == 'classfication':
-      self.DATAINFO = {'IMAGE_SHAPE': self.IMAGE_SHAPE, 'NUM_CLASSES': self.NUM_CLASSES}
+      self.DATAINFO = {'INPUT_SHAPE': self.INPUT_SHAPE, 'NUM_CLASSES': self.NUM_CLASSES}
   
   def args(self):
     raise NotImplementedError
