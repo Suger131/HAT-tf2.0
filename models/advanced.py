@@ -7,11 +7,13 @@
 
 
 import tensorflow as tf
+from tensorflow.python.util.tf_export import tf_export
 from tensorflow.python.keras.layers import *
 
 from utils.counter import Counter
 
 
+@tf_export('keras.layers.Extand_RGB')
 class Extand_RGB(Layer):
   """
     Extand the RGB channels
@@ -29,10 +31,10 @@ class Extand_RGB(Layer):
       0: Original R Channel\n
       1: Original G Channel\n
       2: Original B Channel\n
-      3: R + G\n
-      4: R + B\n
-      5: G + B\n
-      6: R + G + B
+      3: R + G + B
+      4: R + G\n
+      5: R + B\n
+      6: G + B\n
   """
 
   def __init__(self, axis=-1, data_format='channels_last', **kwargs):
@@ -51,10 +53,10 @@ class Extand_RGB(Layer):
     if x.shape[self.axis] != 3:
       raise Exception(f"Input Tensor must have 3 channels(RGB), but got {x.shape[self.axis]}")
     _x = tf.split(x, axis=self.axis, num_or_size_splits=[1, 1, 1])
-    _y = [(_x[0] + _x[1]) / 2,
+    _y = [_x[0] * self._gray[0] + _x[1] * self._gray[1] + _x[2] * self._gray[2],
+          (_x[0] + _x[1]) / 2,
           (_x[0] + _x[2]) / 2,
-          (_x[1] + _x[2]) / 2,
-          _x[0] * self._gray[0] + _x[1] * self._gray[1] + _x[2] * self._gray[2]]
+          (_x[1] + _x[2]) / 2]
     x = tf.concat([*_x, *_y], axis=self.axis)
     return x
 
@@ -66,7 +68,7 @@ class Extand_RGB(Layer):
 
 
 class AdvNet(object):
-
+  
   def __init__(self, *args, **kwargs):
     return super().__init__(*args, **kwargs)
 
@@ -242,25 +244,8 @@ class AdvNet(object):
 
   def rgb_extand(self, x, axis=-1, data_format=None, **kwargs):
     """
-      extand the RGB channels
-      
-      Argument:
-        x: \n
-        4D Tensor, (None, rows, cols, 3) if channels_last(default)\n
-        4D Tensor, (None, 3, rows, cols) if channels_first
-
-      Return:
-        x: 
-        4D Tensor, (None, rows, cols, 7) if channels_last(default)\n
-        4D Tensor, (None, 7, rows, cols) if channels_first\n
-        This 7 channels contains:\n
-        0: Original R Channel\n
-        1: Original G Channel\n
-        2: Original B Channel\n
-        3: R + G\n
-        4: R + B\n
-        5: G + B\n
-        6: R + G + B
+      拓展RGB通道, 原本的3个通道拓展成7个通道\n
+      详情可参考`Extand_RGB`类
     """
     x = Extand_RGB(axis=axis, data_format=data_format, 
                    name=f"RGB_Extand_{Counter('rgb_extand')}", **kwargs)(x)
