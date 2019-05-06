@@ -99,6 +99,7 @@ class Args(object):
     else:
       self._GLOBAL_EPOCH = self.EPOCHS
     self._specialc.append({'GLOBAL_EPOCH': self._GLOBAL_EPOCH})
+    self._logc.append({'EPOCHS': self.EPOCHS, 'BATCH_SIZE': self.BATCH_SIZE})
 
   def _input_processing(self):
 
