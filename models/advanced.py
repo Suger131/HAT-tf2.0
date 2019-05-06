@@ -48,6 +48,8 @@ class Extand_RGB(Layer):
     super(Extand_RGB, self).__init__(**kwargs)
 
   def call(self, x):
+    if x.shape[self.axis] != 3:
+      raise Exception(f"Input Tensor must have 3 channels(RGB), but got {x.shape[self.axis]}")
     _x = tf.split(x, axis=self.axis, num_or_size_splits=[1, 1, 1])
     _y = [(_x[0] + _x[1]) / 2,
           (_x[0] + _x[2]) / 2,
