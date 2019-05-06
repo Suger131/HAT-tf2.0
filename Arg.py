@@ -26,6 +26,7 @@ class Args(object):
     # built-in args
     self._paramc = []
     self._logc = []
+    self._specialc = []
     self._warning_args = []
     self._dir_list = []
     # envs args
@@ -82,12 +83,22 @@ class Args(object):
           self.__dict__[i] = dicts[i]
 
   def _write_config(self):
-    self._config = Config(f"{self.SAVE_DIR}/config")
     if not self._config.if_param():
       for di in self._paramc:
         self._config.param(di)
+    for di in self._specialc:
+      self._config.param(di)
     for di in self._logc:
       self._config.log(di)
+
+  def _special_config(self):
+    self._GLOBAL_EPOCH = self._config.get('param', 'global_epoch')
+    if self._GLOBAL_EPOCH:
+      self._GLOBAL_EPOCH = int(self._GLOBAL_EPOCH)
+      self._GLOBAL_EPOCH += self.EPOCHS
+    else:
+      self._GLOBAL_EPOCH = self.EPOCHS
+    self._specialc.append({'GLOBAL_EPOCH': self._GLOBAL_EPOCH})
 
   def _input_processing(self):
 
@@ -170,6 +181,11 @@ class Args(object):
     # load user args (don't cover)
     self._get_args(self.USER_DICT)
 
+    # get configer
+    self._config = Config(f"{self.SAVE_DIR}/config")
+    # processing special config
+    self._special_config()
+
     # mode envs
     if self.RUN_MODE == 'no-gimage':
       self.IS_GIMAGE = False
@@ -208,27 +224,40 @@ class Args(object):
                              loss=self.LOSS_MODE,
                              metrics=self.METRICS)
 
+  def _fit(self, *args, **kwargs):
+    # NOTE: if use the `histogram_freq`, then raise
+    # AttributeError: 'NoneType' object has no attribute 'fetches'
+    # unknown bug
+    tensorboard_callback = TensorBoard(log_dir=self.LOG_DIR,
+                                      #  histogram_freq=1,
+                                       update_freq='batch',
+                                       write_graph=False,
+                                       write_images=True)
+    _history = []
+    for i in range(self.EPOCHS):
+      self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
+      _train = self.MODEL.model.fit(self.DATASET.train_x,
+                                    self.DATASET.train_y,
+                                    epochs=1, #self.EPOCHS,
+                                    batch_size=self.BATCH_SIZE,
+                                    callbacks=[tensorboard_callback])
+      self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
+      _val = self.MODEL.model.evaluate(self.DATASET.test_x,
+                                       self.DATASET.test_y)
+      _history.extend([{f"epoch{i+1}_train_{item}": _train.history[item][0] for item in _train.history},
+                       dict(zip([f'epoch{i+1}_val_loss', f'epoch{i+1}_val_accuracy'], _val))])
+    return _history
+
   # public method
 
   def train(self):
     
     if not self.IS_TRAIN: return
 
-    tensorboard_callback = TensorBoard(log_dir=self.LOG_DIR,
-                                       histogram_freq=1,
-                                       update_freq='batch',
-                                       write_graph=True,
-                                       write_images=True)
+    self._Log(f'{self._GLOBAL_EPOCH-self.EPOCHS}/{self._GLOBAL_EPOCH}', _T='Global Epochs:')
+    _, result = self._timer.timer('train', self._fit)
 
-    _, result = self._timer.timer('train', self.MODEL.model.fit,
-                                  self.DATASET.train_x,
-                                  self.DATASET.train_y,
-                                  epochs=self.EPOCHS,
-                                  batch_size=self.BATCH_SIZE,
-                                  validation_data=(self.DATASET.test_x, self.DATASET.test_y), 
-                                  callbacks=[tensorboard_callback])
-    
-    self._logc.append(_)
+    self._logc.extend([_, *result])
 
   def test(self):
 
@@ -288,6 +317,7 @@ class Args(object):
 
     pprint(self._paramc)
     pprint(self._logc)
+    pprint(self._specialc)
     self._write_config()
     
 ARGS = Args()
