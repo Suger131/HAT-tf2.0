@@ -40,7 +40,7 @@ class wrn28_10(NetWork):
     self.OPT_EXIST = True
 
   def build_model(self):
-    x_in = Input(shape=self.IMAGE_SHAPE)
+    x_in = Input(shape=self.INPUT_SHAPE)
     Fs = [x * self.S * self.K for x in [1, 2, 4]]
 
     # Conv1
@@ -128,6 +128,6 @@ class wrn28_10(NetWork):
 
 # test part
 if __name__ == "__main__":
-  mod = wrn28_10(DATAINFO={'IMAGE_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
+  mod = wrn28_10(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
   print(mod.model.summary())
   # pass
