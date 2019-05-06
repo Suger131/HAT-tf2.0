@@ -2,6 +2,10 @@
   models 子包的init文件
 '''
 
+
+from models.network import NetWork
+from models.advanced import *
+
 from models.mlp import mlp
 from models.mlp_r import mlp_r
 from models.lenet import lenet
