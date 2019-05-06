@@ -18,6 +18,7 @@ sess = tf.Session(config=config)
 from utils import *
 from datasets import *
 from models import *
+from envs.envs import _CUSTOM_OBJECTS
 
 
 class Args(object):
@@ -29,6 +30,7 @@ class Args(object):
     self._specialc = []
     self._warning_args = []
     self._dir_list = []
+    self._CUSTOM_OBJECTS = _CUSTOM_OBJECTS
     # envs args
     self.IS_TRAIN = True
     self.IS_TEST = True
@@ -217,7 +219,7 @@ class Args(object):
 
     # check save
     self.SAVE_EXIST and self._Log(self.LOAD_NAME ,_T='Loading h5:')
-    self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME) or self.MODEL.model
+    self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME, custom_objects=self._CUSTOM_OBJECTS) or self.MODEL.model
     self.SAVE_EXIST and self._Log(self.LOAD_NAME ,_T='Loaded h5:')
 
     # compile model
