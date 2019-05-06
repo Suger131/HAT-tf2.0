@@ -13,11 +13,11 @@ class boston_housing(Dataset):
     self.NUM_TEST = 102
     self.NUM_CLASSES = 1
     self.INPUT_SHAPE = (13,)
-    (self.train_images, self.train_labels), (self.test_images, self.test_labels) = ds.boston_housing.load_data()
+    (self.train_x, self.train_y), (self.test_x, self.test_y) = ds.boston_housing.load_data()
 
 
 # test mode
 if __name__ == "__main__":
   m = boston_housing()
   # print(m.ginfo())
-  print(m.test_labels.shape)
+  print(m.train_x.dtype, m.train_y.dtype)
