@@ -35,7 +35,7 @@ class vgg19(NetWork, AdvNet):
     # self.OPT_EXIST = True
 
   def build_model(self):
-    x_in = self.input(self.IMAGE_SHAPE)
+    x_in = self.input(self.INPUT_SHAPE)
 
     # 卷积部分
     x = x_in
@@ -46,9 +46,9 @@ class vgg19(NetWork, AdvNet):
     x = self.repeat(self.conv_bn, self.NUM_LAYERS[2], x, self.CONV[2], 3)
     x = self.maxpool(x)
     x = self.repeat(self.conv_bn, self.NUM_LAYERS[3], x, self.CONV[3], 3)
-    x = self.maxpool(x, 2 if self.IMAGE_SHAPE[0] // 16 >= 4 else 1)
+    x = self.maxpool(x, 2 if self.INPUT_SHAPE[0] // 16 >= 4 else 1)
     x = self.repeat(self.conv_bn, self.NUM_LAYERS[4], x, self.CONV[4], 3) 
-    x = self.maxpool(x) if self.IMAGE_SHAPE[0] // 32 >= 4 else self.GAPool(x)
+    x = self.maxpool(x) if self.INPUT_SHAPE[0] // 32 >= 4 else self.GAPool(x)
 
     # 全连接部分
     x = self.flatten(x)
@@ -63,6 +63,6 @@ class vgg19(NetWork, AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = vgg19(DATAINFO={'IMAGE_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.IMAGE_SHAPE)
+  mod = vgg19(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
+  print(mod.INPUT_SHAPE)
   print(mod.model.summary())
