@@ -14,3 +14,4 @@ from models.densenet120 import densenet120
 from models.wrn28_10 import wrn28_10
 
 from models.untitled_3d import untitled_3d
+from models.lenet_3d import lenet_3d
