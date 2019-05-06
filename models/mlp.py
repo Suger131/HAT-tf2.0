@@ -8,11 +8,11 @@
 '''
 
 from models.network import NetWork
-from tensorflow.python.keras.models import Sequential
-from tensorflow.python.keras.layers import *
+from models.advanced import AdvNet
+from tensorflow.python.keras.models import Model
 
 
-class mlp(NetWork):
+class mlp(NetWork, AdvNet):
   """
   MLP 模型
   """
@@ -27,15 +27,18 @@ class mlp(NetWork):
     # self.OPT_EXIST = True
 
   def build_model(self):
-    self.model = Sequential([
-      Flatten(input_shape=self.IMAGE_SHAPE),
-      Dense(self.LOCAL_SIZE, activation='relu'),
-      Dropout(self.DROP_RATE),
-      Dense(self.NUM_CLASSES, activation='softmax')
-    ], name='mlp')
+    x_in = self.input(self.INPUT_SHAPE)
+
+    x = self.flatten(x_in)
+    x = self.local(x, self.LOCAL_SIZE)
+    x = self.dropout(x, self.DROP_RATE)
+    x = self.local(x, self.NUM_CLASSES, activation='softmax')
+
+    self.model = Model(inputs=x_in, outputs=x, name='mlp')
+
 
 # test part
 if __name__ == "__main__":
-  mod = mlp(DATAINFO={'IMAGE_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.IMAGE_SHAPE)
+  mod = mlp(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
+  print(mod.INPUT_SHAPE)
   print(mod.model.summary())
