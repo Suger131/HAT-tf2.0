@@ -25,12 +25,13 @@ class densenet39(NetWork, AdvNet):
     self.THETA = 0.5
 
     self.CONV = 20
+    self.CONV_SIZE = 3
     self.BLOCKS = [5, 6, 7]
   
   def build_model(self):
-    x_in = self.input(self.IMAGE_SHAPE)
+    x_in = self.input(self.INPUT_SHAPE)
 
-    x = self.conv(x_in, self.CONV, 3)  #1
+    x = self.conv(x_in, self.CONV, self.CONV_SIZE)  #1
     x = self.repeat(self._dense, self.BLOCKS[0], x, self.K)  #2*n 10 80->40
     x = self._transition(x)  #1
     x = self.repeat(self._dense, self.BLOCKS[1], x, self.K)  #2*n 12 40+72->56
@@ -72,6 +73,6 @@ class densenet39(NetWork, AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = densenet39(DATAINFO={'IMAGE_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.IMAGE_SHAPE)
+  mod = densenet39(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
+  print(mod.INPUT_SHAPE)
   print(mod.model.summary())
