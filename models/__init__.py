@@ -4,6 +4,8 @@
 
 from models.mlp import mlp
 from models.mlp_r import mlp_r
+from models.lenet import lenet
+from models.alexnet import alexnet
 from models.vgg16 import vgg16
 from models.vgg19 import vgg19
 from models.nvgg16 import nvgg16
