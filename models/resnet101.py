@@ -31,7 +31,7 @@ class resnet101(NetWork, AdvNet):
     self.RES_TIMES = [3, 4, 23, 3]
     self.RES_F_A = [64, 128, 256, 512]
     self.RES_F_B = [256, 512, 1024, 2048]
-    self.RES_STRIDES = [1, 2, 2, 2 if self.IMAGE_SHAPE[0] // 32 >= 4 else 1]
+    self.RES_STRIDES = [1, 2, 2, 2 if self.INPUT_SHAPE[0] // 32 >= 4 else 1]
 
     self.LOCAL = 1000
 
@@ -42,11 +42,11 @@ class resnet101(NetWork, AdvNet):
     # self.OPT_EXIST = True
 
   def build_model(self):
-    x_in = self.input(self.IMAGE_SHAPE)
+    x_in = self.input(self.INPUT_SHAPE)
 
     # first conv
     x = self.conv_bn(x_in, self.CONV_F, self.CONV_SIZE, strides=self.CONV_STRIDES)
-    if self.IMAGE_SHAPE[0] // 16 >= 4: x = self.maxpool(x, self.POOL_SIZE, self.POOL_STRIDES)
+    if self.INPUT_SHAPE[0] // 16 >= 4: x = self.maxpool(x, self.POOL_SIZE, self.POOL_STRIDES)
 
     # res part
     _res_list = list(zip(self.RES_TIMES,
@@ -94,6 +94,6 @@ class resnet101(NetWork, AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = resnet101(DATAINFO={'IMAGE_SHAPE': (224, 224, 3), 'NUM_CLASSES': 10})
-  print(mod.IMAGE_SHAPE)
+  mod = resnet101(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 10})
+  print(mod.INPUT_SHAPE)
   print(mod.model.summary())
