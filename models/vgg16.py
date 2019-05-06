@@ -52,7 +52,7 @@ class vgg16(NetWork):
     return x
 
   def build_model(self):
-    x_in = Input(shape=self.IMAGE_SHAPE)
+    x_in = Input(shape=self.INPUT_SHAPE)
 
     # 卷积部分
     x = x_in
@@ -63,9 +63,9 @@ class vgg16(NetWork):
     for i in range(self.NUM_LAYERS[2]): x = self.conv(x, self.CONV[2], 3)
     x = MaxPool2D(2, padding='same')(x)
     for i in range(self.NUM_LAYERS[3]): x = self.conv(x, self.CONV[3], 3)
-    x = MaxPool2D(self.IMAGE_SHAPE[0] // 16 >= 4 and 2 or 1, padding='same')(x)
+    x = MaxPool2D(self.INPUT_SHAPE[0] // 16 >= 4 and 2 or 1, padding='same')(x)
     for i in range(self.NUM_LAYERS[4]): x = self.conv(x, self.CONV[4], 3)
-    if self.IMAGE_SHAPE[0] // 32 >= 4:
+    if self.INPUT_SHAPE[0] // 32 >= 4:
       x = MaxPool2D(2, padding='same')(x)
     else:
       x = GlobalAvgPool2D()(x)
@@ -81,6 +81,6 @@ class vgg16(NetWork):
 
 # test part
 if __name__ == "__main__":
-  mod = vgg16(DATAINFO={'IMAGE_SHAPE': (224, 224, 3), 'NUM_CLASSES': 10})
-  print(mod.IMAGE_SHAPE)
+  mod = vgg16(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 10})
+  print(mod.INPUT_SHAPE)
   print(mod.model.summary())
