@@ -43,6 +43,7 @@ class Args(object):
     self.OPT = None
     self.OPT_EXIST = False
     self.LOSS_MODE = None
+    self.METRICS = []
     # build
     self.IN_ARGS = input('=>').split(' ')
     self._Log = Log(log_dir='logs/logger')
@@ -205,7 +206,7 @@ class Args(object):
     # compile model
     self.MODEL.model.compile(optimizer=self.OPT,
                              loss=self.LOSS_MODE,
-                             metrics=['accuracy'])
+                             metrics=self.METRICS)
 
   # public method
 
@@ -220,11 +221,11 @@ class Args(object):
                                        write_images=True)
 
     _, result = self._timer.timer('train', self.MODEL.model.fit,
-                                  self.DATASET.train_images,
-                                  self.DATASET.train_labels,
+                                  self.DATASET.train_x,
+                                  self.DATASET.train_y,
                                   epochs=self.EPOCHS,
                                   batch_size=self.BATCH_SIZE,
-                                  validation_data=(self.DATASET.test_images, self.DATASET.test_labels), 
+                                  validation_data=(self.DATASET.test_x, self.DATASET.test_y), 
                                   callbacks=[tensorboard_callback])
     
     self._logc.append(_)
@@ -234,8 +235,8 @@ class Args(object):
     if not self.IS_TEST: return
 
     _, result = self._timer.timer('test', self.MODEL.model.evaluate,
-                                  self.DATASET.test_images,
-                                  self.DATASET.test_labels)
+                                  self.DATASET.test_x,
+                                  self.DATASET.test_y)
     self._Log(result[0], _T='total loss:')
     self._Log(result[1], _T='accuracy:')
     self._logc.append(_)
@@ -270,7 +271,8 @@ class Args(object):
     self.USER_DICT = {'BATCH_SIZE': 128,
                       'EPOCHS': 5,
                       'OPT': 'adam',
-                      'LOSS_MODE': 'sparse_categorical_crossentropy'}
+                      'LOSS_MODE': 'sparse_categorical_crossentropy',
+                      'METRICS' : ['accuracy']}
 
   def run(self):
 
