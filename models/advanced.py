@@ -6,9 +6,61 @@
 """
 
 
+import tensorflow as tf
 from tensorflow.python.keras.layers import *
 
 from utils.counter import Counter
+
+
+class Extand_RGB(Layer):
+  """
+    Extand the RGB channels
+      
+    Argument:
+      x: \n
+      4D Tensor, (None, rows, cols, 3) if channels_last(default)\n
+      4D Tensor, (None, 3, rows, cols) if channels_first
+
+    Return:
+      x: 
+      4D Tensor, (None, rows, cols, 7) if channels_last(default)\n
+      4D Tensor, (None, 7, rows, cols) if channels_first\n
+      This 7 channels contains:\n
+      0: Original R Channel\n
+      1: Original G Channel\n
+      2: Original B Channel\n
+      3: R + G\n
+      4: R + B\n
+      5: G + B\n
+      6: R + G + B
+  """
+
+  def __init__(self, axis=-1, data_format='channels_last', **kwargs):
+    self.data_format = data_format
+    self.axis = axis
+    if self.data_format == 'channels_First':
+      self.axis = 1
+    else:  
+      if self.axis != -1:
+        print(f"[Warning] data format is channels last, axis must be -1, but got {self.axis}. So use -1")
+        self.axis = -1
+    self._gray = [0.299, 0.587, 0.114]
+    super(Extand_RGB, self).__init__(**kwargs)
+
+  def call(self, x):
+    _x = tf.split(x, axis=self.axis, num_or_size_splits=[1, 1, 1])
+    _y = [(_x[0] + _x[1]) / 2,
+          (_x[0] + _x[2]) / 2,
+          (_x[1] + _x[2]) / 2,
+          _x[0] * self._gray[0] + _x[1] * self._gray[1] + _x[2] * self._gray[2]]
+    x = tf.concat([*_x, *_y], axis=self.axis)
+    return x
+
+  def compute_output_shape(self, input_shape):
+    if self.data_format == 'channels_First':
+      return (input_shape[0], 7, input_shape[2], input_shape[3])
+    else:
+      return (input_shape[0], input_shape[1], input_shape[2], 7)
 
 
 class AdvNet(object):
@@ -25,6 +77,10 @@ class AdvNet(object):
             **kwargs):
     return Input(shape=shape, batch_size=batch_size, dtype=dtype, sparse=sparse,
                  tensor=tensor, name=f"Input", **kwargs)
+
+  def reshape(self, x, target_shape, **kwargs):
+    x = Reshape(target_shape=target_shape, name=f"Reshape_{Counter('reshape')}", **kwargs)(x)
+    return x
 
   def add(self, x, **kwargs):
     """
@@ -104,6 +160,27 @@ class AdvNet(object):
                     f"_S{'%sx%s' % strides}", **kwargs)(x)
     return x
 
+  def conv3d(self, x, filters, kernel_size, strides=(1, 1, 1), padding='same',
+             data_format=None, dilation_rate=(1, 1, 1), activation=None, use_bias=True,
+             kernel_initializer='glorot_uniform', bias_initializer='zeros',
+             kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+             kernel_constraint=None, bias_constraint=None, **kwargs):
+    if type(kernel_size) == int:
+      kernel_size = (kernel_size,) * 3
+    if type(strides) == int:
+      strides = (strides,) * 3
+    x = Conv3D(filters=filters, kernel_size=kernel_size, strides=strides,
+               padding=padding, data_format=data_format, dilation_rate=dilation_rate,
+               activation=activation, use_bias=use_bias, kernel_initializer=kernel_initializer,
+               bias_initializer=bias_initializer, kernel_regularizer=kernel_regularizer,
+               bias_regularizer=bias_regularizer, activity_regularizer=activity_regularizer,
+               kernel_constraint=kernel_constraint, bias_constraint=bias_constraint,
+               name=f"Conv3D_{Counter('conv3d')}" +
+                    f"_F{filters}" +
+                    f"_K{'%sx%sx%s' % kernel_size}" +
+                    f"_S{'%sx%sx%s' % strides}", **kwargs)(x)
+    return x
+
   def bn(self, x, axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True,
          beta_initializer='zeros', gamma_initializer='ones', moving_mean_initializer='zeros',
          moving_variance_initializer='ones', beta_regularizer=None, gamma_regularizer=None,
@@ -159,6 +236,32 @@ class AdvNet(object):
       x = self.relu(x, **kwargs)
     else:
       x = self.activation(x, activation, **kwargs)
+    return x
+
+  def rgb_extand(self, x, axis=-1, data_format=None, **kwargs):
+    """
+      extand the RGB channels
+      
+      Argument:
+        x: \n
+        4D Tensor, (None, rows, cols, 3) if channels_last(default)\n
+        4D Tensor, (None, 3, rows, cols) if channels_first
+
+      Return:
+        x: 
+        4D Tensor, (None, rows, cols, 7) if channels_last(default)\n
+        4D Tensor, (None, 7, rows, cols) if channels_first\n
+        This 7 channels contains:\n
+        0: Original R Channel\n
+        1: Original G Channel\n
+        2: Original B Channel\n
+        3: R + G\n
+        4: R + B\n
+        5: G + B\n
+        6: R + G + B
+    """
+    x = Extand_RGB(axis=axis, data_format=data_format, 
+                   name=f"RGB_Extand_{Counter('rgb_extand')}", **kwargs)(x)
     return x
 
 
