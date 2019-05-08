@@ -10,9 +10,11 @@ from models.mlp import mlp
 from models.mlp_r import mlp_r
 from models.lenet import lenet
 from models.alexnet import alexnet
+from models.alexnet_s import alexnet_s
 from models.vgg16 import vgg16
 from models.vgg19 import vgg19
 from models.nvgg16 import nvgg16
+from models.googlenetv4 import googlenetv4
 from models.resnet50 import resnet50
 from models.resnet101 import resnet101
 from models.densenet39 import densenet39
