@@ -17,6 +17,7 @@ from models.nvgg16 import nvgg16
 from models.googlenetv4 import googlenetv4
 from models.resnet50 import resnet50
 from models.resnet101 import resnet101
+from models.resnext50 import resnext50
 from models.densenet39 import densenet39
 from models.densenet120 import densenet120
 from models.wrn28_10 import wrn28_10
