@@ -294,7 +294,7 @@ class GroupConv(Layer):
 
   def get_config(self):
     config = {
-        'groups' : groups,
+        'groups' : self.groups,
         'filters': self.filters,
         'kernel_size': self.kernel_size,
         'strides': self.strides,
