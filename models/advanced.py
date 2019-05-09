@@ -10,8 +10,10 @@ import tensorflow as tf
 from tensorflow.python.ops import nn
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import nn_ops
+from tensorflow.python.ops import gen_math_ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.util.tf_export import tf_export
+from tensorflow.python.keras import backend as K
 from tensorflow.python.keras import regularizers
 from tensorflow.python.keras import activations
 from tensorflow.python.keras import initializers
@@ -27,13 +29,18 @@ class ExtandRGB(Layer):
   """
     Extand the RGB channels
       
-    Argument:
+    Usage:
+    ```python
+      x = ExtandRGB()(x)
+    ```
+
+    Argument:\n
       x: \n
       4D Tensor, (None, rows, cols, 3) if channels_last(default)\n
       4D Tensor, (None, 3, rows, cols) if channels_first
 
-    Return:
-      x: 
+    Return:\n
+      x: \n
       4D Tensor, (None, rows, cols, 7) if channels_last(default)\n
       4D Tensor, (None, 7, rows, cols) if channels_first\n
       This 7 channels contains:\n
@@ -137,13 +144,14 @@ class GroupConv(Layer):
                bias_initializer='zeros', kernel_regularizer=None,
                bias_regularizer=None, activity_regularizer=None,
                kernel_constraint=None, bias_constraint=None,
-               trainable=True, rank=2, name=None, **kwargs):
+               trainable=True, rank=2, split=True, name=None, **kwargs):
     super(GroupConv, self).__init__(
         trainable=trainable,
         name=name,
         activity_regularizer=regularizers.get(activity_regularizer),
         **kwargs)
     self.rank = rank
+    self.split = split
     self.groups = groups
     self.filters = filters
     self.kernel_size = conv_utils.normalize_tuple(
@@ -168,11 +176,18 @@ class GroupConv(Layer):
     self.input_spec = InputSpec(ndim=self.rank + 2)
 
   def build(self, input_shape):
-    input_shape = tensor_shape.TensorShape(input_shape)
+    input_shape_ = tensor_shape.TensorShape(input_shape).as_list()
     if self.data_format == 'channels_first':
       channel_axis = 1
+      _in_list = [input_shape_[0]] + [input_shape_[channel_axis] // self.groups] + input_shape_[2:]
     else:
       channel_axis = -1
+      _in_list = input_shape_[: self.rank + 1] + [input_shape_[self.rank + 1] // self.groups]
+    if self.split:
+      input_shape = tensor_shape.TensorShape(_in_list)
+    else:
+      input_shape = tensor_shape.TensorShape(input_shape)
+
     if input_shape.dims[channel_axis].value is None:
       raise ValueError('The channel dimension of the inputs '
                        'should be defined. Found `None`.')
@@ -194,7 +209,7 @@ class GroupConv(Layer):
       self.bias = []
       for i in range(self.groups):
         self.bias.append(self.add_weight(
-            name='bias',
+            name=f'bias_{i}',
             shape=(self.filters,),
             initializer=self.bias_initializer,
             regularizer=self.bias_regularizer,
@@ -204,7 +219,7 @@ class GroupConv(Layer):
     else:
       self.bias = None
     self.input_spec = InputSpec(ndim=self.rank + 2,
-                                axes={channel_axis: input_dim})
+                                axes={channel_axis: input_dim * self.groups if self.split else input_dim})
     if self.padding == 'causal':
       op_padding = 'valid'
     else:
@@ -225,13 +240,19 @@ class GroupConv(Layer):
     else:
       channel_axis = -1
 
-    if self.rank==1 and self.padding == 'causal':
+    if self.rank == 1 and self.padding == 'causal':
       inputs = array_ops.pad(inputs, self._compute_causal_padding())
+    
+    if self.split:
+      inputs = tf.split(inputs, axis=channel_axis, num_or_size_splits=[self.filters,] * self.groups)
 
     outputs = []
     for i in range(self.groups):
-      temp = self._convolution_op(inputs, self.kernel[i])
-
+      if self.split:
+        temp = self._convolution_op(inputs[i], self.kernel[i])
+      else:
+        temp = self._convolution_op(inputs, self.kernel[i])
+      
       if self.use_bias:
         if self.data_format == 'channels_first':
           if self.rank == 1:
@@ -294,6 +315,7 @@ class GroupConv(Layer):
 
   def get_config(self):
     config = {
+        'split': self.split,
         'groups' : self.groups,
         'filters': self.filters,
         'kernel_size': self.kernel_size,
@@ -323,6 +345,91 @@ class GroupConv(Layer):
     else:
       causal_padding = [[0, 0], [0, 0], [left_pad, 0]]
     return causal_padding
+
+
+@tf_export('keras.layers.SqueezeExcitation', 'keras.layers.SE')
+class SqueezeExcitation(Layer):
+  """
+    SE-block (Squeeze & Excitation)
+
+    This block would not change the shape of Tensor.
+
+    Usage:
+    
+    ```python
+      x = SqueezeExcitation()(x)
+      # or
+      x = SE()(x)
+    ```
+  """
+  def __init__(self, rate=16, activation='sigmoid', data_format=None, kernel_initializer='glorot_uniform',
+               kernel_regularizer=None, activity_regularizer=None, kernel_constraint=None, **kwargs):
+    super(SqueezeExcitation, self).__init__(
+        activity_regularizer=regularizers.get(activity_regularizer), **kwargs)
+    
+    self.rate = rate
+    self.data_format = data_format
+    if self.data_format == 'channels_First':
+      self.axis = 1
+    else:
+      self.axis = -1
+    self.activation = activations.get(activation)
+    self.kernel_initializer = initializers.get(kernel_initializer)
+    self.kernel_regularizer = regularizers.get(kernel_regularizer)
+    self.kernel_constraint = constraints.get(kernel_constraint)
+
+  def build(self, input_shape):
+    channels = int(input_shape[self.axis])
+
+    self.kernel1 = self.add_weight(
+        'kernel1',
+        shape=[channels, channels // self.rate],
+        initializer=self.kernel_initializer,
+        regularizer=self.kernel_regularizer,
+        constraint=self.kernel_constraint,
+        dtype=self.dtype,
+        trainable=True)
+    self.kernel2 = self.add_weight(
+        'kernel2',
+        shape=[channels // self.rate, channels],
+        initializer=self.kernel_initializer,
+        regularizer=self.kernel_regularizer,
+        constraint=self.kernel_constraint,
+        dtype=self.dtype,
+        trainable=True)
+    
+    self.built = True
+
+  def call(self, inputs):
+    # Global Average Pooling
+    if self.data_format == 'channels_first':
+      weights = K.mean(inputs, axis=[2, -1])
+    else:
+      weights = K.mean(inputs, axis=[1, -2])
+    # FC 1
+    weights = gen_math_ops.mat_mul(weights, self.kernel1)
+    # FC 2
+    weights = gen_math_ops.mat_mul(weights, self.kernel2)
+    if self.activation is not None:
+      weights = self.activation(weights)
+    # reshape
+    weights = Reshape((1, 1, K.int_shape(weights)[-1]))(weights)
+    # Scale
+    outputs = tf.multiply(inputs, weights)
+    return outputs
+
+  def get_config(self):
+    config = {
+        'rate': self.rate,
+        'activation': activations.serialize(self.activation),
+        'kernel_initializer': initializers.serialize(self.kernel_initializer),
+        'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
+        'activity_regularizer':
+            regularizers.serialize(self.activity_regularizer),
+        'kernel_constraint': constraints.serialize(self.kernel_constraint),
+    }
+    base_config = super(Dense, self).get_config()
+    return dict(list(base_config.items()) + list(config.items()))
 
 
 class AdvNet(object):
@@ -447,7 +554,7 @@ class AdvNet(object):
            data_format=None, dilation_rate=(1, 1), activation=None, use_bias=True,
            kernel_initializer='glorot_uniform', bias_initializer='zeros',
            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
-           kernel_constraint=None, bias_constraint=None, rank=2, **kwargs):
+           kernel_constraint=None, bias_constraint=None, split=True, rank=2, **kwargs):
     if type(kernel_size) == int:
       kernel_size = (kernel_size,) * 2
     if type(strides) == int:
@@ -461,7 +568,7 @@ class AdvNet(object):
             name=f"GroupConv_{Counter('conv')}" +
                  f"_G{groups}" +
                  f"_F{filters}" +
-                 f"_K{'%sx%s' % kernel_size}", **kwargs)(x)
+                 f"_K{'%sx%s' % kernel_size}", split=split, **kwargs)(x)
     return x
 
   def bn(self, x, axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True,
@@ -529,6 +636,17 @@ class AdvNet(object):
     x = ExtandRGB(axis=axis, data_format=data_format, 
                    name=f"RGB_Extand_{Counter('rgb_extand')}", **kwargs)(x)
     return x
+
+  def SE(self, x, rate=16, activation='sigmoid', data_format=None, kernel_initializer='glorot_uniform',
+         kernel_regularizer=None, activity_regularizer=None, kernel_constraint=None, **kwargs):
+    x = SE(rate=rate, activation=activation, data_format=data_format, kernel_initializer=kernel_initializer,
+           kernel_regularizer=kernel_regularizer, activity_regularizer=activity_regularizer,
+           kernel_constraint=kernel_constraint, name=f"SE_{Counter('se')}")(x)
+    return x
+
+
+# Short name
+SE = SqueezeExcitation
 
 
 if __name__ == "__main__":
