@@ -243,7 +243,7 @@ class Args(object):
                                     self.DATASET.train_y,
                                     epochs=1, #self.EPOCHS,
                                     batch_size=self.BATCH_SIZE,
-                                    callbacks=[tensorboard_callback])
+                                    callbacks=[tensorboard_callback])#
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
       _val = self.MODEL.model.evaluate(self.DATASET.test_x,
                                        self.DATASET.test_y)
