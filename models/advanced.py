@@ -428,7 +428,7 @@ class SqueezeExcitation(Layer):
             regularizers.serialize(self.activity_regularizer),
         'kernel_constraint': constraints.serialize(self.kernel_constraint),
     }
-    base_config = super(Dense, self).get_config()
+    base_config = super(SqueezeExcitation, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
 
 
