@@ -29,7 +29,7 @@ class resnext50(NetWork, AdvNet):
     self.POOL_STRIDES = 2
 
     self.RES_TIMES = [3, 4, 6, 3]
-    self.GROUP = 16
+    self.GROUP = 32
     self.GROUP_FILTERS = [4, 8, 16, 32]
     self.RES_FILTERS = [256, 512, 1024, 2048]
     self.RES_STRIDES = [1 if self.INPUT_SHAPE[0] // 16 >= 4 else 2,
@@ -101,3 +101,8 @@ if __name__ == "__main__":
   mod = resnext50(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
   print(mod.INPUT_SHAPE)
   print(mod.model.summary())
+  mod.model.compile('adam',
+      'sparse_categorical_crossentropy',
+      metrics=['accuracy'])
+  mod.model.save('resnext.h5', include_optimizer=False)
+  
