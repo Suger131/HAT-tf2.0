@@ -6,3 +6,4 @@ logs/
 back_models/
 back_logs/
 test*.py
+*.jpg
