@@ -246,7 +246,8 @@ class Args(object):
                                     callbacks=[tensorboard_callback])#
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
       _val = self.MODEL.model.evaluate(self.DATASET.test_x,
-                                       self.DATASET.test_y)
+                                       self.DATASET.test_y,
+                                       batch_size=self.BATCH_SIZE)
       _history.extend([{f"epoch{i+1}_train_{item}": _train.history[item][0] for item in _train.history},
                        dict(zip([f'epoch{i+1}_val_loss', f'epoch{i+1}_val_accuracy'], _val))])
     return _history
@@ -268,7 +269,8 @@ class Args(object):
 
     _, result = self._timer.timer('test', self.MODEL.model.evaluate,
                                   self.DATASET.test_x,
-                                  self.DATASET.test_y)
+                                  self.DATASET.test_y,
+                                  batch_size=self.BATCH_SIZE)
     self._Log(result[0], _T='total loss:')
     self._Log(result[1], _T='accuracy:')
     self._logc.append(_)
