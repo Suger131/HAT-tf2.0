@@ -512,21 +512,20 @@ class AdvNet(object):
            data_format=None, dilation_rate=(1, 1), activation=None, use_bias=True,
            kernel_initializer='glorot_uniform', bias_initializer='zeros',
            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
-           kernel_constraint=None, bias_constraint=None, **kwargs):
+           kernel_constraint=None, bias_constraint=None, name='', **kwargs):
     if type(kernel_size) == int:
       kernel_size = (kernel_size,) * 2
     if type(strides) == int:
       strides = (strides,) * 2
+    if not name:
+      name = f"Conv_{Counter('conv')}_F{filters}_K{'%sx%s' % kernel_size}_S{'%sx%s' % strides}"
     x = Conv2D(filters=filters, kernel_size=kernel_size, strides=strides,
                padding=padding, data_format=data_format, dilation_rate=dilation_rate,
                activation=activation, use_bias=use_bias, kernel_initializer=kernel_initializer,
                bias_initializer=bias_initializer, kernel_regularizer=kernel_regularizer,
                bias_regularizer=bias_regularizer, activity_regularizer=activity_regularizer,
                kernel_constraint=kernel_constraint, bias_constraint=bias_constraint,
-               name=f"Conv_{Counter('conv')}" +
-                    f"_F{filters}" +
-                    f"_K{'%sx%s' % kernel_size}" +
-                    f"_S{'%sx%s' % strides}", **kwargs)(x)
+               name=name, **kwargs)(x)
     return x
 
   def conv3d(self, x, filters, kernel_size, strides=(1, 1, 1), padding='same',
@@ -647,6 +646,13 @@ class AdvNet(object):
 
 # Short name
 SE = SqueezeExcitation
+
+
+# envs
+_CUSTOM_OBJECTS = {'ExtandRGB': ExtandRGB,
+                   'GroupConv': GroupConv,
+                   'SqueezeExcitation': SqueezeExcitation,
+                   'SE': SE}
 
 
 if __name__ == "__main__":
