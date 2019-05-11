@@ -21,16 +21,16 @@ class lenet_3d(NetWork, AdvNet):
   """
   
   def args(self):
-    self.CONV = [4, 8]
-    self.CONV3D_SIZE = (5, 5, 3)
-    self.STRIDES = (2, 2, 1)
+    self.CONV = [20, 50]
+    self.CONV3D_SIZE = (3, 3, 1)
+    self.STRIDES = (3, 3, 1)
     self.LOCAL_SIZE = 500
-    self.DROP_RATE = 0.2
+    self.DROP_RATE = 0.5
     # for test
     # self.BATCH_SIZE = 128
     # self.EPOCHS = 150
-    # self.OPT = 'sgd'
-    # self.OPT_EXIST = True
+    self.OPT = 'sgd'
+    self.OPT_EXIST = True
 
   def build_model(self):
     x_in = self.input(self.INPUT_SHAPE)
@@ -42,10 +42,20 @@ class lenet_3d(NetWork, AdvNet):
     
     # 3D Conv
     x = self.conv3d(x, self.CONV[0], self.CONV3D_SIZE)
+    x = self.bn(x)
     x = self.relu(x)
+    x = self.conv3d(x, self.CONV[0], self.CONV3D_SIZE)
+    x = self.bn(x)
+    x = self.relu(x)
+    x = ZeroPadding3D((1, 1, 0))(x)
     x = MaxPool3D(self.STRIDES)(x)
     x = self.conv3d(x, self.CONV[1], self.CONV3D_SIZE)
+    x = self.bn(x)
     x = self.relu(x)
+    x = self.conv3d(x, self.CONV[1], self.CONV3D_SIZE)
+    x = self.bn(x)
+    x = self.relu(x)
+    x = ZeroPadding3D((1, 1, 0))(x)
     x = MaxPool3D(self.STRIDES)(x)
     
     # Local
@@ -53,6 +63,7 @@ class lenet_3d(NetWork, AdvNet):
     x = self.flatten(x)
     x = self.local(x, self.LOCAL_SIZE)
     x = self.dropout(x, self.DROP_RATE)
+    x = self.local(x, self.LOCAL_SIZE)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
     self.model = Model(inputs=x_in, outputs=x, name='lenet_3d')
