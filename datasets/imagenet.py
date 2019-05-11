@@ -14,7 +14,7 @@ class imagenet(Dataset):
     self.NUM_VAL = 10000
     self.NUM_CLASSES = 10
     self.INPUT_SHAPE = (224, 224, 3)
-    (self.train_x, self.train_y), (self.test_x, self.test_y) = (None, None), (None, None)
+    (self.train_x, self.train_y), (self.val_x, self.val_y) = (None, None), (None, None)
 
 
 # test mode
