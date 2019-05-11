@@ -21,8 +21,8 @@ class car10(Dataset):
     self.DATA_DIR = 'datasets/car10'
     self.CLASSES_DICT = self._get_classes_dict()
     self.train_x, self.train_y = self._get_train_data()
-    self.test_x, self.test_y = self._get_val_data()
-    self.output_x = self._get_test_data()
+    self.val_x, self.val_y = self._get_val_data()
+    self.test_x = self._get_test_data()
 
   def _get_classes_dict(self):
     with open(f"{self.DATA_DIR}/classes.txt", 'r') as f:
