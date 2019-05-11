@@ -15,7 +15,7 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
 
-from utils import _CUSTOM_OBJECTS
+from models.advanced import _CUSTOM_OBJECTS
 from utils import *
 from datasets import *
 from models import *
@@ -33,7 +33,7 @@ class Args(object):
     self._CUSTOM_OBJECTS = _CUSTOM_OBJECTS
     # envs args
     self.IS_TRAIN = True
-    self.IS_TEST = True
+    self.IS_VAL = True
     self.IS_SAVE = True
     self.IS_GIMAGE = True
     self.DATASETS_NAME = ''
@@ -123,7 +123,7 @@ class Args(object):
       elif (self._check_args(i, ['gimage', 'gimg'], 'RUN_MODE', data='gimage') or
             self._check_args(i, ['no-gimage', 'n-gimg'], 'RUN_MODE', data='no-gimage') or
             self._check_args(i, ['train-only', 'train-o', 'train'], 'RUN_MODE', data='train') or
-            self._check_args(i, ['test-only', 'test-o', 'test'], 'RUN_MODE', data='test')): pass
+            self._check_args(i, ['val-only', 'val-o', 'val'], 'RUN_MODE', data='val')): pass
 
       else:
         self._warning_args.append(i)
@@ -195,24 +195,24 @@ class Args(object):
       self._Log('Not get model image.')
     if self.RUN_MODE == 'gimage':
       self.IS_TRAIN = False
-      self.IS_TEST = False
+      self.IS_VAL = False
       self.IS_SAVE = False
       self._Log('Get model image only.')
     elif self.RUN_MODE == 'train':
-      self.IS_TEST = False
+      self.IS_VAL = False
       self._Log('train only.')
-    elif self.RUN_MODE == 'test':
+    elif self.RUN_MODE == 'val':
       self.IS_TRAIN = False
       self.IS_SAVE = False
-      self._Log('test only.')
+      self._Log('val only.')
 
     # log some mode info
     if self.RUN_MODE not in ['gimage']:
       self._Log(self.EPOCHS, _T='Epochs:')
       self._Log(self.BATCH_SIZE, _T='Batch size:')
       self._Log('', _L=['Model Optimizer exist.', f'Using Optimizer: {self.OPT}'], _B=self.OPT_EXIST)
-      if self.RUN_MODE == 'test':
-        self._Log('', _L=['h5 exist.', 'h5 not exist, testing a fresh model.'], _B=self.SAVE_EXIST)
+      if self.RUN_MODE == 'val':
+        self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.SAVE_EXIST)
       else:
         self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.SAVE_EXIST)
       self._Log(self.LOG_DIR + '\\', _T='logs dir:')
@@ -245,8 +245,8 @@ class Args(object):
                                     batch_size=self.BATCH_SIZE,
                                     callbacks=[tensorboard_callback])#
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
-      _val = self.MODEL.model.evaluate(self.DATASET.test_x,
-                                       self.DATASET.test_y,
+      _val = self.MODEL.model.evaluate(self.DATASET.val_x,
+                                       self.DATASET.val_y,
                                        batch_size=self.BATCH_SIZE)
       _history.extend([{f"epoch{i+1}_train_{item}": _train.history[item][0] for item in _train.history},
                        dict(zip([f'epoch{i+1}_val_loss', f'epoch{i+1}_val_accuracy'], _val))])
@@ -263,18 +263,21 @@ class Args(object):
 
     self._logc.extend([_, *result])
 
-  def test(self):
+  def val(self):
 
-    if not self.IS_TEST: return
+    if not self.IS_VAL: return
 
-    _, result = self._timer.timer('test', self.MODEL.model.evaluate,
-                                  self.DATASET.test_x,
-                                  self.DATASET.test_y,
+    _, result = self._timer.timer('val', self.MODEL.model.evaluate,
+                                  self.DATASET.val_x,
+                                  self.DATASET.val_y,
                                   batch_size=self.BATCH_SIZE)
     self._Log(result[0], _T='total loss:')
     self._Log(result[1], _T='accuracy:')
     self._logc.append(_)
-    self._logc.append(dict(zip(['test_total_loss', 'test_accuracy'], result)))
+    self._logc.append(dict(zip(['val_total_loss', 'val_accuracy'], result)))
+
+  def test(self):
+    return
 
   def save(self):
 
@@ -313,6 +316,8 @@ class Args(object):
     self.gimage()
 
     self.train()
+
+    self.val()
 
     self.test()
 
