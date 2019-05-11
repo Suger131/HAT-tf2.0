@@ -13,8 +13,8 @@ class f_mnist(Dataset):
     self.NUM_TEST = 10000
     self.NUM_CLASSES = 10
     self.INPUT_SHAPE = (28, 28, 1)
-    (self.train_x, self.train_y), (self.test_x, self.test_y) = ds.fashion_mnist.load_data()
-    self.train_x, self.test_x = self.train_x / 255.0, self.test_x / 255.0
+    (self.train_x, self.train_y), (self.val_x, self.val_y) = ds.fashion_mnist.load_data()
+    self.train_x, self.val_x = self.train_x / 255.0, self.val_x / 255.0
     self.train_x = self.train_x.reshape((self.NUM_TRAIN, *self.INPUT_SHAPE))
-    self.test_x = self.test_x.reshape((self.NUM_TEST, *self.INPUT_SHAPE))
+    self.val_x = self.val_x.reshape((self.NUM_TEST, *self.INPUT_SHAPE))
     
