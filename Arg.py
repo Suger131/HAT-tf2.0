@@ -15,10 +15,10 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
 
+from utils import _CUSTOM_OBJECTS
 from utils import *
 from datasets import *
 from models import *
-from envs.envs import _CUSTOM_OBJECTS
 
 
 class Args(object):
