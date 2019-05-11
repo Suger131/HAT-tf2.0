@@ -13,7 +13,7 @@ class boston_housing(Dataset):
     self.NUM_TEST = 102
     self.NUM_CLASSES = 1
     self.INPUT_SHAPE = (13,)
-    (self.train_x, self.train_y), (self.test_x, self.test_y) = ds.boston_housing.load_data()
+    (self.train_x, self.train_y), (self.val_x, self.val_y) = ds.boston_housing.load_data()
 
 
 # test mode
