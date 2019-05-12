@@ -64,7 +64,6 @@ class ExtandRGB(Layer):
         print(f"[Warning] data format is channels last, axis must be -1, but got {self.axis}. So use -1")
         self.axis = -1
     self._gray = [0.299, 0.587, 0.114]
-    super(ExtandRGB, self).__init__(**kwargs)
 
   def call(self, x):
     if x.shape[self.axis] != 3:
@@ -82,6 +81,64 @@ class ExtandRGB(Layer):
       return (input_shape[0], 7, input_shape[2], input_shape[3])
     else:
       return (input_shape[0], input_shape[1], input_shape[2], 7)
+
+
+@tf_export('keras.layers.ExtandRGBX')
+class ExtandRGBX(Layer):
+
+  def __init__(self, k, data_format=None, dilation_rate=1, trainable=False, **kwargs):
+    super(ExtandRGBX, self).__init__(trainable=trainable, **kwargs)
+    self.k = k
+    self.data_format = data_format
+    self.dilation_rate = conv_utils.normalize_tuple(dilation_rate, 2, 'dilation_rate')
+    if self.data_format == 'channels_First':
+      self.axis = 1
+    else:
+      self.axis = -1
+
+  def build(self, input_shape):
+
+    self.kernel = self._color_weight()
+
+    self._convolution_op = K.conv2d
+    self.built = True
+
+  def call(self, x):
+    if x.shape[self.axis] != 3:
+      raise Exception(f"Input Tensor must have 3 channels(RGB), but got {x.shape[self.axis]}")
+    x = self._convolution_op(x, self.kernel, padding='same',
+          data_format=self.data_format, dilation_rate=self.dilation_rate)
+    return x
+
+  def _color_weight(self):
+    _weight = []
+    for i in range(3):
+      i_ = i + 1 if i + 1 <= 2 else 0
+      for j in range(self.k + 1):
+        _t = [0, 0, 0]
+        _t[i] = 1. / (1. + j / self.k)
+        _t[i_] = j / self.k / (1. + j / self.k)
+        _weight.append(_t)
+      for j in range(1, self.k):
+        _t = [0, 0, 0]
+        _t[i_] = 1. / (1. + (self.k - j) / self.k)
+        _t[i] = (self.k - j) / self.k / (1. + (self.k - j) / self.k)
+        _weight.append(_t)
+    _weight = K.variable(_weight)
+    _weight = K.transpose(_weight)
+    _weight = K.reshape(_weight, (1, 1, 3, 6 * self.k))
+    return _weight
+
+  def compute_output_shape(self, input_shape):
+    input_shape[self.axis] = 6 * self.k
+    return input_shape
+
+  def get_config(self):
+    config = {
+        'k': self.k,
+    }
+    base_config = super(ExtandRGBX, self).get_config()
+    return dict(list(base_config.items()) + list(config.items()))
 
 
 @tf_export('keras.layers.GroupConv')
@@ -650,6 +707,7 @@ SE = SqueezeExcitation
 
 # envs
 _CUSTOM_OBJECTS = {'ExtandRGB': ExtandRGB,
+                   'ExtandRGBX': ExtandRGBX,
                    'GroupConv': GroupConv,
                    'SqueezeExcitation': SqueezeExcitation,
                    'SE': SE}
