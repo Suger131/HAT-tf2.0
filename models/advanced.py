@@ -393,10 +393,11 @@ class SqueezeExcitation(Layer):
 
   def build(self, input_shape):
     channels = int(input_shape[self.axis])
+    neck = int(channels / self.rate)
 
     self.kernel1 = self.add_weight(
         'kernel1',
-        shape=[channels, channels // self.rate],
+        shape=[channels, neck],
         initializer=self.kernel_initializer,
         regularizer=self.kernel_regularizer,
         constraint=self.kernel_constraint,
@@ -404,7 +405,7 @@ class SqueezeExcitation(Layer):
         trainable=True)
     self.kernel2 = self.add_weight(
         'kernel2',
-        shape=[channels // self.rate, channels],
+        shape=[neck, channels],
         initializer=self.kernel_initializer,
         regularizer=self.kernel_regularizer,
         constraint=self.kernel_constraint,
@@ -562,7 +563,7 @@ class AdvNet(object):
                     f"_S{'%sx%sx%s' % strides}", **kwargs)(x)
     return x
 
-  def dwconv(self, x, kernel_size, strides=(1, 1), padding='valid', depth_multiplier=1,
+  def dwconv(self, x, kernel_size, strides=(1, 1), padding='same', depth_multiplier=1,
              data_format=None, activation=None, use_bias=True,
              depthwise_initializer='glorot_uniform', bias_initializer='zeros',
              depthwise_regularizer=None, bias_regularizer=None,
