@@ -23,15 +23,11 @@ class dwdnet(NetWork, AdvNet):
     DwDNet
   '''
   def args(self):
-    # Head part
-    self.RGB_C = 24 // 6
-    self.HEAD_CONV = [24, 36, 48]
-
-    # Main part
+    self.RGB_C = 48 // 6
     self.CONV_BIAS = False
     self.CONV = [48, 96, 192]
     self.TIME = [3, 3, 3]
-    self.SE_T = 4
+    self.SE_T = 3
     self.THETA = 0.5
     self.DROP = 0.5
 
@@ -68,19 +64,19 @@ class dwdnet(NetWork, AdvNet):
     # Extand the RGB to (300,300,24)
     x = self.exrgb(x_in, self.RGB_C)
     # downsampling to (150,150,24)
-    x = self.conv_bn(x, self.HEAD_CONV[0], 3, 2, use_bias=self.CONV_BIAS)
+    x = self.dwconv(x, 3, 2, use_bias=self.CONV_BIAS)
     # DWConv to (148,148,24)
     x = self.dwconv(x, 3, padding='valid', use_bias=self.CONV_BIAS)
     # SE block
-    x = self.SE(x)
+    x = self.SE(x, rate=self.SE_T)
     # downsampling to (73,73,36)
-    x = self.conv_bn(x, self.HEAD_CONV[1], 3, 2, padding='valid', use_bias=self.CONV_BIAS)
+    x = self.dwconv(x, 3, 2, padding='valid', use_bias=self.CONV_BIAS)
     # DWConv to (71,71,36)
     x = self.dwconv(x, 3, padding='valid', use_bias=self.CONV_BIAS)
     # SE block
-    x = self.SE(x)
+    x = self.SE(x, rate=self.SE_T)
     # downsampling to (35,35,48)
-    x = self.conv_bn(x, self.HEAD_CONV[2], 3, 2, padding='valid', use_bias=self.CONV_BIAS)
+    x = self.dwconv(x, 3, 2, padding='valid', use_bias=self.CONV_BIAS)
     # return result
     return x
 
