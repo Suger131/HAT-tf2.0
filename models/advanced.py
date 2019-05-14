@@ -24,70 +24,26 @@ from tensorflow.python.keras.utils import conv_utils
 from utils.counter import Counter
 
 
-@tf_export('keras.layers.ExtandRGB')
-class ExtandRGB(Layer):
+@tf_export('keras.layers.ExtendRGB')
+class ExtendRGB(Layer):
   """
-    Extand the RGB channels
-      
+    Extend the RGB channels
+
+    Input:\n
+      (batch, ..., 3)
+    
+    Output:\n
+      (batch, ..., k*6)
+
     Usage:
+
     ```python
-      x = ExtandRGB()(x)
+      x = ExtendRGB(4)(x) # got (batch, ..., 24)
     ```
-
-    Argument:\n
-      x: \n
-      4D Tensor, (None, rows, cols, 3) if channels_last(default)\n
-      4D Tensor, (None, 3, rows, cols) if channels_first
-
-    Return:\n
-      x: \n
-      4D Tensor, (None, rows, cols, 7) if channels_last(default)\n
-      4D Tensor, (None, 7, rows, cols) if channels_first\n
-      This 7 channels contains:\n
-      0: Original R Channel\n
-      1: Original G Channel\n
-      2: Original B Channel\n
-      3: R + G + B
-      4: R + G\n
-      5: R + B\n
-      6: G + B\n
   """
-
-  def __init__(self, axis=-1, data_format='channels_last', **kwargs):
-    super(ExtandRGB, self).__init__(trainable=False, **kwargs)
-    self.data_format = data_format
-    self.axis = axis
-    if self.data_format == 'channels_First':
-      self.axis = 1
-    else:  
-      if self.axis != -1:
-        print(f"[Warning] data format is channels last, axis must be -1, but got {self.axis}. So use -1")
-        self.axis = -1
-    self._gray = [0.299, 0.587, 0.114]
-
-  def call(self, x):
-    if x.shape[self.axis] != 3:
-      raise Exception(f"Input Tensor must have 3 channels(RGB), but got {x.shape[self.axis]}")
-    _x = tf.split(x, axis=self.axis, num_or_size_splits=[1, 1, 1])
-    _y = [_x[0] * self._gray[0] + _x[1] * self._gray[1] + _x[2] * self._gray[2],
-          (_x[0] + _x[1]) / 2,
-          (_x[0] + _x[2]) / 2,
-          (_x[1] + _x[2]) / 2]
-    x = tf.concat([*_x, *_y], axis=self.axis)
-    return x
-
-  def compute_output_shape(self, input_shape):
-    if self.data_format == 'channels_First':
-      return (input_shape[0], 7, input_shape[2], input_shape[3])
-    else:
-      return (input_shape[0], input_shape[1], input_shape[2], 7)
-
-
-@tf_export('keras.layers.ExtandRGBX')
-class ExtandRGBX(Layer):
 
   def __init__(self, k, data_format=None, dilation_rate=1, trainable=False, **kwargs):
-    super(ExtandRGBX, self).__init__(trainable=trainable, **kwargs)
+    super(ExtendRGB, self).__init__(trainable=trainable, **kwargs)
     self.k = k
     self.data_format = data_format
     self.dilation_rate = conv_utils.normalize_tuple(dilation_rate, 2, 'dilation_rate')
@@ -137,7 +93,7 @@ class ExtandRGBX(Layer):
     config = {
         'k': self.k,
     }
-    base_config = super(ExtandRGBX, self).get_config()
+    base_config = super(ExtendRGB, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
 
 
@@ -606,6 +562,26 @@ class AdvNet(object):
                     f"_S{'%sx%sx%s' % strides}", **kwargs)(x)
     return x
 
+  def dwconv(self, x, kernel_size, strides=(1, 1), padding='valid', depth_multiplier=1,
+             data_format=None, activation=None, use_bias=True,
+             depthwise_initializer='glorot_uniform', bias_initializer='zeros',
+             depthwise_regularizer=None, bias_regularizer=None,
+             activity_regularizer=None, depthwise_constraint=None,
+             bias_constraint=None, **kwargs):
+    if type(kernel_size) == int:
+      kernel_size = (kernel_size,) * 2
+    if type(strides) == int:
+      strides = (strides,) * 2
+    name = f"DWConv_{Counter('dwconv')}_K{'%sx%s' % kernel_size}_S{'%sx%s' % strides}"
+    x = DepthwiseConv2D(kernel_size=kernel_size, strides=strides, padding=padding,
+          depth_multiplier=depth_multiplier, data_format=data_format, activation=activation,
+          use_bias=use_bias, depthwise_initializer=depthwise_initializer,
+          bias_initializer=bias_initializer, depthwise_regularizer=depthwise_regularizer,
+          bias_regularizer=bias_regularizer, activity_regularizer=activity_regularizer,
+          depthwise_constraint=depthwise_constraint, bias_constraint=bias_constraint,
+          name=name, **kwargs)(x)
+    return x
+
   def groupconv(self, x, groups, filters, kernel_size, strides=(1, 1), padding='same',
            data_format=None, dilation_rate=(1, 1), activation=None, use_bias=True,
            kernel_initializer='glorot_uniform', bias_initializer='zeros',
@@ -684,13 +660,12 @@ class AdvNet(object):
       x = self.activation(x, activation, **kwargs)
     return x
 
-  def rgb_extand(self, x, axis=-1, data_format=None, **kwargs):
+  def exrgb(self, x, k, dilation_rate=1, data_format=None, **kwargs):
     """
-      拓展RGB通道, 原本的3个通道拓展成7个通道\n
-      详情可参考`ExtandRGB`类
+      拓展RGB通道
     """
-    x = ExtandRGB(axis=axis, data_format=data_format, 
-                   name=f"RGB_Extand_{Counter('rgb_extand')}", **kwargs)(x)
+    x = ExtendRGB(k, dilation_rate=dilation_rate, data_format=data_format, 
+                  name=f"Extend_RGB", **kwargs)(x)
     return x
 
   def SE(self, x, rate=16, activation='sigmoid', data_format=None, kernel_initializer='glorot_uniform',
@@ -706,8 +681,7 @@ SE = SqueezeExcitation
 
 
 # envs
-_CUSTOM_OBJECTS = {'ExtandRGB': ExtandRGB,
-                   'ExtandRGBX': ExtandRGBX,
+_CUSTOM_OBJECTS = {'ExtendRGB': ExtendRGB,
                    'GroupConv': GroupConv,
                    'SqueezeExcitation': SqueezeExcitation,
                    'SE': SE}
