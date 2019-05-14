@@ -29,7 +29,7 @@ class dwdnet(NetWork, AdvNet):
     self.TIME = [3, 3, 3]
     self.SE_T = 3
     self.THETA = 0.5
-    self.DROP = 0.5
+    self.DROP = 0
 
   def build_model(self):
     self.axis = -1
