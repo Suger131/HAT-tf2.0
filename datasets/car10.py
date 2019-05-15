@@ -1,5 +1,6 @@
 import os
 import pickle
+import gzip
 from random import shuffle
 import numpy as np
 from PIL import Image
@@ -112,13 +113,13 @@ class car10(Dataset):
               'val_x'  : self.val_x,
               'val_y'  : self.val_y,
               'test_x' : self.test_x}
-    with open(f"{self.DATA_DIR}/car10.pkl", 'wb') as f:
+    with gzip.open(f"{self.DATA_DIR}/car10.gz", 'wb') as f:
       pickle.dump(car10_, f)
 
   def _load(self):
-    if not os.path.exists(f"{self.DATA_DIR}/car10.pkl"):
+    if not os.path.exists(f"{self.DATA_DIR}/car10.gz"):
       return False
-    with open(f"{self.DATA_DIR}/car10.pkl",'rb') as f:
+    with gzip.open(f"{self.DATA_DIR}/car10.gz",'rb') as f:
       car10_ = pickle.load(f)
     self.train_x = car10_['train_x']
     self.train_y = car10_['train_y']
