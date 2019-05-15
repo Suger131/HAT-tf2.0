@@ -5,9 +5,9 @@
     模型默认输入尺寸是(None, 300, 300, 3)
     模型中间特征图的设计参照Googlenet-v4
   本模型默认总参数量[参考基准：cifar10模型]：
-    Total params:           2,042,770
-    Trainable params:       2,011,330
-    Non-trainable params:   31,440
+    Total params:           510,154
+    Trainable params:       506,986
+    Non-trainable params:   3,168
 """
 
 
