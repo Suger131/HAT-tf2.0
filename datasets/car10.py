@@ -1,8 +1,10 @@
-import numpy as np
+import os
+import pickle
 from random import shuffle
+import numpy as np
 from PIL import Image
-from datasets.Dataset import Dataset
 from tensorflow.python.keras import datasets as ds
+from datasets.Dataset import Dataset
 
 
 class car10(Dataset):
@@ -20,9 +22,8 @@ class car10(Dataset):
     self.INPUT_SHAPE = (300, 300, 3)
     self.DATA_DIR = 'datasets/car10'
     self.CLASSES_DICT = self._get_classes_dict()
-    self.train_x, self.train_y = self._get_train_data()
-    self.val_x, self.val_y = self._get_val_data()
-    self.test_x = self._get_test_data()
+    if not self._load():
+      self._save()
 
   def _get_classes_dict(self):
     with open(f"{self.DATA_DIR}/classes.txt", 'r') as f:
@@ -101,6 +102,30 @@ class car10(Dataset):
         temp = [inputs[i] for i in index]
       return temp
     return inputs
+
+  def _save(self):
+    self.train_x, self.train_y = self._get_train_data()
+    self.val_x, self.val_y = self._get_val_data()
+    self.test_x = self._get_test_data()
+    car10_ = {'train_x': self.train_x,
+              'train_y': self.train_y,
+              'val_x'  : self.val_x,
+              'val_y'  : self.val_y,
+              'test_x' : self.test_x}
+    with open(f"{self.DATA_DIR}/car10.pkl", 'wb') as f:
+      pickle.dump(car10_, f)
+
+  def _load(self):
+    if not os.path.exists(f"{self.DATA_DIR}/car10.pkl"):
+      return False
+    with open(f"{self.DATA_DIR}/car10.pkl",'rb') as f:
+      car10_ = pickle.load(f)
+    self.train_x = car10_['train_x']
+    self.train_y = car10_['train_y']
+    self.val_x   = car10_['val_x']
+    self.val_y   = car10_['val_y']
+    self.test_x = car10_['test_x']
+    return True
 
 # test part
 if __name__ == "__main__":
