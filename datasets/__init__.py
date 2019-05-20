@@ -9,3 +9,4 @@ from datasets.boston_housing import boston_housing
 from datasets.imagenet import imagenet
 
 from datasets.car10 import car10
+from datasets.car10x import car10x
