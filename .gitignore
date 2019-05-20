@@ -6,5 +6,5 @@ logs/
 back_models/
 back_logs/
 test*.py
-datasets/car10/
+datasets/car*/
 sample/
