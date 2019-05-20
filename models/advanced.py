@@ -24,7 +24,7 @@ from tensorflow.python.keras.utils import conv_utils
 from utils.counter import Counter
 
 
-@tf_export('keras.layers.ExtendRGB')
+@tf_export('models.ExtendRGB')
 class ExtendRGB(Layer):
   """
     Extend the RGB channels
@@ -97,7 +97,7 @@ class ExtendRGB(Layer):
     return dict(list(base_config.items()) + list(config.items()))
 
 
-@tf_export('keras.layers.GroupConv')
+@tf_export('models.GroupConv')
 class GroupConv(Layer):
   """
     Group Conv nD(rank=n)
@@ -360,7 +360,7 @@ class GroupConv(Layer):
     return causal_padding
 
 
-@tf_export('keras.layers.SqueezeExcitation', 'keras.layers.SE')
+@tf_export('models.SqueezeExcitation', 'models.SE')
 class SqueezeExcitation(Layer):
   """
     SE-block (Squeeze & Excitation)
