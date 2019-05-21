@@ -29,4 +29,5 @@ from models.resnetse29 import resnetse29
 from models.vggse16 import vggse16
 from models.dwdnet import dwdnet
 
+from models.lenet300 import lenet300
 from models.tester import tester
