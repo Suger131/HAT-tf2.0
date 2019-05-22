@@ -135,8 +135,8 @@ class Args(object):
     self._get_args(self.USER_DICT_N)
 
     # dir args
-    self.SAVE_DIR = f'logs\{self.DATASETS_NAME}_{self.MODELS_NAME}'
-    self.H5_NAME = f'{self.SAVE_DIR}\{self.DATASETS_NAME}_{self.MODELS_NAME}'
+    self.SAVE_DIR = f'logs/{self.DATASETS_NAME}_{self.MODELS_NAME}'
+    self.H5_NAME = f'{self.SAVE_DIR}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
     
     # make dir
     self._dir_list.extend([self.SAVE_DIR])
@@ -215,7 +215,7 @@ class Args(object):
         self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.SAVE_EXIST)
       else:
         self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.SAVE_EXIST)
-      self._Log(self.LOG_DIR + '\\', _T='logs dir:')
+      self._Log(self.LOG_DIR + '/', _T='logs dir:')
 
     # check save
     self.SAVE_EXIST and self._Log(self.LOAD_NAME ,_T='Loading h5:')
