@@ -4,6 +4,7 @@ import tensorflow as tf
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard
 from tensorflow.python.keras.optimizers import *
+from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 # from tensorflow.python.framework.config import (set_gpu_per_process_memory_fraction,
 #                                                 set_gpu_per_process_memory_growth)
 # 设置显存使用上限50%，按需申请
@@ -36,6 +37,7 @@ class Args(object):
     self.IS_VAL = True
     self.IS_SAVE = True
     self.IS_GIMAGE = True
+    self.IS_ENHANCE = False
     self.DATASETS_NAME = ''
     self.DATASET = None
     self.MODELS_NAME = ''
@@ -122,9 +124,9 @@ class Args(object):
 
       elif (self._check_args(i, ['gimage', 'gimg'], 'RUN_MODE', data='gimage') or
             self._check_args(i, ['no-gimage', 'n-gimg'], 'RUN_MODE', data='no-gimage') or
-            self._check_args(i, ['train-only', 'train-o', 'train'], 'RUN_MODE', data='train') or
-            self._check_args(i, ['val-only', 'val-o', 'val'], 'RUN_MODE', data='val')): pass
-
+            self._check_args(i, ['-T', 'train-only', 'train-o', 'train'], 'RUN_MODE', data='train') or
+            self._check_args(i, ['-V', 'val-only', 'val-o', 'val'], 'RUN_MODE', data='val') or
+            self._check_args(i, ['-E', 'data-enhance'], 'IS_ENHANCE', data=True)): pass
       else:
         self._warning_args.append(i)
     self._Log(self._warning_args, _A='Warning', text='Unsupported option:')
@@ -226,6 +228,9 @@ class Args(object):
     self.MODEL.model.compile(optimizer=self.OPT,
                              loss=self.LOSS_MODE,
                              metrics=self.METRICS)
+    
+    # test
+    # print(self.IS_ENHANCE)
 
   def _fit(self, *args, **kwargs):
     # NOTE: if use the `histogram_freq`, then raise
@@ -239,18 +244,51 @@ class Args(object):
     _history = []
     for i in range(self.EPOCHS):
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
-      _train = self.MODEL.model.fit(self.DATASET.train_x,
-                                    self.DATASET.train_y,
-                                    epochs=1, #self.EPOCHS,
-                                    batch_size=self.BATCH_SIZE,
-                                    callbacks=[tensorboard_callback])#
+      if self.IS_ENHANCE:
+        _train = self.MODEL.model.fit_generator(
+          self._datagen(),
+          # steps_per_epoch=self.DATASET.NUM_TRAIN / self.BATCH_SIZE,
+          epochs=1, #self.EPOCHS,
+          # initial_epoch=self._GLOBAL_EPOCH - self.EPOCHS + i,
+          callbacks=[tensorboard_callback]
+        )
+      else:
+        _train = self.MODEL.model.fit(
+          self.DATASET.train_x,
+          self.DATASET.train_y,
+          epochs=1, #self.EPOCHS,
+          batch_size=self.BATCH_SIZE,
+          # initial_epoch=self._GLOBAL_EPOCH - self.EPOCHS + i,
+          callbacks=[tensorboard_callback]
+        )
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
-      _val = self.MODEL.model.evaluate(self.DATASET.val_x,
-                                       self.DATASET.val_y,
-                                       batch_size=self.BATCH_SIZE)
+      _val = self.MODEL.model.evaluate(
+          self.DATASET.val_x,
+          self.DATASET.val_y,
+          batch_size=self.BATCH_SIZE)
       _history.extend([{f"epoch{i+1}_train_{item}": _train.history[item][0] for item in _train.history},
                        dict(zip([f'epoch{i+1}_val_loss', f'epoch{i+1}_val_accuracy'], _val))])
     return _history
+
+  def _datagen(self):
+    """
+      Image Data Enhancement
+    """
+    datagen = ImageDataGenerator(
+      featurewise_center=True,
+      featurewise_std_normalization=True,
+      rotation_range=10,
+      fill_mode='constant',
+      cval=0,
+      horizontal_flip=True,
+      brightness_range=(0.8, 1.2)
+    )
+    datagen.fit(self.DATASET.train_x)
+    return datagen.flow(
+      self.DATASET.train_x, 
+      self.DATASET.train_y, 
+      batch_size=self.BATCH_SIZE,
+      shuffle=True)
 
   # public method
 
