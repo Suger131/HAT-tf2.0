@@ -483,14 +483,14 @@ class Shuffle(_Merge):
     x = K.concatenate(inputs, axis=self.axis)
     
     _len = len(inputs)
-    _shape = K.int_shape(x)
+    _shape = K.int_shape(x)[1:]
     _shapex = _shape[:-1] + (_len, _shape[-1] // _len)
-    _transpose = list(range(len(_shapex)))
+    _transpose = list(range(len(_shapex)+1))
     _transpose = _transpose[:-2] + [_transpose[-1], _transpose[-2]]
-    
-    x = K.reshape(x, _shapex)
+
+    x = Reshape(_shapex)(x)
     x = tf.transpose(x, _transpose)
-    x = K.reshape(x, _shape)
+    x = Reshape(_shape)(x)
 
     return x 
 
