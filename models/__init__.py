@@ -27,6 +27,7 @@ from models.untitled_3d import untitled_3d
 from models.lenet_3d import lenet_3d
 from models.resnetse29 import resnetse29
 from models.vggse16 import vggse16
+from models.shufflenet import shufflenet
 from models.dwdnet import dwdnet
 
 from models.lenet300 import lenet300
