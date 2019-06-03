@@ -6,6 +6,7 @@
 """
 
 
+# pylint: disable=no-name-in-module
 import tensorflow as tf
 from tensorflow.python.ops import nn
 from tensorflow.python.ops import array_ops
@@ -22,11 +23,11 @@ from tensorflow.python.keras.layers import *
 from tensorflow.python.keras.layers.merge import _Merge
 from tensorflow.python.keras.utils import conv_utils
 from tensorflow.python.keras.utils import tf_utils
+from tensorflow.python.keras.utils.generic_utils import get_custom_objects
 
 from utils.counter import Counter
 
 
-@tf_export('models.ExtendRGB')
 class ExtendRGB(Layer):
   """
     Extend the RGB channels
@@ -99,7 +100,6 @@ class ExtendRGB(Layer):
     return dict(list(base_config.items()) + list(config.items()))
 
 
-@tf_export('models.GroupConv')
 class GroupConv(Layer):
   """
     Group Conv nD(rank=n)
@@ -362,7 +362,6 @@ class GroupConv(Layer):
     return causal_padding
 
 
-@tf_export('models.SqueezeExcitation', 'models.SE')
 class SqueezeExcitation(Layer):
   """
     SE-block (Squeeze & Excitation)
@@ -448,7 +447,6 @@ class SqueezeExcitation(Layer):
     return dict(list(base_config.items()) + list(config.items()))
 
 
-@tf_export('models.Shuffle')
 class Shuffle(_Merge):
   """
     Layer that shuffle and concatenate a list of inputs
@@ -542,6 +540,45 @@ class Shuffle(_Merge):
     }
     base_config = super(Shuffle, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
+
+
+class Swish(Layer):
+
+    def __init__(self, **kwargs):
+        super(Swish, self).__init__(**kwargs)
+        self.supports_masking = True
+
+    def call(self, inputs, training=None):
+        return tf.nn.swish(inputs)
+
+
+class DropConnect(Layer):
+
+    def __init__(self, drop_connect_rate=0., **kwargs):
+        super(DropConnect, self).__init__(**kwargs)
+        self.drop_connect_rate = float(drop_connect_rate)
+
+    def call(self, inputs, training=None):
+
+        def drop_connect():
+            keep_prob = 1.0 - self.drop_connect_rate
+
+            # Compute drop_connect tensor
+            batch_size = tf.shape(inputs)[0]
+            random_tensor = keep_prob
+            random_tensor += tf.random_uniform([batch_size, 1, 1, 1], dtype=inputs.dtype)
+            binary_tensor = tf.floor(random_tensor)
+            output = (inputs / keep_prob) * binary_tensor
+            return output
+
+        return K.in_train_phase(drop_connect, inputs, training=training)
+
+    def get_config(self):
+        config = {
+            'drop_connect_rate': self.drop_connect_rate,
+        }
+        base_config = super(DropConnect, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 class AdvNet(object):
@@ -784,7 +821,10 @@ _CUSTOM_OBJECTS = {'ExtendRGB': ExtendRGB,
                    'GroupConv': GroupConv,
                    'SqueezeExcitation': SqueezeExcitation,
                    'SE': SE,
-                   'Shuffle': Shuffle}
+                   'Shuffle': Shuffle,
+                   'Swish': Swish,
+                   'DropConnect': DropConnect,}
+get_custom_objects().update(_CUSTOM_OBJECTS)
 
 
 if __name__ == "__main__":
