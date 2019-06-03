@@ -376,29 +376,38 @@ class SqueezeExcitation(Layer):
       x = SE()(x)
     ```
   """
-  def __init__(self, rate=16, activation='sigmoid', data_format=None, kernel_initializer='glorot_uniform',
-               kernel_regularizer=None, activity_regularizer=None, kernel_constraint=None, **kwargs):
+  def __init__(self, input_filters=None, rate=16, activation='sigmoid', data_format=None,
+               use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
+               kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+               kernel_constraint=None, bias_constraint=None, **kwargs):
     super(SqueezeExcitation, self).__init__(
         activity_regularizer=regularizers.get(activity_regularizer), **kwargs)
     
+    self.input_filters = input_filters
     self.rate = rate
     self.data_format = data_format
     if self.data_format == 'channels_First':
       self.axis = 1
     else:
       self.axis = -1
+    self.use_bias = use_bias
     self.activation = activations.get(activation)
     self.kernel_initializer = initializers.get(kernel_initializer)
+    self.bias_initializer = initializers.get(bias_initializer)
     self.kernel_regularizer = regularizers.get(kernel_regularizer)
+    self.bias_regularizer = regularizers.get(bias_regularizer)
     self.kernel_constraint = constraints.get(kernel_constraint)
+    self.bias_constraint = constraints.get(bias_constraint)
 
   def build(self, input_shape):
+
     channels = int(input_shape[self.axis])
-    neck = int(channels / self.rate)
+    input_filters = self.input_filters or channels
+    c = max((1, int(input_filters / self.rate)))
 
     self.kernel1 = self.add_weight(
         'kernel1',
-        shape=[channels, neck],
+        shape=[channels, c],
         initializer=self.kernel_initializer,
         regularizer=self.kernel_regularizer,
         constraint=self.kernel_constraint,
@@ -406,12 +415,29 @@ class SqueezeExcitation(Layer):
         trainable=True)
     self.kernel2 = self.add_weight(
         'kernel2',
-        shape=[neck, channels],
+        shape=[c, channels],
         initializer=self.kernel_initializer,
         regularizer=self.kernel_regularizer,
         constraint=self.kernel_constraint,
         dtype=self.dtype,
         trainable=True)
+    if self.use_bias:
+      self.biases1 = self.add_weight(
+          'biases1',
+          shape=(c,),
+          initializer=self.bias_initializer,
+          regularizer=self.bias_regularizer,
+          constraint=self.bias_constraint,
+          trainable=True,
+          dtype=self.dtype)
+      self.biases2 = self.add_weight(
+          'biases2',
+          shape=(channels,),
+          initializer=self.bias_initializer,
+          regularizer=self.bias_regularizer,
+          constraint=self.bias_constraint,
+          trainable=True,
+          dtype=self.dtype)
     
     self.built = True
 
@@ -423,25 +449,36 @@ class SqueezeExcitation(Layer):
       weights = K.mean(inputs, axis=[1, -2])
     # FC 1
     weights = gen_math_ops.mat_mul(weights, self.kernel1)
+    if self.use_bias:
+      weights = nn.bias_add(weights, self.biases1)
     # FC 2
     weights = gen_math_ops.mat_mul(weights, self.kernel2)
+    if self.use_bias:
+      weights = nn.bias_add(weights, self.biases2)
     if self.activation is not None:
       weights = self.activation(weights)
     # reshape
-    weights = Reshape((1, 1, K.int_shape(weights)[-1]))(weights)
+    weights = Reshape((K.int_shape(weights)[1], 1, 1)
+      if self.data_format == 'channels_first'
+      else (1, 1, K.int_shape(weights)[-1]))(weights)
     # Scale
     outputs = tf.multiply(inputs, weights)
     return outputs
 
   def get_config(self):
     config = {
+        'input_filters': self.input_filters,
         'rate': self.rate,
+        'use_bias': self.use_bias,
         'activation': activations.serialize(self.activation),
         'kernel_initializer': initializers.serialize(self.kernel_initializer),
         'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
         'activity_regularizer':
             regularizers.serialize(self.activity_regularizer),
         'kernel_constraint': constraints.serialize(self.kernel_constraint),
+        'bias_initializer': self.bias_initializer,
+        'bias_regularizer': self.bias_regularizer,
+        'bias_constraint': self.bias_constraint,
     }
     base_config = super(SqueezeExcitation, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
@@ -579,6 +616,21 @@ class DropConnect(Layer):
         }
         base_config = super(DropConnect, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+# Short name
+SE = SqueezeExcitation
+
+
+# envs
+_CUSTOM_OBJECTS = {'ExtendRGB': ExtendRGB,
+                   'GroupConv': GroupConv,
+                   'SqueezeExcitation': SqueezeExcitation,
+                   'SE': SE,
+                   'Shuffle': Shuffle,
+                   'Swish': Swish,
+                   'DropConnect': DropConnect,}
+get_custom_objects().update(_CUSTOM_OBJECTS)
 
 
 class AdvNet(object):
@@ -804,27 +856,18 @@ class AdvNet(object):
                   name=f"Extend_RGB", **kwargs)(x)
     return x
 
-  def SE(self, x, rate=16, activation='sigmoid', data_format=None, kernel_initializer='glorot_uniform',
-         kernel_regularizer=None, activity_regularizer=None, kernel_constraint=None, **kwargs):
-    x = SE(rate=rate, activation=activation, data_format=data_format, kernel_initializer=kernel_initializer,
-           kernel_regularizer=kernel_regularizer, activity_regularizer=activity_regularizer,
-           kernel_constraint=kernel_constraint, name=f"SE_{Counter('se')}")(x)
+  def SE(self, x, input_filters=None, rate=16, activation='sigmoid', data_format=None,
+        use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
+        kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
+        kernel_constraint=None, bias_constraint=None, **kwargs):
+    x = SE(
+      input_filters=input_filters, rate=rate, activation=activation, data_format=data_format,
+      use_bias=use_bias, kernel_initializer=kernel_initializer, bias_initializer=bias_initializer,
+      kernel_regularizer=kernel_regularizer, bias_regularizer=bias_regularizer,
+      activity_regularizer=activity_regularizer, kernel_constraint=kernel_constraint,
+      bias_constraint=bias_constraint, name=f"SE_{Counter('se')}", **kwargs
+    )(x)
     return x
-
-
-# Short name
-SE = SqueezeExcitation
-
-
-# envs
-_CUSTOM_OBJECTS = {'ExtendRGB': ExtendRGB,
-                   'GroupConv': GroupConv,
-                   'SqueezeExcitation': SqueezeExcitation,
-                   'SE': SE,
-                   'Shuffle': Shuffle,
-                   'Swish': Swish,
-                   'DropConnect': DropConnect,}
-get_custom_objects().update(_CUSTOM_OBJECTS)
 
 
 if __name__ == "__main__":
