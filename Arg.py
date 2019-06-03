@@ -5,6 +5,7 @@ from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard
 from tensorflow.python.keras.optimizers import *
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
+# tf2 显存管理
 # from tensorflow.python.framework.config import (set_gpu_per_process_memory_fraction,
 #                                                 set_gpu_per_process_memory_growth)
 # 设置显存使用上限50%，按需申请
@@ -16,7 +17,6 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
 
-from models.advanced import _CUSTOM_OBJECTS
 from utils import *
 from datasets import *
 from models import *
@@ -31,7 +31,6 @@ class Args(object):
     self._specialc = []
     self._warning_args = []
     self._dir_list = []
-    self._CUSTOM_OBJECTS = _CUSTOM_OBJECTS
     # envs args
     self.IS_TRAIN = True
     self.IS_VAL = True
@@ -221,7 +220,7 @@ class Args(object):
 
     # check save
     self.SAVE_EXIST and self._Log(self.LOAD_NAME ,_T='Loading h5:')
-    self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME, custom_objects=self._CUSTOM_OBJECTS) or self.MODEL.model
+    self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME) or self.MODEL.model
     self.SAVE_EXIST and self._Log(self.LOAD_NAME ,_T='Loaded h5:')
 
     # compile model
