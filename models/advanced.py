@@ -7,6 +7,7 @@
 
 
 # pylint: disable=no-name-in-module
+import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops import nn
 from tensorflow.python.ops import array_ops
@@ -19,6 +20,7 @@ from tensorflow.python.keras import regularizers
 from tensorflow.python.keras import activations
 from tensorflow.python.keras import initializers
 from tensorflow.python.keras import constraints
+from tensorflow.python.keras.initializers import Initializer
 from tensorflow.python.keras.layers import *
 from tensorflow.python.keras.layers.merge import _Merge
 from tensorflow.python.keras.utils import conv_utils
@@ -618,18 +620,79 @@ class DropConnect(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
+class EfficientNetConvInitializer(Initializer):
+    """Initialization for convolutional kernels.
+    The main difference with tf.variance_scaling_initializer is that
+    tf.variance_scaling_initializer uses a truncated normal with an uncorrected
+    standard deviation, whereas base_path we use a normal distribution. Similarly,
+    tf.contrib.layers.variance_scaling_initializer uses a truncated normal with
+    a corrected standard deviation.
+
+    # Arguments:
+      shape: shape of variable
+      dtype: dtype of variable
+      partition_info: unused
+
+    # Returns:
+      an initialization for the variable
+    """
+    def __init__(self):
+        super(EfficientNetConvInitializer, self).__init__()
+
+    def __call__(self, shape, dtype=None, partition_info=None):
+        dtype = dtype or K.floatx()
+
+        kernel_height, kernel_width, _, out_filters = shape
+        fan_out = int(kernel_height * kernel_width * out_filters)
+        return tf.random_normal(
+            shape, mean=0.0, stddev=np.sqrt(2.0 / fan_out), dtype=dtype)
+
+
+class EfficientNetDenseInitializer(Initializer):
+    """Initialization for dense kernels.
+        This initialization is equal to
+          tf.variance_scaling_initializer(scale=1.0/3.0, mode='fan_out',
+                                          distribution='uniform').
+        It is written out explicitly base_path for clarity.
+
+        # Arguments:
+          shape: shape of variable
+          dtype: dtype of variable
+          partition_info: unused
+
+        # Returns:
+          an initialization for the variable
+    """
+    def __init__(self):
+        super(EfficientNetDenseInitializer, self).__init__()
+
+    def __call__(self, shape, dtype=None, partition_info=None):
+        dtype = dtype or K.floatx()
+
+        init_range = 1.0 / np.sqrt(shape[1])
+        return tf.random_uniform(shape, -init_range, init_range, dtype=dtype)
+
+
 # Short name
 SE = SqueezeExcitation
+ENCI = EfficientNetConvInitializer
+ENDI = EfficientNetDenseInitializer
 
 
 # envs
-_CUSTOM_OBJECTS = {'ExtendRGB': ExtendRGB,
-                   'GroupConv': GroupConv,
-                   'SqueezeExcitation': SqueezeExcitation,
-                   'SE': SE,
-                   'Shuffle': Shuffle,
-                   'Swish': Swish,
-                   'DropConnect': DropConnect,}
+_CUSTOM_OBJECTS = {
+  'ExtendRGB': ExtendRGB,
+  'GroupConv': GroupConv,
+  'SqueezeExcitation': SqueezeExcitation,
+  'SE': SE,
+  'Shuffle': Shuffle,
+  'Swish': Swish,
+  'DropConnect': DropConnect,
+  'EfficientNetConvInitializer': EfficientNetConvInitializer,
+  'EfficientNetDenseInitializer': EfficientNetDenseInitializer,
+  'ENCI': ENCI,
+  'ENDI': ENDI,
+}
 get_custom_objects().update(_CUSTOM_OBJECTS)
 
 
