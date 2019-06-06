@@ -31,3 +31,7 @@ from models.shufflenet import shufflenet
 from models.dwdnet import dwdnet
 
 from models.lenet300 import lenet300
+# from models.tester import tester
+from models.stagenet import stagenet
+from models.enet import enet
+from models.enb0_ci import enb0_ci
