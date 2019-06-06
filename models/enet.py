@@ -3,81 +3,12 @@
 """
 
 # pylint: disable=no-name-in-module
-import numpy as np
-import tensorflow as tf
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.utils.generic_utils import get_custom_objects
-from tensorflow.python.keras.initializers import Initializer
-
 
 from models.network import NetWork
-from models.advanced import AdvNet, Swish, DropConnect
+from models.advanced import AdvNet, Swish, DropConnect, ENCI, ENDI
 from utils.counter import Counter
-
-
-class EfficientNetConvInitializer(Initializer):
-    """Initialization for convolutional kernels.
-    The main difference with tf.variance_scaling_initializer is that
-    tf.variance_scaling_initializer uses a truncated normal with an uncorrected
-    standard deviation, whereas base_path we use a normal distribution. Similarly,
-    tf.contrib.layers.variance_scaling_initializer uses a truncated normal with
-    a corrected standard deviation.
-
-    # Arguments:
-      shape: shape of variable
-      dtype: dtype of variable
-      partition_info: unused
-
-    # Returns:
-      an initialization for the variable
-    """
-    def __init__(self):
-        super(EfficientNetConvInitializer, self).__init__()
-
-    def __call__(self, shape, dtype=None, partition_info=None):
-        dtype = dtype or K.floatx()
-
-        kernel_height, kernel_width, _, out_filters = shape
-        fan_out = int(kernel_height * kernel_width * out_filters)
-        return tf.random_normal(
-            shape, mean=0.0, stddev=np.sqrt(2.0 / fan_out), dtype=dtype)
-
-
-class EfficientNetDenseInitializer(Initializer):
-    """Initialization for dense kernels.
-        This initialization is equal to
-          tf.variance_scaling_initializer(scale=1.0/3.0, mode='fan_out',
-                                          distribution='uniform').
-        It is written out explicitly base_path for clarity.
-
-        # Arguments:
-          shape: shape of variable
-          dtype: dtype of variable
-          partition_info: unused
-
-        # Returns:
-          an initialization for the variable
-    """
-    def __init__(self):
-        super(EfficientNetDenseInitializer, self).__init__()
-
-    def __call__(self, shape, dtype=None, partition_info=None):
-        dtype = dtype or K.floatx()
-
-        init_range = 1.0 / np.sqrt(shape[1])
-        return tf.random_uniform(shape, -init_range, init_range, dtype=dtype)
-
-
-# envs
-ENCI = EfficientNetConvInitializer
-ENDI = EfficientNetDenseInitializer
-get_custom_objects().update({
-    'EfficientNetConvInitializer': EfficientNetConvInitializer,
-    'EfficientNetDenseInitializer': EfficientNetDenseInitializer,
-    'ENCI': ENCI,
-    'ENDI': ENDI
-})
 
 
 # func
@@ -286,8 +217,8 @@ if __name__ == "__main__":
 
   from tensorflow.python.keras.utils import plot_model
 
-  plot_model(
-    mod.model,
-    to_file=f'enet.png',
-    show_shapes=True
-  )
+  # plot_model(
+  #   mod.model,
+  #   to_file=f'enet.png',
+  #   show_shapes=True
+  # )
