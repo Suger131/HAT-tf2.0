@@ -64,14 +64,16 @@ class Args(object):
     self._Log(args, _T=text, _A='Error')
     os._exit(1)
 
-  def _check_args(self, item, lists, args_name, data='', isdigit=False):
+  def _check_args(self, item, lists, args_name, data='', force_str=False):
     '''check'''
     if item not in lists:
       return False
     elif self.__dict__[args_name]:
       self._error(args_name, 'More than one:')
     else:
-      self.__dict__[args_name] = isdigit and (int(data) or int(item)) or data or item
+      if type(data) == str and data.isdigit() and not force_str:
+        data = int(data)
+      self.__dict__[args_name] = data or item
       return True
 
   def _get_args(self, dicts, cover=False):
@@ -111,23 +113,31 @@ class Args(object):
       if i in ['', ' ']:
         pass
 
-      elif i.find('=') != -1:
+      elif '=' in i:
         temp = i.split('=')
-        if (self._check_args(temp[0], ['data', 'dataset', 'datasets', 'dat'], 'DATASETS_NAME', temp[1]) or
-            self._check_args(temp[0], ['model', 'models', 'mod'], 'MODELS_NAME', temp[1]) or
-            self._check_args(temp[0], ['epochs', 'epoch', 'ep'], 'EPOCHS', temp[1], isdigit=True) or
-            self._check_args(temp[0], ['batch_size', 'bat'], 'BATCH_SIZE', temp[1], isdigit=True) or
-            self._check_args(temp[0], ['mode'], 'RUN_MODE', temp[1])): pass
-        else:
+        _check_list = [
+          [['dat', 'datasets'  ], 'DATASETS_NAME'],
+          [['mod', 'models'    ], 'MODELS_NAME'],
+          [['ep' , 'epochs'    ], 'EPOCHS'],
+          [['bat', 'batch_size'], 'BATCH_SIZE'],
+          [['mode'             ], 'RUN_MODE'],
+        ]
+        _check_box = [self._check_args(temp[0], *j, temp[1]) for j in _check_list]
+        if not any(_check_box):
           self._warning_args.append(temp[0])
-
-      elif (self._check_args(i, ['gimage', 'gimg'], 'RUN_MODE', data='gimage') or
-            self._check_args(i, ['no-gimage', 'n-gimg'], 'RUN_MODE', data='no-gimage') or
-            self._check_args(i, ['-T', 'train-only', 'train-o', 'train'], 'RUN_MODE', data='train') or
-            self._check_args(i, ['-V', 'val-only', 'val-o', 'val'], 'RUN_MODE', data='val') or
-            self._check_args(i, ['-E', 'data-enhance'], 'IS_ENHANCE', data=True)): pass
+          
       else:
-        self._warning_args.append(i)
+        _check_list = [
+          [['-G' , 'gimage'      ], 'RUN_MODE'  , 'gimage'],
+          [['-NG', 'no-gimage'   ], 'RUN_MODE'  , 'no-gimage'],
+          [['-T' , 'train-only'  ], 'RUN_MODE'  , 'train'],
+          [['-V' , 'val-only'    ], 'RUN_MODE'  , 'val'],
+          [['-E' , 'data-enhance'], 'IS_ENHANCE', True],
+        ]
+        _check_box = [self._check_args(i, *j) for j in _check_list]
+        if not any(_check_box):
+          self._warning_args.append(i)
+    
     self._Log(self._warning_args, _A='Warning', text='Unsupported option:')
 
   def _envs_processing(self):
@@ -185,6 +195,17 @@ class Args(object):
     # load user args (don't cover)
     self._get_args(self.USER_DICT)
 
+    # check save
+    if self.SAVE_EXIST:
+      self._Log(self.LOAD_NAME ,_T='Loading h5:')
+      self.MODEL.model = load_model(self.LOAD_NAME)
+      self._Log(self.LOAD_NAME ,_T='Loaded h5:')
+    else:
+      # compile model
+      self.MODEL.model.compile(optimizer=self.OPT,
+                             loss=self.LOSS_MODE,
+                             metrics=self.METRICS)
+
     # get configer
     self._config = Config(f"{self.SAVE_DIR}/config")
     # processing special config
@@ -217,19 +238,8 @@ class Args(object):
       else:
         self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.SAVE_EXIST)
       self._Log(self.LOG_DIR + '/', _T='logs dir:')
-
-    # check save
-    self.SAVE_EXIST and self._Log(self.LOAD_NAME ,_T='Loading h5:')
-    self.MODEL.model = self.SAVE_EXIST and load_model(self.LOAD_NAME) or self.MODEL.model
-    self.SAVE_EXIST and self._Log(self.LOAD_NAME ,_T='Loaded h5:')
-
-    # compile model
-    self.MODEL.model.compile(optimizer=self.OPT,
-                             loss=self.LOSS_MODE,
-                             metrics=self.METRICS)
-    
-    # test
-    # print(self.IS_ENHANCE)
+    if self.IS_ENHANCE:
+      self._Log('Enhance data.')
 
   def _fit(self, *args, **kwargs):
     # NOTE: if use the `histogram_freq`, then raise
@@ -319,7 +329,7 @@ class Args(object):
 
     if not self.IS_SAVE: return
 
-    self.MODEL.model.save(self.SAVE_NAME, include_optimizer=not self.OPT_EXIST)
+    self.MODEL.model.save(self.SAVE_NAME)#, include_optimizer=not self.OPT_EXIST
 
     self._Log(self.SAVE_NAME, _T='Successfully save model:')
 
@@ -359,11 +369,7 @@ class Args(object):
 
     self.save()
 
-    from pprint import pprint
-
-    pprint(self._paramc)
-    pprint(self._logc)
-    pprint(self._specialc)
-    self._write_config()
+    if self.RUN_MODE != 'gimage':
+      self._write_config()
     
 ARGS = Args()
