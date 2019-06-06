@@ -34,10 +34,10 @@ class ExtendRGB(Layer):
   """
     Extend the RGB channels
 
-    Input:\n
+    Input:
       (batch, ..., 3)
     
-    Output:\n
+    Output:
       (batch, ..., k*6)
 
     Usage:
