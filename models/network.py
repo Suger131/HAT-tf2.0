@@ -16,6 +16,9 @@ class NetWork(object):
 
   def __init__(self, *args, **kwargs):
     
+    self.INPUT_SHAPE = ()
+    self.NUM_CLASSES = 0
+
     self._kwargs = kwargs
     self._default_list = ['BATCH_SIZE', 'EPOCHS', 'OPT', 'OPT_EXIST', 'LOSS_MODE', 'METRICS']
     self._default_dict = {}
