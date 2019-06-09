@@ -23,11 +23,16 @@ class Counter(object):
       The `set` method can use a free initial value.
       The `get` method do not change the value.
 
-    Sample:\n
-      `x = f"{Counter('a')}"`\n
-      `print(Counter('a'))`\n
-      `Counter()('a')`\n
-      `a=Counter();a.set('b', 5);a.get('b')`
+    Sample:
+    ```python
+      x = f"{Counter('a')}"
+      print(Counter('a'))
+      Counter()('a')
+
+      a=Counter()
+      a.set('b', 5)
+      a.get('b')
+    ```
   """
   count = {}
 
