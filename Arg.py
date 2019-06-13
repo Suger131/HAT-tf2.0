@@ -17,9 +17,9 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
 
-from utils import *
-from datasets import *
-from models import *
+from hat.utils import *
+from hat.datasets import *
+from hat.models import *
 
 
 class Args(object):
