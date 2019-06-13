@@ -6,5 +6,3 @@
 from hat.models.network import *
 from hat.models.advance import *
 from hat.models.utils import *
-
-from hat.models.mlp import mlp
