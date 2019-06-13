@@ -10,11 +10,6 @@ from hat.models.advance.shuffle import Shuffle
 from hat.models.advance.squeezeexcitation import SqueezeExcitation
 from hat.models.advance.swish import Swish
 
-# Short name
-SE = SqueezeExcitation
-ENCI = EfficientNetConvInitializer
-ENDI = EfficientNetDenseInitializer
-
 
 # import setting
 __all__ = [
@@ -30,6 +25,12 @@ __all__ = [
   'ENCI',
   'ENDI',
 ]
+
+
+# Short name
+SE = SqueezeExcitation
+ENCI = EfficientNetConvInitializer
+ENDI = EfficientNetDenseInitializer
 
 
 # envs
