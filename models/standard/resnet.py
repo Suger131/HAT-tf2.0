@@ -35,13 +35,19 @@ class resnet(NetWork, AdvNet):
     ResNet
   """
 
-  def __init__(self, times, use_se=False, use_group=False, **kwargs):
+  def __init__(self, times, use_se=False, use_group=False, name='', **kwargs):
     self.RES_TIMES = times
     self.USE_SE = use_se
     self.USE_GROUP = use_group
+    self.NAME = name
     super().__init__(**kwargs)
 
   def args(self):
+
+    self.RES_TIMES = self.RES_TIMES
+    self.USE_SE = self.USE_SE
+    self.USE_GROUP = self.USE_GROUP
+
     self.CONV_F = 64
     self.CONV_SIZE = 7
     self.CONV_STRIDES = 2 if self.INPUT_SHAPE[0] // 16 >= 4 else 1
@@ -85,7 +91,7 @@ class resnet(NetWork, AdvNet):
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='resnet50')
+    self.model = Model(inputs=x_in, outputs=x, name=self.NAME)
 
   def _block(self, x_in, times, filters1, filters2, strides=2):
     x = self._bottle(x_in, filters1, filters2, strides=strides, _t=True)
@@ -136,6 +142,7 @@ def resnet50(**kwargs):
   """
   return resnet(
     times=[3, 4, 6, 3],
+    name='resnet50',
     **kwargs
   )
 
@@ -148,6 +155,7 @@ def resnet101(**kwargs):
   """
   return resnet(
     times=[3, 4, 23, 3],
+    name='resnet101',
     **kwargs
   )
 
@@ -160,6 +168,7 @@ def resnet152(**kwargs):
   """
   return resnet(
     times=[3, 8, 36, 3],
+    name='resnet152',
     **kwargs
   )
 
@@ -173,6 +182,7 @@ def resnetse50(**kwargs):
   return resnet(
     times=[3, 4, 6, 3],
     use_se=True,
+    name='resnetse50',
     **kwargs
   )
 
@@ -186,6 +196,7 @@ def resnetse101(**kwargs):
   return resnet(
     times=[3, 4, 23, 3],
     use_se=True,
+    name='resnetse101',
     **kwargs
   )
 
@@ -199,6 +210,7 @@ def resnetse152(**kwargs):
   return resnet(
     times=[3, 8, 36, 3],
     use_se=True,
+    name='resnetse152',
     **kwargs
   )
 
@@ -212,6 +224,7 @@ def resnext50(**kwargs):
   return resnet(
     times=[3, 4, 6, 3],
     use_group=True,
+    name='resnext50',
     **kwargs
   )
 
@@ -225,6 +238,7 @@ def resnext101(**kwargs):
   return resnet(
     times=[3, 4, 23, 3],
     use_group=True,
+    name='resnext101',
     **kwargs
   )
 
@@ -238,6 +252,7 @@ def resnext152(**kwargs):
   return resnet(
     times=[3, 8, 36, 3],
     use_group=True,
+    name='resnext152',
     **kwargs
   )
 
