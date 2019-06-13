@@ -81,7 +81,7 @@ class resnet(NetWork, AdvNet):
                          self.RES_FB,
                          self.RES_STRIDES))
     for i in _res_list:
-      x = self._block(x, i[0], i[1], i[2], i[3])
+      x = self._block(x, *i)
 
     # local part
     x = self.bn(x)
