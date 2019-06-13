@@ -1,8 +1,8 @@
 """
   AlexNet 模型
   本模型默认总参数量[参考基准：cifar10]：
-    Total params:           28,825,320
-    Trainable params:       28,824,616
+    Total params:           24,769,290
+    Trainable params:       24,768,586
     Non-trainable params:   704
   本模型默认总参数量[参考基准：ImageNet]：
     Total params:           62,379,752
@@ -60,6 +60,6 @@ class alexnet(NetWork, AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = alexnet(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 1000})
+  mod = alexnet(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
   print(mod.INPUT_SHAPE)
   print(mod.model.summary())
