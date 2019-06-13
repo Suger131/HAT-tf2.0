@@ -11,7 +11,7 @@ class Shuffle(_Merge):
   """
     Layer that shuffle and concatenate a list of inputs
 
-    Usege: The same as keras.layers.Concatenate
+    Usage: The same as keras.layers.Concatenate
   """
   def __init__(self, axis=-1, **kwargs):
     super(Shuffle, self).__init__(**kwargs)
