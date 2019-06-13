@@ -1,4 +1,4 @@
-from tensorflow.python.keras.models import load_model
+__all__ = ['NetWork']
 
 class NetWork(object):
 
@@ -14,7 +14,7 @@ class NetWork(object):
     build_model里应当包含self.model的定义
   """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
     
     self.INPUT_SHAPE = ()
     self.NUM_CLASSES = 0
