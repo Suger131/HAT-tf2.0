@@ -5,7 +5,7 @@ from random import shuffle
 import numpy as np
 from PIL import Image
 from tensorflow.python.keras import datasets as ds
-from datasets.Dataset import Dataset
+from hat.datasets.Dataset import Dataset
 
 
 class car10(Dataset):

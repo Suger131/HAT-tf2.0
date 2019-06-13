@@ -10,8 +10,8 @@
 # pylint: disable=wildcard-import
 
 from tensorflow.python.keras.models import Model
-from models.network import NetWork
-from models.advance import AdvNet
+from hat.models.network import NetWork
+from hat.models.advance import AdvNet
 
 
 class vgg16(NetWork, AdvNet):

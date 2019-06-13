@@ -14,8 +14,8 @@
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import *
 
-from utils.counter import Counter
-from models.advance.util import *
+from hat.utils.counter import Counter
+from hat.models.advance.util import *
 
 
 class AdvNet(object):

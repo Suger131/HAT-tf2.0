@@ -1,4 +1,4 @@
-from datasets.Dataset import Dataset
+from hat.datasets.Dataset import Dataset
 from tensorflow.python.keras import datasets as ds
 
 

@@ -9,9 +9,9 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=wildcard-import
 
-from models.network import NetWork
-from models.advance import AdvNet
 from tensorflow.python.keras.models import Model
+from hat.models.network import NetWork
+from hat.models.advance import AdvNet
 
 
 class googlenetv4(NetWork, AdvNet):

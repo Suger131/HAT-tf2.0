@@ -1,15 +1,14 @@
 # pylint: disable=no-name-in-module
-from models.advance.extendrgb import ExtendRGB 
-from models.advance.squeezeexcitation import SqueezeExcitation
-from models.advance.shuffle import Shuffle
-from models.advance.groupconv import GroupConv
-from models.advance.swish import Swish
-from models.advance.dropconnect import DropConnect
-from models.advance.enci import EfficientNetConvInitializer
-from models.advance.endi import EfficientNetDenseInitializer
-
 from tensorflow.python.keras.utils.generic_utils import get_custom_objects
 
+from hat.models.advance.dropconnect import DropConnect
+from hat.models.advance.enci import EfficientNetConvInitializer
+from hat.models.advance.endi import EfficientNetDenseInitializer
+from hat.models.advance.extendrgb import ExtendRGB
+from hat.models.advance.groupconv import GroupConv
+from hat.models.advance.shuffle import Shuffle
+from hat.models.advance.squeezeexcitation import SqueezeExcitation
+from hat.models.advance.swish import Swish
 
 # Short name
 SE = SqueezeExcitation
@@ -48,4 +47,3 @@ _CUSTOM_OBJECTS = {
   'ENDI': ENDI,
 }
 get_custom_objects().update(_CUSTOM_OBJECTS)
-

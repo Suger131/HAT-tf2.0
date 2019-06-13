@@ -1,7 +1,7 @@
 import os
 import time
 
-from utils._func import _writer
+from hat.utils._func import _writer
 
 
 class Log(object):

@@ -1,4 +1,4 @@
-from Arg import ARGS
+from hat.Arg import ARGS
 
 
 if __name__ == "__main__":

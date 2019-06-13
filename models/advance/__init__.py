@@ -6,6 +6,6 @@
 
 # pylint: disable=wildcard-import
 
-from models.advance.util import *
-from models.advance.advnet import *
+from hat.models.advance.util import *
+from hat.models.advance.advnet import *
 
