@@ -12,7 +12,7 @@
 
 from tensorflow.python.keras.models import Model
 from models.network import NetWork
-from models.advanced import AdvNet
+from models.advance import AdvNet
 
 
 class alexnet(NetWork, AdvNet):
