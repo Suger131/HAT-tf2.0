@@ -1,9 +1,13 @@
+# pylint: disable=no-name-in-module
+# pylint: disable=no-member
+# pylint: disable=wildcard-import
+# pylint: disable=attribute-defined-outside-init
+
 import os
 
 import tensorflow as tf
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard
-from tensorflow.python.keras.optimizers import *
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 # tf2 显存管理
 # from tensorflow.python.framework.config import (set_gpu_per_process_memory_fraction,
@@ -42,6 +46,7 @@ class Args(object):
     self.MODELS_NAME = ''
     self.MODEL = None
     self.RUN_MODE = ''
+    self.MODEL_LIB = ''
     self.BATCH_SIZE = 0
     self.EPOCHS = 0
     self.OPT = None
@@ -121,6 +126,7 @@ class Args(object):
           [['ep' , 'epochs'    ], 'EPOCHS'],
           [['bat', 'batch_size'], 'BATCH_SIZE'],
           [['mode'             ], 'RUN_MODE'],
+          [['-L' , 'lib'       ], 'MODEL_LIB'],
         ]
         _check_box = [self._check_args(temp[0], *j, temp[1]) for j in _check_list]
         if not any(_check_box):
@@ -183,9 +189,17 @@ class Args(object):
     self._paramc.append(_dataset[1])
     self._Log(self.DATASETS_NAME, _T='Loaded Dataset:')
 
+    # set models lib
+    if not self.MODEL_LIB:
+      self.MODEL_LIB = 'S'
+    models = MLib(self.MODEL_LIB)
+
     # get model object
-    call_model = globals().get(self.MODELS_NAME)
-    callable(call_model) and self._Log(self.MODELS_NAME, _T='Loading Model:') or self._error(self.MODELS_NAME, 'Not in Models:')
+    try:
+      call_model = getattr(models, self.MODELS_NAME)
+      self._Log(self.MODELS_NAME, _T='Loading Model:')
+    except:
+      self._error(self.MODELS_NAME, 'Not in Models:')
     self.MODEL = call_model(DATAINFO=self.DATAINFO)
     _model = self.MODEL.ginfo()
     self._get_args(_model[0])
