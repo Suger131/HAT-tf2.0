@@ -10,6 +10,8 @@
 # pylint: disable=wildcard-import
 # pylint: disable=useless-super-delegation
 # pylint: disable=unused-variable
+
+from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import *
 
 from utils.counter import Counter
@@ -441,6 +443,37 @@ class AdvNet(object):
       name=f"DropConnect_{Counter('dropconnect')}",
       **kwargs
     )(x)
+    return x
+
+  def proc_input(self, x, size, axis=-1):
+    """
+      Processing the input tensor shape.
+
+      ### Input:
+        x: Input Tensor
+
+        size: Target shape, int or 2D tuple or 2D list
+    """
+    if isinstance(size, int):
+      size = (size, size)
+    elif len(size) != 2:
+      raise Exception(f'len of size must be 2 if tuple or list, but got: {len(size)}')
+    
+    if axis==-1:
+      _size = K.int_shape(x)[1:3]
+    else:
+      _size = K.int_shape(x)[2:4]
+    
+    _n = [(size[i] - _size[i]) // 2 for i in range(2)]
+    
+    if _n[0] < 0 and _n[1] < 0:
+      _n = [-i for i in _n]
+      x = Cropping2D(_n)(x)
+    elif _n[0] > 0 and _n[1] > 0:
+      x = ZeroPadding2D(_n)(x)
+    else:
+      pass
+    
     return x
 
 
