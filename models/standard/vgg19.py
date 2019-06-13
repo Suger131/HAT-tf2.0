@@ -1,9 +1,9 @@
 """
   VGG-19
   本模型默认总参数量[参考基准：cifar10]：
-    Total params:           37,721,154
-    Trainable params:       37,712,706
-    Non-trainable params:   8,448
+    Total params:           43,035,970
+    Trainable params:       43,024,962
+    Non-trainable params:   11,008
 """
 
 # pylint: disable=no-name-in-module
@@ -20,7 +20,7 @@ class vgg19(NetWork, AdvNet):
   """
   
   def args(self):
-    self.TIME = [2, 2, 3, 3, 3]
+    self.TIME = [2, 2, 4, 4, 4]
     self.CONV = [64, 128, 256, 512, 512]
     self.POOL = [2, 2, 2, 2, 'g']
     self.LOCAL = [4096, 4096, 1000]
