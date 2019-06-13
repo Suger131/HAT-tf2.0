@@ -16,4 +16,4 @@ from hat.models.standard.vgg19 import vgg19
 from hat.models.standard.googlenetv4 import googlenetv4
 from hat.models.standard.resnet import *
 from hat.models.standard.densenet import *
-
+from hat.models.standard.mobilenetv2 import mobilenetv2
