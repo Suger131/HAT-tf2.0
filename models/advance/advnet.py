@@ -18,6 +18,12 @@ from hat.utils.counter import Counter
 from hat.models.advance.util import *
 
 
+# import setting
+__all__ = [
+  'AdvNet'
+]
+
+
 class AdvNet(object):
   """
     Advanced Network builder.
@@ -27,6 +33,14 @@ class AdvNet(object):
     super().__init__(*args, **kwargs)
 
   def repeat(self, func, times, *args, **kwargs):
+    """
+      Return a python function
+
+      Usage:
+      ```python
+        x = self.repeat(self.local, 3, 128)(x)
+      ```
+    """
     
     def _func(x):
       for i in range(times):
@@ -37,6 +51,9 @@ class AdvNet(object):
 
   def input(self, shape, batch_size=None, dtype=None, sparse=False, tensor=None,
             **kwargs):
+    """
+      Input Layer
+    """
     return Input(
       shape=shape,
       batch_size=batch_size,
@@ -48,6 +65,9 @@ class AdvNet(object):
     )
 
   def reshape(self, x, target_shape, **kwargs):
+    """
+      Reshape Layer
+    """
     x = Reshape(
       target_shape=target_shape,
       name=f"Reshape_{Counter('reshape')}",
@@ -57,6 +77,8 @@ class AdvNet(object):
 
   def add(self, x, **kwargs):
     """
+      Add Layer
+
       x must be a list
     """
     x = Add(
@@ -67,6 +89,8 @@ class AdvNet(object):
 
   def concat(self, x, axis=-1, **kwargs):
     """
+      Concatenate Layer
+
       x must be a list
     """
     x = Concatenate(
@@ -79,6 +103,9 @@ class AdvNet(object):
   def local(self, x, units, activation='relu', use_bias=True, kernel_initializer='glorot_uniform',
             bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
             activity_regularizer=None, kernel_constraint=None, bias_constraint=None, **kwargs):
+    """
+      Full Connect Layer
+    """
     name = f"Softmax" if activation=='softmax' else f"Local_{Counter('local')}"
     x = Dense(
       units=units,
@@ -97,6 +124,9 @@ class AdvNet(object):
     return x
 
   def dropout(self, x, rate, noise_shape=None, seed=None, **kwargs):
+    """
+      Dropout Layer
+    """
     x = Dropout(
       rate=rate,
       noise_shape=noise_shape,
@@ -107,6 +137,9 @@ class AdvNet(object):
     return x
 
   def flatten(self, x, data_format=None, **kwargs):
+    """
+      Flatten Layer
+    """
     x = Flatten(
       data_format=data_format,
       name=f"Faltten_{Counter('flatten')}",
@@ -116,6 +149,9 @@ class AdvNet(object):
 
   def maxpool(self, x, pool_size=(2, 2), strides=None, padding='same',
               data_format=None, **kwargs):
+    """
+      Max Pooling 2D Layer
+    """
     if not strides:
       strides = pool_size
     x = MaxPool2D(
@@ -130,6 +166,9 @@ class AdvNet(object):
 
   def avgpool(self, x, pool_size=(2, 2), strides=(2, 2), padding='same',
               data_format=None, **kwargs):
+    """
+      Avg Pooling 2D Layer
+    """
     x = AvgPool2D(
       pool_size=pool_size,
       strides=strides,
@@ -141,6 +180,9 @@ class AdvNet(object):
     return x
 
   def GAPool(self, x, data_format=None, **kwargs):
+    """
+      Global Avg Pooling 2D
+    """
     x = GlobalAvgPool2D(
       data_format=data_format,
       name=f"GlobalAvgPool_{Counter('gapool')}",
@@ -149,6 +191,9 @@ class AdvNet(object):
     return x
 
   def GMPool(self, x, data_format=None, **kwargs):
+    """
+      Global Max Pooling 2D
+    """
     x = GlobalMaxPool2D(
       data_format=data_format,
       name=f"GlobalMaxPool_{Counter('gmpool')}",
@@ -161,6 +206,9 @@ class AdvNet(object):
            kernel_initializer='glorot_uniform', bias_initializer='zeros',
            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
            kernel_constraint=None, bias_constraint=None, name='', **kwargs):
+    """
+      Conv2D Layer
+    """
     if type(kernel_size) == int:
       kernel_size = (kernel_size,) * 2
     if type(strides) == int:
@@ -198,6 +246,9 @@ class AdvNet(object):
              kernel_initializer='glorot_uniform', bias_initializer='zeros',
              kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
              kernel_constraint=None, bias_constraint=None, name='', **kwargs):
+    """
+      Conv3D Layer
+    """
     if type(kernel_size) == int:
       kernel_size = (kernel_size,) * 3
     if type(strides) == int:
@@ -236,6 +287,9 @@ class AdvNet(object):
              depthwise_regularizer=None, bias_regularizer=None,
              activity_regularizer=None, depthwise_constraint=None,
              bias_constraint=None, name='', **kwargs):
+    """
+      DepthwiseConv2D Layer
+    """
     if type(kernel_size) == int:
       kernel_size = (kernel_size,) * 2
     if type(strides) == int:
@@ -271,6 +325,9 @@ class AdvNet(object):
            kernel_initializer='glorot_uniform', bias_initializer='zeros',
            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
            kernel_constraint=None, bias_constraint=None, split=True, rank=2, name='', **kwargs):
+    """
+      Group Conv Layer
+    """
     if type(kernel_size) == int:
       kernel_size = (kernel_size,) * 2
     if type(strides) == int:
@@ -312,6 +369,9 @@ class AdvNet(object):
          beta_constraint=None, gamma_constraint=None, renorm=False, renorm_clipping=None,
          renorm_momentum=0.99, fused=None, trainable=True, virtual_batch_size=None,
          adjustment=None, **kwargs):
+    """
+      BatchNormalization Layer
+    """
     x = BatchNormalization(
       axis=axis,
       momentum=momentum,
@@ -339,6 +399,9 @@ class AdvNet(object):
     return x
 
   def relu(self, x, **kwargs):
+    """
+      ReLU Layer
+    """
     x = Activation(
       'relu',
       name=f"ReLU_{Counter('relu')}",
@@ -347,6 +410,9 @@ class AdvNet(object):
     return x
 
   def activation(self, x, activation, **kwargs):
+    """
+      Activation Layer
+    """
     x = Activation(
       activation=activation,
       name=f"{activation.capitalize()}_{Counter('relu')}",
@@ -365,7 +431,7 @@ class AdvNet(object):
            renorm_clipping=None, renorm_momentum=0.99, fused=None, trainable=True,
            virtual_batch_size=None, adjustment=None, **kwargs):
     '''
-      带有bn层的conv, 默认激活函数为ReLU
+      Conv2D with BN and ReLU(optional)
     '''
     x = self.conv(x, filters=filters, kernel_size=kernel_size, strides=strides,
                   padding=padding, data_format=data_format, dilation_rate=dilation_rate,
@@ -404,6 +470,18 @@ class AdvNet(object):
         use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
         kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
         kernel_constraint=None, bias_constraint=None, **kwargs):
+    """
+      SqueezeExcitation Layer
+
+      If input_filters=None, input_filters will use input channels(depend on axis)
+
+      Usage:
+      ```python
+        x = self.SE(x)
+        x = self.SE(x, rate=4)
+        x = self.SE(x, 128, 4)
+      ```
+    """
     x = SE(
       input_filters=input_filters,
       rate=rate,
@@ -423,6 +501,11 @@ class AdvNet(object):
     return x
 
   def shuffle(self, x, axis=-1, **kwargs):
+    """
+      Layer that shuffle and concatenate a list of inputs
+
+      Usage: The same as keras.layers.Concatenate
+    """
     x = Shuffle(
       axis=axis,
       name=f"Shuffle_{Counter('shuffle')}",
@@ -431,6 +514,11 @@ class AdvNet(object):
     return x
 
   def swish(self, x, **kwargs):
+    """
+      Swish Layer(Activation)
+
+      Swish = x * Sigmoid(x)
+    """
     x = Swish(
       name=f"Swish_{Counter('swish')}",
       **kwargs
@@ -438,6 +526,9 @@ class AdvNet(object):
     return x
 
   def dropconnect(self, x, drop_connect_rate=0, **kwargs):
+    """
+      Drop Connect Layer
+    """
     x = DropConnect(
       drop_connect_rate,
       name=f"DropConnect_{Counter('dropconnect')}",
@@ -475,12 +566,6 @@ class AdvNet(object):
       pass
     
     return x
-
-
-# import setting
-__all__ = [
-  'AdvNet'
-]
 
 
 if __name__ == "__main__":
