@@ -255,7 +255,7 @@ class Args(object):
         self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.SAVE_EXIST)
       else:
         self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.SAVE_EXIST)
-      self._Log(self.LOG_DIR + '/', _T='logs dir:')
+      self._Log(self.LOG_DIR + '\\', _T='logs dir:')
     if self.IS_ENHANCE:
       self._Log('Enhance data.')
 
