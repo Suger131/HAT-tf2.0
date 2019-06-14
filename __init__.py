@@ -21,6 +21,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os as _os
+import sys as _sys
 
 from hat import datasets
 from hat import models
@@ -31,6 +32,6 @@ __all__ = [_s for _s in dir() if not _s.startswith('_')]
 __all__.extend([_s for _s in _names_with_underscore])
 
 _hat_dir = _os.path.dirname(_os.path.abspath(__file__))
-if _hat_dir not in __path__:
-  __path__.append(_hat_dir)
+if _hat_dir not in _sys.path:
+  _sys.path.append(_hat_dir)
 
