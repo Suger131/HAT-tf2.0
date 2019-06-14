@@ -10,12 +10,13 @@
     Non-trainable params:   3,168
 """
 
+# pylint: disable=no-name-in-module
+# pylint: disable=wildcard-import
 
-from models.network import NetWork
-from models.advanced import AdvNet
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import *
+from hat.models.network import NetWork
+from hat.models.advance import AdvNet
 
 
 class dwdnet(NetWork, AdvNet):
@@ -39,13 +40,13 @@ class dwdnet(NetWork, AdvNet):
     x = self._head(x_in)
 
     # Dense part
-    x = self.repeat(self._dense, self.TIME[0], x, self.CONV[0])
+    x = self.repeat(self._dense, self.TIME[0], self.CONV[0])(x)
     x = self._transition(x)
-    x = self.repeat(self._dense, self.TIME[1], x, self.CONV[1])
+    x = self.repeat(self._dense, self.TIME[1], self.CONV[1])(x)
     x = self._transition(x)
-    x = self.repeat(self._dense, self.TIME[2], x, self.CONV[2])
+    x = self.repeat(self._dense, self.TIME[2], self.CONV[2])(x)
     x = self._transition(x, strides=1, crop=False)
-    x = self.repeat(self._dense, self.TIME[3], x, self.CONV[3])
+    x = self.repeat(self._dense, self.TIME[3], self.CONV[3])(x)
 
     # Output
     x = self.GAPool(x)

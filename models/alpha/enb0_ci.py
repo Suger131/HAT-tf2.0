@@ -13,20 +13,8 @@ from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.optimizers import Adam
 
-from models.network import NetWork
-from models.advanced import AdvNet, Swish, DropConnect, ENCI, ENDI
-from utils.counter import Counter
-
-
-# func
-def swish(x, **kwargs):
-  x = Swish(name=f"Swish_{Counter('swish')}", **kwargs)(x)
-  return x
-
-
-def dropconnect(x, drop_connect_rate=0, **kwargs):
-  x = DropConnect(drop_connect_rate, name=f"DropConnect_{Counter('dropconnect')}", **kwargs)(x)
-  return x
+from hat.models.network import NetWork
+from hat.models.advance import AdvNet, ENCI, ENDI
 
 
 class enb0_ci(NetWork, AdvNet):
@@ -79,7 +67,7 @@ class enb0_ci(NetWork, AdvNet):
       momentum=batch_norm_momentum,
       epsilon=batch_norm_epsilon
     )
-    x = swish(x)
+    x = self.swish(x)
 
     # blocks part
     blocks_list = list(zip(
@@ -115,7 +103,7 @@ class enb0_ci(NetWork, AdvNet):
       momentum=batch_norm_momentum,
       epsilon=batch_norm_epsilon
     )
-    x = swish(x)
+    x = self.swish(x)
 
     # output part
     x = self.flatten(x)
@@ -168,7 +156,7 @@ class enb0_ci(NetWork, AdvNet):
         momentum=batch_norm_momentum,
         epsilon=batch_norm_epsilon
       )
-      x = swish(x)
+      x = self.swish(x)
     else:
       x = x_in
     
@@ -187,7 +175,7 @@ class enb0_ci(NetWork, AdvNet):
       momentum=batch_norm_momentum,
       epsilon=batch_norm_epsilon
     )
-    x = swish(x)
+    x = self.swish(x)
 
     if se_rate:
       x = self.SE(x, input_filters=input_filters, rate=se_rate, kernel_initializer=ENDI())
@@ -214,7 +202,7 @@ class enb0_ci(NetWork, AdvNet):
       if all(s == 1 for s in strides) and input_filters == filters:
         # only apply drop_connect if skip presents.
         if drop_connect_rate:
-          x = dropconnect(x, drop_connect_rate)
+          x = self.dropconnect(x, drop_connect_rate)
         x = self.add([x, x_in])
 
     return x
@@ -226,7 +214,7 @@ if __name__ == "__main__":
   print(mod.INPUT_SHAPE)
   print(mod.model.summary())
 
-  from tensorflow.python.keras.utils import plot_model
+  # from tensorflow.python.keras.utils import plot_model
 
   # plot_model(
   #   mod.model,
