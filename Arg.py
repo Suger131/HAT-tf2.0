@@ -148,11 +148,17 @@ class Args(object):
 
   def _envs_processing(self):
 
+    # set models lib
+    if not self.MODEL_LIB:
+      self.MODEL_LIB = 'S'
+    models = MLib(self.MODEL_LIB)
+    _lib_name = NLib(self.MODEL_LIB)
+
     # load user datasets & models (don't cover)
     self._get_args(self.USER_DICT_N)
 
     # dir args
-    self.SAVE_DIR = f'logs/{self.DATASETS_NAME}_{self.MODELS_NAME}'
+    self.SAVE_DIR = f'logs/{_lib_name}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
     self.H5_NAME = f'{self.SAVE_DIR}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
     
     # make dir
@@ -176,9 +182,11 @@ class Args(object):
     # a Windows-specific bug in TensorFlow.
     # The fix is to use the platform-appropriate path separators in log_dir
     # rather than hard-coding forward slashes:
-    self.LOG_DIR = os.path.join(f'logs',
-                                f'{self.DATASETS_NAME}_{self.MODELS_NAME}',
-                                f'{self.DATASETS_NAME}_{self.MODELS_NAME}_{self.SAVE_TIME}',)
+    self.LOG_DIR = os.path.join(
+      f'logs',
+      f'{_lib_name}',
+      f'{self.DATASETS_NAME}_{self.MODELS_NAME}',
+      f'{self.DATASETS_NAME}_{self.MODELS_NAME}_{self.SAVE_TIME}',)
 
     # get dataset object
     call_dataset = globals().get(self.DATASETS_NAME)
@@ -188,11 +196,6 @@ class Args(object):
     self._get_args(_dataset[0])
     self._paramc.append(_dataset[1])
     self._Log(self.DATASETS_NAME, _T='Loaded Dataset:')
-
-    # set models lib
-    if not self.MODEL_LIB:
-      self.MODEL_LIB = 'S'
-    models = MLib(self.MODEL_LIB)
 
     # get model object
     try:
@@ -205,6 +208,7 @@ class Args(object):
     self._get_args(_model[0])
     self._paramc.extend(_model)
     self._Log(self.MODELS_NAME, _T='Loaded Model:')
+    self._Log(_lib_name, _T='Model Lib:')
 
     # load user args (don't cover)
     self._get_args(self.USER_DICT)
