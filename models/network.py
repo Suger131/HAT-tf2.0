@@ -1,17 +1,12 @@
 __all__ = ['NetWork']
 
 class NetWork(object):
-
   """
-  这是一个网络模型基类。
+    这是一个网络模型基类
 
-  你需要重写的方法是: 
-  
-    args()\n\n 定义模型需要的各种参数\n\n 另，可定义BATCH_SIZE，EPOCHS和OPT
-
-    build_model()\n\n 构建网络模型
-
-    build_model里应当包含self.model的定义
+    你需要重写的方法有:
+      args 模型的各种参数，在此定义的所有量都会被写入config里面。另，可定义BATCH_SIZE, EPOCHS, OPT
+      build_model 构建网络模型，应该包含self.model的定义
   """
 
   def __init__(self, **kwargs):

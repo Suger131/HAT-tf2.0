@@ -27,9 +27,15 @@ __all__ = [
 
 class AdvNet(NetWork):
   """
-    Advanced Network builder.
+    Advanced NetWork Builder
+
+    这是一个网络模型基类(高级)
+
+    你需要重写的方法有:
+      args 模型的各种参数，在此定义的所有量都会被写入config里面。另，可定义BATCH_SIZE, EPOCHS, OPT
+      build_model 构建网络模型，应该包含self.model的定义
   """
-  
+
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
