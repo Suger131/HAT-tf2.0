@@ -46,6 +46,7 @@ class vss(NetWork, AdvNet):
     for ix, i in enumerate(self.CONV_):
       if ix: x = self.poolx(x)
       x = self.repeat(self.conv_s, *i)(x)
+      # x = self.SE(x)
 
     # x = self.conv_s(x,  64)
     # x = self.conv_s(x,  64)
