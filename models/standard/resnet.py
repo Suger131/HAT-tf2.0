@@ -11,7 +11,6 @@
 # pylint: disable=wildcard-import
 
 from tensorflow.python.keras.models import Model
-from hat.models.network import NetWork
 from hat.models.advance import AdvNet
 
 
@@ -30,7 +29,7 @@ __all__ = [
 ]
 
 
-class resnet(NetWork, AdvNet):
+class resnet(AdvNet):
   """
     ResNet
   """
@@ -54,7 +53,6 @@ class resnet(NetWork, AdvNet):
     self.POOL_SIZE = 3
     self.POOL_STRIDES = 2
 
-    # self.RES_TIMES = [3, 4, 6, 3]
     self.RES_FA = [64, 128, 256, 512]
     self.RES_FB = [256, 512, 1024, 2048]
     self.RES_STRIDES = [1, 2, 2, 2 if self.INPUT_SHAPE[0] // 32 >= 4 else 1]
@@ -62,11 +60,9 @@ class resnet(NetWork, AdvNet):
     self.LOCAL = 1000
     self.DROP = 0.5
 
-    # for test
     # self.BATCH_SIZE = 128
-    # self.EPOCHS = 150
+    # self.EPOCHS = 384
     # self.OPT = 'sgd'
-    # self.OPT_EXIST = True
 
   def build_model(self):
     x_in = self.input(self.INPUT_SHAPE)

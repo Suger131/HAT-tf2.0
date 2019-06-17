@@ -20,7 +20,7 @@ class NetWork(object):
     self.NUM_CLASSES = 0
 
     self._kwargs = kwargs
-    self._default_list = ['BATCH_SIZE', 'EPOCHS', 'OPT', 'OPT_EXIST', 'LOSS_MODE', 'METRICS']
+    self._default_list = ['BATCH_SIZE', 'EPOCHS', 'OPT', 'LOSS_MODE', 'METRICS']
     self._default_dict = {}
     self._dict = {}
     self._check_kwargs()
@@ -29,7 +29,6 @@ class NetWork(object):
     self.BATCH_SIZE = 0
     self.EPOCHS = 0
     self.OPT = None
-    self.OPT_EXIST = False
     self.LOSS_MODE = ''
     self.METRICS = []
     self.args()

@@ -50,7 +50,6 @@ class Args(object):
     self.BATCH_SIZE = 0
     self.EPOCHS = 0
     self.OPT = None
-    self.OPT_EXIST = False
     self.LOSS_MODE = None
     self.METRICS = []
     # build
@@ -220,9 +219,11 @@ class Args(object):
       self._Log(self.LOAD_NAME ,_T='Loaded h5:')
     else:
       # compile model
-      self.MODEL.model.compile(optimizer=self.OPT,
-                             loss=self.LOSS_MODE,
-                             metrics=self.METRICS)
+      self.MODEL.model.compile(
+        optimizer=self.OPT,
+        loss=self.LOSS_MODE,
+        metrics=self.METRICS
+      )
 
     # get configer
     self._config = Config(f"{self.SAVE_DIR}/config")
@@ -250,7 +251,7 @@ class Args(object):
     if self.RUN_MODE not in ['gimage']:
       self._Log(self.EPOCHS, _T='Epochs:')
       self._Log(self.BATCH_SIZE, _T='Batch size:')
-      self._Log('', _L=['Model Optimizer exist.', f'Using Optimizer: {self.OPT}'], _B=self.OPT_EXIST)
+      self._Log('', _L=['Model Optimizer exist.', f'Using Optimizer: {self.OPT}'], _B=self.OPT != None)
       if self.RUN_MODE == 'val':
         self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.SAVE_EXIST)
       else:
@@ -347,7 +348,7 @@ class Args(object):
 
     if not self.IS_SAVE: return
 
-    self.MODEL.model.save(self.SAVE_NAME)#, include_optimizer=not self.OPT_EXIST
+    self.MODEL.model.save(self.SAVE_NAME)
 
     self._Log(self.SAVE_NAME, _T='Successfully save model:')
 

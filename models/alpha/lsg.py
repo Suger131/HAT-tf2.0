@@ -12,10 +12,9 @@
 
 from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
-from hat.models.network import NetWork
 
 
-class lsg(NetWork, AdvNet):
+class lsg(AdvNet):
   """
     LSG
   """

@@ -12,10 +12,9 @@
 
 from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
-from hat.models.network import NetWork
 
 
-class vss(NetWork, AdvNet):
+class vss(AdvNet):
   """
     VSS
   """
@@ -29,7 +28,7 @@ class vss(NetWork, AdvNet):
     self.BATCH_SIZE = 128
     self.EPOCHS = 384
     self.OPT = 'Adam'
-    self.OPT_EXIST = True
+    # self.OPT_EXIST = True
 
   def build_model(self):
 

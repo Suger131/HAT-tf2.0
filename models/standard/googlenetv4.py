@@ -10,11 +10,10 @@
 # pylint: disable=wildcard-import
 
 from tensorflow.python.keras.models import Model
-from hat.models.network import NetWork
 from hat.models.advance import AdvNet
 
 
-class googlenetv4(NetWork, AdvNet):
+class googlenetv4(AdvNet):
   """
     GoogleNet-V4
   """
@@ -30,7 +29,6 @@ class googlenetv4(NetWork, AdvNet):
     self.RA_CONV = [256, 384, 96 * 4]
     self.RB_CONV = [320, 192, 1024]
     
-  
   def build_model(self):
 
     x_in = self.input(self.INPUT_SHAPE)

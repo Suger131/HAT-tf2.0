@@ -15,11 +15,10 @@
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import *
-from hat.models.network import NetWork
 from hat.models.advance import AdvNet
 
 
-class mobilenetv2(NetWork, AdvNet):
+class mobilenetv2(AdvNet):
   """
     MobileNet-v2
   """

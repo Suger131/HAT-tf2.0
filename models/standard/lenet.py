@@ -11,10 +11,9 @@
 
 from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
-from hat.models.network import NetWork
 
 
-class lenet(NetWork, AdvNet):
+class lenet(AdvNet):
   """
     LeNet 
   """

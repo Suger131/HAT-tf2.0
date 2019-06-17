@@ -15,6 +15,7 @@ from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import *
 
 from hat.utils.counter import Counter
+from hat.models.network import NetWork
 from hat.models.advance.util import *
 
 
@@ -24,13 +25,19 @@ __all__ = [
 ]
 
 
-class AdvNet(object):
+class AdvNet(NetWork):
   """
     Advanced Network builder.
   """
   
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
+
+  def args(self):
+    super().args()
+
+  def build_model(self):
+    super().build_model()
 
   def repeat(self, func, times, *args, **kwargs):
     """

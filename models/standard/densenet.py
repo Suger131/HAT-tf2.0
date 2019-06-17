@@ -14,7 +14,6 @@
 
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model
-from hat.models.network import NetWork
 from hat.models.advance import AdvNet
 
 
@@ -36,7 +35,7 @@ __all__ = [
 ]
 
 
-class densenet(NetWork, AdvNet):
+class densenet(AdvNet):
   """
     DenseNet-BC
   """
@@ -59,10 +58,6 @@ class densenet(NetWork, AdvNet):
     self.CONV = 64
     self.CONV_SIZE = 7
     self.CONV_STEP = 2 if self.INPUT_SHAPE[0] >= 64 else 1
-    # self.K = 12
-    # self.THETA = 0.5
-    # self.BLOCKS = [6, 12, 24, 16]
-    # self.BIAS = False
   
   def build_model(self):
     x_in = self.input(self.INPUT_SHAPE)

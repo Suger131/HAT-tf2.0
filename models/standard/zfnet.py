@@ -14,11 +14,10 @@
 # pylint: disable=wildcard-import
 
 from tensorflow.python.keras.models import Model
-from hat.models.network import NetWork
 from hat.models.advance import AdvNet
 
 
-class zfnet(NetWork, AdvNet):
+class zfnet(AdvNet):
   """
     ZFNet
   """

@@ -10,11 +10,10 @@
 # pylint: disable=wildcard-import
 
 from tensorflow.python.keras.models import Model
-from hat.models.network import NetWork
 from hat.models.advance import AdvNet
 
 
-class vgg16(NetWork, AdvNet):
+class vgg16(AdvNet):
   """
     VGG-16
   """
@@ -29,7 +28,6 @@ class vgg16(NetWork, AdvNet):
     self.BATCH_SIZE = 128
     self.EPOCHS = 384
     self.OPT = 'adam'
-    self.OPT_EXIST = True
 
   def build_model(self):
     

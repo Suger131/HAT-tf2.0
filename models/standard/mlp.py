@@ -12,10 +12,9 @@
 
 from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
-from hat.models.network import NetWork
 
 
-class mlp(NetWork, AdvNet):
+class mlp(AdvNet):
   """
     MLP
   """
