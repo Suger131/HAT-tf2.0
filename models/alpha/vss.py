@@ -87,6 +87,7 @@ class vss(NetWork, AdvNet):
     )
     x = self.bn(x)
     x = self.swish(x)
+    x = self.SE(x)
     
     return x
 
