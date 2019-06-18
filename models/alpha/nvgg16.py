@@ -2,21 +2,20 @@
   NVGG16 模型
   input size range: (26, 64)
   本模型默认总参数量[参考基准：cifar10]：
-    Total params:           37,757,922
-    Trainable params:       37,731,090
-    Non-trainable params:   26,832
+    Total params:           16,324,938
+    Trainable params:       16,312,394
+    Non-trainable params:   12,544
 '''
 
 
 # pylint: disable=no-name-in-module
-from models.network import NetWork
-from models.advanced import AdvNet
-from tensorflow.python.keras.models import Model
+
 from tensorflow.python.keras.regularizers import l2
-from tensorflow.python.keras.optimizers import Adam
+from tensorflow.python.keras.optimizers import SGD
+from hat.models.advance import AdvNet
 
 
-class nvgg16(NetWork, AdvNet):
+class nvgg16(AdvNet):
   """
   NVGG16 模型
   """
@@ -29,35 +28,39 @@ class nvgg16(NetWork, AdvNet):
     self.TIME = [2, 2, 3, 3, 3]
     self.CONV = [64, 128, 256, 512, 512]
 
-    self.LOCAL = [4096, 4096, 1000]
-    self.D = 0.25
+    self.LOCAL = [1024, 1024]
+    self.D = 0.2
     self.DX = 0.5
 
-    # for test
     self.BATCH_SIZE = 128
     self.EPOCHS = 384
-    self.OPT = Adam(lr=1e-3, decay=0.1 / 256)
-    self.OPT_EXIST = True
+    self.OPT = SGD(lr=1e-2, decay=1e-6)
 
   def build_model(self):
+
+    # params
+    self.CONV_ = list(zip(
+      self.TIME,
+      self.CONV,
+    ))
 
     x_in = self.input(shape=self.INPUT_SHAPE)
 
     x = x_in
     
-    for i in range(len(self.CONV)):
-      if i:
-        x = self.maxpool(x, 3, 1 if i == 4 else 2)
+    for ix, i in enumerate(self.CONV_):
+      if ix:
+        x = self.maxpool(x, 3, 1 if ix == 4 else 2)
         x = self.dropout(x, self.D)
-      x = self.repeat(self._conv, self.TIME[i], x, self.CONV[i], 3)
+      x = self.repeat(self._conv, *i, 3)(x)
     
     x = self.GAPool(x)
+    x = self.dropout(x, self.D)
     x = self._local(x, self.LOCAL[0])
-    x = self._local(x, self.LOCAL[1])
-    x = self._local(x, self.LOCAL[2], d=self.DX)
+    x = self._local(x, self.LOCAL[1], d=self.DX)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='nvgg16')
+    self.Model(inputs=x_in, outputs=x, name='nvgg16')
 
   def _conv(self, x, *args, **kwargs):
     x = self.conv_bn(x, *args,
@@ -72,7 +75,7 @@ class nvgg16(NetWork, AdvNet):
       kernel_initializer=self.CONV_KI, **kwargs)
     x = self.bn(x)
     x = self.relu(x)
-    x = self.dropout(x, d)
+    if d: x = self.dropout(x, d)
     return x
 
 

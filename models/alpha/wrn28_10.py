@@ -9,23 +9,18 @@
     Non-trainable params:   17,952
 '''
 
-from models.network import NetWork
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import *
+# pylint: disable=no-name-in-module
+
 from tensorflow.python.keras.optimizers import SGD
+from hat.models.advance import AdvNet
 
 
-class wrn28_10(NetWork):
+class wrn28_10(AdvNet):
   """
   WRN-28-10 模型
   """
 
   def args(self):
-    # counters
-    self._COUNT_CONV = 0
-    self._COUNT_BN = 0
-    self._COUNT_RELU = 0
 
     # main args
     self.S = 16
@@ -34,16 +29,19 @@ class wrn28_10(NetWork):
     self.D = 0
 
     # train args
-    self.EPOCHS = 200
-    self.BATCH_SIZE = 32
+    self.EPOCHS = 384
+    self.BATCH_SIZE = 128
     self.OPT = SGD(lr=0.1, momentum=0.9, decay=5e-4, nesterov=True)
-    self.OPT_EXIST = True
+
 
   def build_model(self):
-    x_in = Input(shape=self.INPUT_SHAPE)
+
+    # params
     Fs = [x * self.S * self.K for x in [1, 2, 4]]
 
-    # Conv1
+    x_in = self.input(shape=self.INPUT_SHAPE)
+
+    # Conv
     x = self.conv(x_in, self.S, 3)
 
     # Res Blocks
@@ -54,80 +52,59 @@ class wrn28_10(NetWork):
     # Output
     x = self.bn(x)
     x = self.relu(x)
-    x = GlobalAvgPool2D()(x)
-    x = Dense(self.NUM_CLASSES, activation='softmax', name='softmax')(x)
+    x = self.GAPool(x)
+    x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='wrn28_10')
-
-  def conv(self, x_in, filters, kernel_size, strides=1, padding='same', use_bias=False, kernel_initializer='he_normal'):
-    '''卷积层'''
-    self._COUNT_CONV += 1
-    x = Conv2D(filters,
-               kernel_size,
-               strides=strides,
-               padding=padding,
-               use_bias=use_bias,
-               kernel_initializer=kernel_initializer,
-               name='CONV_' + str(self._COUNT_CONV))(x_in)
-    return x
-
-  def bn(self, x_in, momentum=0.1, epsilon=1e-5, gamma_initializer='uniform'):
-    '''BN层'''
-    self._COUNT_BN += 1
-    x = BatchNormalization(axis=-1,
-                           momentum=momentum,
-                           epsilon=epsilon,
-                           gamma_initializer=gamma_initializer,
-                           name='BN_' + str(self._COUNT_BN))(x_in)
-    return x
-
-  def relu(self, x_in):
-    '''RELU层'''
-    self._COUNT_RELU += 1
-    x = Activation('relu', name='RELU_' + str(self._COUNT_RELU))(x_in)
-    return x
+    self.Model(inputs=x_in, outputs=x, name='wrn28_10')
 
   def expand(self, x_in, F, strides=2):
-    '''塑形层
-
-       要确保使用之前紧接着的是卷积层'''
+    """
+      塑形层，要确保使用之前紧接着的是卷积层
+    """
     xi = self.bn(x_in)
     xi = self.relu(xi)
     
+    x_aux = self.conv(xi, F, 3, strides=strides)
+
     x = self.conv(xi, F, 3, strides=strides)
     x = self.bn(x)
     x = self.relu(x)
     x = self.conv(x, F, 3)
 
-    x_aux = self.conv(xi, F, 1, strides=strides)
+    x = self.add([x, x_aux])
 
-    x = Add()([x, x_aux])
+    return x
+
+  def _block(self, x_in, F):
+    """
+      残差单元
+    """
+    x = self.bn(x_in)
+    x = self.relu(x)
+    x = self.conv(x, F, 3)
+
+    x = self.dropout(x, self.D)
+
+    x = self.bn(x)
+    x = self.relu(x)
+    x = self.conv(x, F, 3)
+
+    x = self.add([x, x_in])
+    
     return x
 
   def conv_block(self, x_in, F, N, strides=2):
-    '''残差块'''
-    
-    xi = self.expand(x_in, F, strides=strides)
+    """
+      残差块
+    """
+    x = self.expand(x_in, F, strides=strides)
 
-    for i in range(N):
+    x = self.repeat(self._block, N, F)(x)
 
-      x = self.bn(xi)
-      x = self.relu(x)
-      x = self.conv(x, F, 3)
-
-      x = Dropout(self.D)(x)
-
-      x = self.bn(x)
-      x = self.relu(x)
-      x = self.conv(x, F, 3)
-
-      xi = Add()([x, xi])
-
-    return xi
+    return x
 
 
 # test part
 if __name__ == "__main__":
   mod = wrn28_10(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
   print(mod.model.summary())
-  # pass
