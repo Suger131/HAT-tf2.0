@@ -10,12 +10,15 @@
 import os
 
 import tensorflow as tf
+
 # tf2 显存管理
 # from tensorflow.python.framework.config import (set_gpu_per_process_memory_fraction,
 #                                                 set_gpu_per_process_memory_growth)
-# 设置显存使用上限50%，按需申请
-# set_gpu_per_process_memory_fraction(0.5)
+# 设置显存按需申请
 # set_gpu_per_process_memory_growth(True)
+# 设置显存使用上限50%
+# set_gpu_per_process_memory_fraction(0.5)
+
 # tf1 显存管理
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
