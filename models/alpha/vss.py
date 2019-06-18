@@ -25,7 +25,6 @@ class vss(AdvNet):
     self.BATCH_SIZE = 128
     self.EPOCHS = 384
     self.OPT = 'Adam'
-    # self.OPT_EXIST = True
 
   def build_model(self):
 
@@ -44,24 +43,6 @@ class vss(AdvNet):
       x = self.repeat(self.conv_s, *i)(x)
       # x = self.SE(x)
 
-    # x = self.conv_s(x,  64)
-    # x = self.conv_s(x,  64)
-    # x = self.poolx(x, 3, 2)
-    # x = self.conv_s(x, 128)
-    # x = self.conv_s(x, 128)
-    # x = self.poolx(x, 3, 2)
-    # x = self.conv_s(x, 256)
-    # x = self.conv_s(x, 256)
-    # x = self.conv_s(x, 256)
-    # x = self.poolx(x, 3, 2)
-    # x = self.conv_s(x, 512)
-    # x = self.conv_s(x, 512)
-    # x = self.conv_s(x, 512)
-    # x = self.poolx(x, 3, 2)
-    # x = self.conv_s(x, 512)
-    # x = self.conv_s(x, 512)
-    # x = self.conv_s(x, 512)
-
     x = self.GAPool(x)
 
     x = self.local_s(x, 1024)
@@ -71,7 +52,7 @@ class vss(AdvNet):
 
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='lsg')
+    self.Model(inputs=x_in, outputs=x, name='vss')
 
   def conv_s(self, x_in, filters, kernel_size=3):
     
