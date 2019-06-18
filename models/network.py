@@ -1,4 +1,9 @@
-__all__ = ['NetWork']
+# pylint: disable=unnecessary-pass
+
+__all__ = [
+  'NetWork'
+]
+
 
 class NetWork(object):
   """
@@ -53,9 +58,17 @@ class NetWork(object):
     self.__dict__ = {**self.__dict__, **self._kwargs}
 
   def args(self):
+    """
+      定义需要写入到config的参数
+
+      另，可以定义BATCH_SIZE, EPOCHS, OPT
+    """
     pass
 
   def build_model(self):
+    """
+      构建网络模型，应该包含self.model的定义
+    """
     raise NotImplementedError
 
   # public method

@@ -47,13 +47,24 @@ class AdvNet(NetWork):
     super().__init__(*args, **kwargs)
 
   def args(self):
+    """
+      定义需要写入到config的参数
+
+      另，可以定义BATCH_SIZE, EPOCHS, OPT
+    """
     super().args()
 
   def build_model(self):
+    """
+      构建网络模型，应该包含self.model的定义
+    """
     super().build_model()
 
-  def Model(self, inputs, outputs, name):
-    self.model = Model(inputs=inputs, outputs=outputs, name=name)
+  def Model(self, inputs, outputs, name, **kwargs):
+    """
+      Model Builder
+    """
+    self.model = Model(inputs=inputs, outputs=outputs, name=name, **kwargs)
 
   def input(self, shape, batch_size=None, dtype=None, sparse=False, tensor=None,
             **kwargs):
