@@ -9,15 +9,13 @@
 """
 
 # pylint: disable=no-name-in-module
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.optimizers import Adam
 
-from hat.models.network import NetWork
+from tensorflow.python.keras import backend as K
+from tensorflow.python.keras.optimizers import Adam
 from hat.models.advance import AdvNet, ENCI, ENDI
 
 
-class enb0_ci(NetWork, AdvNet):
+class enb0_ci(AdvNet):
   """
     Efficient Net B0
   """
@@ -116,7 +114,7 @@ class enb0_ci(NetWork, AdvNet):
       activation='softmax'
     )
 
-    self.model = Model(inputs=x_in, outputs=x, name='enb0_ci')
+    self.Model(inputs=x_in, outputs=x, name='enb0_ci')
 
   def MBConv(self,
         n, x_in, filters, kernel_size, strides, expand_ratio, se_rate,

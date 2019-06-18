@@ -1,4 +1,4 @@
-'''
+"""
   LeNet-3D
   For cifar10
   NOTE: INPUT_CHANNELS must > 1
@@ -6,16 +6,16 @@
     Total params:           1,800,222
     Trainable params:       1,800,222
     Non-trainable params:   0
-'''
+"""
 
+# pylint: disable=no-name-in-module
+# pylint: disable=wildcard-import
 
-from models.network import NetWork
-from models.advanced import AdvNet
-from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import *
+from hat.models.advance import AdvNet
 
 
-class lenet_3d(NetWork, AdvNet):
+class lenet_3d(AdvNet):
   """
   LeNet-3D
   """
@@ -26,19 +26,18 @@ class lenet_3d(NetWork, AdvNet):
     self.STRIDES = (3, 3, 1)
     self.LOCAL_SIZE = 500
     self.DROP_RATE = 0.5
-    # for test
+
     # self.BATCH_SIZE = 128
-    # self.EPOCHS = 150
+    # self.EPOCHS = 384
     self.OPT = 'sgd'
-    self.OPT_EXIST = True
 
   def build_model(self):
     x_in = self.input(self.INPUT_SHAPE)
 
     # extand the rgb channel
-    x = self.rgb_extand(x_in)
+    x = self.conv(x_in, 12, 5)
     # change 4D Tensor into 5D Tensor
-    x = self.reshape(x, (self.INPUT_SHAPE[0], self.INPUT_SHAPE[1], 7, 1))
+    x = self.reshape(x, (self.INPUT_SHAPE[0], self.INPUT_SHAPE[1], 12, 1))
     
     # 3D Conv
     x = self.conv3d(x, self.CONV[0], self.CONV3D_SIZE)
@@ -64,9 +63,10 @@ class lenet_3d(NetWork, AdvNet):
     x = self.local(x, self.LOCAL_SIZE)
     x = self.dropout(x, self.DROP_RATE)
     x = self.local(x, self.LOCAL_SIZE)
+    x = self.dropout(x, self.DROP_RATE)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='lenet_3d')
+    self.Model(inputs=x_in, outputs=x, name='lenet_3d')
 
 
 # test part

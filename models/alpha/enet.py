@@ -3,31 +3,18 @@
 """
 
 # pylint: disable=no-name-in-module
+
 from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.models import Model
-
-from models.network import NetWork
-from models.advanced import AdvNet, Swish, DropConnect, ENCI, ENDI
-from utils.counter import Counter
+from hat.models.advance import AdvNet, ENCI, ENDI
 
 
-# func
-def swish(x, **kwargs):
-  x = Swish(name=f"Swish_{Counter('swish')}", **kwargs)(x)
-  return x
-
-
-def dropconnect(x, drop_connect_rate=0, **kwargs):
-  x = DropConnect(drop_connect_rate, name=f"DropConnect_{Counter('dropconnect')}", **kwargs)(x)
-  return x
-
-
-class enet(NetWork, AdvNet):
+class enet(AdvNet):
   """
     Efficient Net B0
   """
 
   def args(self):
+    
     self.STEM_CONV = 32
     self.STEM_STEP = 2
     self.HEAD_CONV = 1280
@@ -40,7 +27,6 @@ class enet(NetWork, AdvNet):
     self.MB_STEP = [1 , 2 , 2 , 1 , 2  , 2  , 1  ]
     self.MB_TIME = [1 , 2 , 2 , 3 , 3  , 4  , 1  ]
     self.MB_EXPD = [1 , 6 , 6 , 6 , 6  , 6  , 6  ]
-    
 
   def build_model(self):
 
@@ -68,7 +54,7 @@ class enet(NetWork, AdvNet):
       momentum=batch_norm_momentum,
       epsilon=batch_norm_epsilon
     )
-    x = swish(x)
+    x = self.swish(x)
 
     # blocks part
     blocks_list = list(zip(
@@ -104,7 +90,7 @@ class enet(NetWork, AdvNet):
       momentum=batch_norm_momentum,
       epsilon=batch_norm_epsilon
     )
-    x = swish(x)
+    x = self.swish(x)
 
     # output part
     x = self.GAPool(x)
@@ -117,7 +103,7 @@ class enet(NetWork, AdvNet):
       activation='softmax'
     )
 
-    self.model = Model(inputs=x_in, outputs=x, name='enet')
+    self.Model(inputs=x_in, outputs=x, name='enet')
 
   def MBConv(self,
         n, x_in, filters, kernel_size, strides, expand_ratio, se_rate,
@@ -157,7 +143,7 @@ class enet(NetWork, AdvNet):
         momentum=batch_norm_momentum,
         epsilon=batch_norm_epsilon
       )
-      x = swish(x)
+      x = self.swish(x)
     else:
       x = x_in
     
@@ -176,7 +162,7 @@ class enet(NetWork, AdvNet):
       momentum=batch_norm_momentum,
       epsilon=batch_norm_epsilon
     )
-    x = swish(x)
+    x = self.swish(x)
 
     if se_rate:
       x = self.SE(x, input_filters=input_filters, rate=se_rate, kernel_initializer=ENDI())
@@ -203,7 +189,7 @@ class enet(NetWork, AdvNet):
       if all(s == 1 for s in strides) and input_filters == filters:
         # only apply drop_connect if skip presents.
         if drop_connect_rate:
-          x = dropconnect(x, drop_connect_rate)
+          x = self.dropconnect(x, drop_connect_rate)
         x = self.add([x, x_in])
 
     return x
@@ -215,7 +201,7 @@ if __name__ == "__main__":
   print(mod.INPUT_SHAPE)
   print(mod.model.summary())
 
-  from tensorflow.python.keras.utils import plot_model
+  # from tensorflow.python.keras.utils import plot_model
 
   # plot_model(
   #   mod.model,

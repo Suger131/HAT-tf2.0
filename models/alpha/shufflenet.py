@@ -6,15 +6,14 @@
     Non-trainable params:   17,952
 """
 
+# pylint: disable=no-name-in-module
 
 from tensorflow.python.keras import backend as K
-from models.network import NetWork
-from models.advanced import AdvNet, Shuffle
 from tensorflow.python.keras.layers import Lambda
-from tensorflow.python.keras.models import Model
+from hat.models.advance import AdvNet
 
 
-class shufflenet(NetWork, AdvNet):
+class shufflenet(AdvNet):
   """
     Shuffle Net
   """
@@ -41,7 +40,7 @@ class shufflenet(NetWork, AdvNet):
 
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='shufflenet')
+    self.Model(inputs=x_in, outputs=x, name='shufflenet')
 
   def _head(self, x_in):
     x = self.conv_bn(x_in, 24, 3, 2)
@@ -53,8 +52,7 @@ class shufflenet(NetWork, AdvNet):
   def stage(self, x_in, filters, n, crop=True):
     n = n - 1
     x = self._block_d(x_in, filters, crop)
-    for i in range(n):
-      x = self._block_c(x)
+    x = self.repeat(self._block_c, n)(x)
     return x
 
   def _block_d(self, x_in, filters, crop=True):
@@ -74,7 +72,7 @@ class shufflenet(NetWork, AdvNet):
     x2 = self.bn(x2)
     x2 = self.conv(x2, _hc, 1)
 
-    x = Shuffle(self.axis)([x1, x2])
+    x = self.shuffle(self.axis)([x1, x2])
     x = self.bn(x)
     x = self.relu(x)
     
@@ -95,7 +93,7 @@ class shufflenet(NetWork, AdvNet):
     x = self.bn(x)
     x = self.relu(x)
     
-    x = Shuffle(self.axis)([_side, x])
+    x = self.shuffle(self.axis)([_side, x])
 
     return x
 
