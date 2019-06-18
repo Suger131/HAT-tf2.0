@@ -6,10 +6,7 @@
     Non-trainable params:   11,008
 """
 
-# pylint: disable=no-name-in-module
-# pylint: disable=wildcard-import
 
-from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
 
 
@@ -55,7 +52,7 @@ class vgg19(AdvNet):
       x = self.dropout(x, i[1]) if i[1] else x
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='vgg19')
+    self.Model(inputs=x_in, outputs=x, name='vgg19')
 
 # test part
 if __name__ == "__main__":

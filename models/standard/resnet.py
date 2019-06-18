@@ -7,10 +7,7 @@
     Non-trainable params:   45,440
 '''
 
-# pylint: disable=no-name-in-module
-# pylint: disable=wildcard-import
 
-from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
 
 
@@ -87,7 +84,7 @@ class resnet(AdvNet):
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name=self.NAME)
+    self.Model(inputs=x_in, outputs=x, name=self.NAME)
 
   def _block(self, x_in, times, filters1, filters2, strides=2):
     x = self._bottle(x_in, filters1, filters2, strides=strides, _t=True)

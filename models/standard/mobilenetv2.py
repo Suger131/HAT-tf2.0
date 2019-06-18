@@ -13,7 +13,6 @@
 # pylint: disable=wildcard-import
 
 from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import *
 from hat.models.advance import AdvNet
 
@@ -56,7 +55,7 @@ class mobilenetv2(AdvNet):
     x = self.conv(x, self.NUM_CLASSES, 1, activation='softmax', name='Softmax')  # 加速
     x = self.flatten(x)
 
-    self.model = Model(inputs=x_in, outputs=x, name='mobilenetv2')
+    self.Model(inputs=x_in, outputs=x, name='mobilenetv2')
 
   def _bottleneck(self, x_in, filters, k, strides=1, first=False, crop=False, crop_down=False):
 

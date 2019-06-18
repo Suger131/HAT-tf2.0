@@ -10,10 +10,8 @@
 '''
 
 # pylint: disable=no-name-in-module
-# pylint: disable=wildcard-import
 
 from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
 
 
@@ -77,7 +75,7 @@ class densenet(AdvNet):
     x = self.GAPool(x)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name=self.NAME)
+    self.Model(inputs=x_in, outputs=x, name=self.NAME)
 
   def _dense(self, x_in, k):
 

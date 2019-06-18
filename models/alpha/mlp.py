@@ -7,10 +7,7 @@
     Non-trainable params:   0
 """
 
-# pylint: disable=no-name-in-module
-# pylint: disable=wildcard-import
 
-from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
 
 
@@ -32,7 +29,7 @@ class mlp(AdvNet):
     x = self.dropout(x, self.DROP_RATE)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='mlp')
+    self.Model(inputs=x_in, outputs=x, name='mlp')
 
 
 # test part

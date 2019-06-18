@@ -5,13 +5,14 @@
 
 """
 
-
 # pylint: disable=no-name-in-module
 # pylint: disable=wildcard-import
 # pylint: disable=useless-super-delegation
 # pylint: disable=unused-variable
+# pylint: disable=attribute-defined-outside-init
 
 from tensorflow.python.keras import backend as K
+from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import *
 
 from hat.utils.counter import Counter
@@ -33,7 +34,13 @@ class AdvNet(NetWork):
 
     你需要重写的方法有:
       args 模型的各种参数，在此定义的所有量都会被写入config里面。另，可定义BATCH_SIZE, EPOCHS, OPT
-      build_model 构建网络模型，应该包含self.model的定义
+      build_model 构建网络模型，应该包含self.model的定义。可用self.Model完成。
+      Sample: 
+    
+    ```python
+      self.Model(inputs=x_in, outputs=x, name='mlp') # or
+      self.model = Model(inputs=x_in, outputs=x, name='mlp')
+    ```
   """
 
   def __init__(self, *args, **kwargs):
@@ -44,6 +51,24 @@ class AdvNet(NetWork):
 
   def build_model(self):
     super().build_model()
+
+  def Model(self, inputs, outputs, name):
+    self.model = Model(inputs=inputs, outputs=outputs, name=name)
+
+  def input(self, shape, batch_size=None, dtype=None, sparse=False, tensor=None,
+            **kwargs):
+    """
+      Input Layer
+    """
+    return Input(
+      shape=shape,
+      batch_size=batch_size,
+      dtype=dtype,
+      sparse=sparse,
+      tensor=tensor,
+      name=f"Input",
+      **kwargs
+    )
 
   def repeat(self, func, times, *args, **kwargs):
     """
@@ -61,21 +86,6 @@ class AdvNet(NetWork):
       return x
 
     return _func
-
-  def input(self, shape, batch_size=None, dtype=None, sparse=False, tensor=None,
-            **kwargs):
-    """
-      Input Layer
-    """
-    return Input(
-      shape=shape,
-      batch_size=batch_size,
-      dtype=dtype,
-      sparse=sparse,
-      tensor=tensor,
-      name=f"Input",
-      **kwargs
-    )
 
   def reshape(self, x, target_shape, **kwargs):
     """

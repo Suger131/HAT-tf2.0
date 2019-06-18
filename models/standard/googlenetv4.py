@@ -6,10 +6,7 @@
     Non-trainable params:   62,336
 """
 
-# pylint: disable=no-name-in-module
-# pylint: disable=wildcard-import
 
-from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
 
 
@@ -61,7 +58,7 @@ class googlenetv4(AdvNet):
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='googlenetv4')
+    self.Model(inputs=x_in, outputs=x, name='googlenetv4')
 
   def _Stem(self, x_in):
     

@@ -7,10 +7,7 @@
     Non-trainable params:   24,832
 """
 
-# pylint: disable=no-name-in-module
-# pylint: disable=wildcard-import
 
-from tensorflow.python.keras.models import Model
 from hat.models.advance import AdvNet
 
 
@@ -74,7 +71,7 @@ class vss(AdvNet):
 
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.model = Model(inputs=x_in, outputs=x, name='lsg')
+    self.Model(inputs=x_in, outputs=x, name='lsg')
 
   def conv_s(self, x_in, filters, kernel_size=3):
     
