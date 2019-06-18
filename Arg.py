@@ -2,13 +2,14 @@
 # pylint: disable=no-member
 # pylint: disable=wildcard-import
 # pylint: disable=attribute-defined-outside-init
+# pylint: disable=bare-except
+# pylint: disable=unused-argument
+# pylint: disable=redefined-outer-name
+# pylint: disable=protected-access
 
 import os
 
 import tensorflow as tf
-from tensorflow.python.keras.models import load_model
-from tensorflow.python.keras.callbacks import TensorBoard
-from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 # tf2 显存管理
 # from tensorflow.python.framework.config import (set_gpu_per_process_memory_fraction,
 #                                                 set_gpu_per_process_memory_growth)
@@ -20,6 +21,9 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
+from tensorflow.python.keras.models import load_model
+from tensorflow.python.keras.callbacks import TensorBoard
+from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 
 from hat.utils import *
 from hat.datasets import *
@@ -189,7 +193,10 @@ class Args(object):
 
     # get dataset object
     call_dataset = globals().get(self.DATASETS_NAME)
-    callable(call_dataset) and self._Log(self.DATASETS_NAME, _T='Loading Dataset:') or self._error(self.DATASETS_NAME, 'Not in Datasets:')
+    if callable(call_dataset):
+      self._Log(self.DATASETS_NAME, _T='Loading Dataset:')
+    else:
+      self._error(self.DATASETS_NAME, 'Not in Datasets:')
     self.DATASET = call_dataset()
     _dataset = self.DATASET.ginfo()
     self._get_args(_dataset[0])
