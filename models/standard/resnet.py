@@ -1,11 +1,53 @@
-'''
+"""
   ResNet 系列
   
   本模型默认总参数量[参考基准：cifar10]：
+
+    【resnet50】
     Total params:           25,631,362
     Trainable params:       25,585,922
     Non-trainable params:   45,440
-'''
+    -------------------------------------------------
+    【resnet101】
+    Total params:           44,701,826
+    Trainable params:       44,604,162
+    Non-trainable params:   97,664
+    ------------------------------------------------- 
+    【resnet152】
+    Total params:           60,414,594
+    Trainable params:       60,270,850
+    Non-trainable params:   143,744
+    -------------------------------------------------
+   【resnetse50】
+    Total params:           28,162,354
+    Trainable params:       28,116,914
+    Non-trainable params:   45,440
+    -------------------------------------------------
+   【resnetse101】
+    Total params:           49,479,538
+    Trainable params:       49,381,874
+    Non-trainable params:   97,664
+    -------------------------------------------------
+   【resnetse152】
+    Total params:           67,043,634
+    Trainable params:       66,899,890
+    Non-trainable params:   143,744
+    -------------------------------------------------
+   【resnext50】
+    Total params:           25,125,890
+    Trainable params:       25,065,346
+    Non-trainable params:   60,544
+    -------------------------------------------------
+   【resnext101】
+    Total params:           44,379,138
+    Trainable params:       44,248,962
+    Non-trainable params:   130,176
+    -------------------------------------------------
+   【resnext152】
+    Total params:           60,244,994
+    Trainable params:       60,053,378
+    Non-trainable params:   191,616
+"""
 
 
 from hat.models.advance import AdvNet
