@@ -12,6 +12,9 @@ class Dataset(object):
 
   def __init__(self, *args, **kwargs):
 
+    self.INPUT_SHAPE = ()
+    self.NUM_CLASSES = 0
+
     self._list = ['mission', 'NUM_TRAIN', 'NUM_TEST', 'NUM_VAL', 'NUM_CLASSES', 'INPUT_SHAPE']
     self._dict = {}
     self._info_list = ['NUM_TRAIN', 'NUM_TEST', 'NUM_VAL', 'DATAINFO']
