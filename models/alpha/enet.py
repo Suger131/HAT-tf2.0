@@ -4,8 +4,40 @@
 
 # pylint: disable=no-name-in-module
 
+import math
 from tensorflow.python.keras import backend as K
 from hat.models.advance import AdvNet, ENCI, ENDI
+
+
+# method
+def round_filters(filters, width_coefficient, depth_divisor, min_depth):
+  """Round number of filters based on depth multiplier."""
+  orig_f = filters
+  multiplier = width_coefficient
+  divisor = depth_divisor
+  min_depth = min_depth
+
+  if not multiplier:
+    return filters
+
+  filters *= multiplier
+  min_depth = min_depth or divisor
+  new_filters = max(min_depth, int(filters + divisor / 2) // divisor * divisor)
+  # Make sure that round down does not go down by more than 10%.
+  if new_filters < 0.9 * filters:
+    new_filters += divisor
+
+  return int(new_filters)
+
+
+def round_repeats(repeats, depth_coefficient):
+  """Round number of filters based on depth multiplier."""
+  multiplier = depth_coefficient
+
+  if not multiplier:
+    return repeats
+
+  return int(math.ceil(multiplier * repeats))
 
 
 class enet(AdvNet):
@@ -21,7 +53,6 @@ class enet(AdvNet):
     self.DROP_CONNECT = 0
     self.D = 0.2
     self.SE_RATE = 4
-    self.MB_INDX = [0 , 1 , 2 , 3 , 4  , 5  , 6  ]
     self.MB_CONV = [16, 24, 40, 80, 112, 192, 320]
     self.MB_SIZE = [3 , 3 , 5 , 3 , 5  , 5  , 3  ]
     self.MB_STEP = [1 , 2 , 2 , 1 , 2  , 2  , 1  ]
@@ -58,7 +89,6 @@ class enet(AdvNet):
 
     # blocks part
     blocks_list = list(zip(
-      self.MB_INDX,
       self.MB_CONV,
       self.MB_SIZE,
       self.MB_STEP,
@@ -66,7 +96,7 @@ class enet(AdvNet):
       self.MB_EXPD))
     drop_connect_rate_per_block = self.DROP_CONNECT / float(sum(self.MB_TIME))
     
-    for block_idx, filters, kernel_size, strides, n, expand_ratio in blocks_list:
+    for block_idx, (filters, kernel_size, strides, n, expand_ratio) in enumerate(blocks_list):
       x = self.MBConv(
         n, x, filters,
         kernel_size, strides,
