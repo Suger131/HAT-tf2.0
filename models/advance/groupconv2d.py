@@ -19,24 +19,30 @@ from tensorflow.python.ops import array_ops, nn, nn_ops
 class GroupConv(Layer):
   """
     Group Convolution 2D
+
+    Argument:
+      groups: An int. The numbers of groups. Make sure [Channels] can be disdivided by groups.
+      filters: An int. The numbers of groups filters. 0 means filters=channels//groups.(default 0)
+      kernel_size: An int or tuple/list of 2 int, specifying the length of the convolution window.(default 1)
+      others: The same as normal Convolution.
   """
-  def __init__(self, groups, filters, kernel_size, strides=1, padding='valid',
+  def __init__(self, groups, filters=0, kernel_size=1, strides=1, padding='valid',
                data_format=None, dilation_rate=1, activation=None,
                use_bias=True, kernel_initializer='glorot_uniform',
                bias_initializer='zeros', kernel_regularizer=None,
                bias_regularizer=None, kernel_constraint=None,
-               bias_constraint=None, split=True, **kwargs):
+               bias_constraint=None, **kwargs):
     super().__init__(**kwargs)
-    rank = 2
+    # rank = 2
     self.groups = groups
     self.filters = filters
     self.kernel_size = conv_utils.normalize_tuple(
-        kernel_size, rank, 'kernel_size')
-    self.strides = conv_utils.normalize_tuple(strides, rank, 'strides')
+        kernel_size, 2, 'kernel_size')
+    self.strides = conv_utils.normalize_tuple(strides, 3, 'strides')
     self.padding = conv_utils.normalize_padding(padding)
     self.data_format = conv_utils.normalize_data_format(data_format)
     self.dilation_rate = conv_utils.normalize_tuple(
-        dilation_rate, rank, 'dilation_rate')
+        dilation_rate, 3, 'dilation_rate')
     self.activation = activations.get(activation)
     self.use_bias = use_bias
     self.kernel_initializer = initializers.get(kernel_initializer)
@@ -45,7 +51,6 @@ class GroupConv(Layer):
     self.bias_regularizer = regularizers.get(bias_regularizer)
     self.kernel_constraint = constraints.get(kernel_constraint)
     self.bias_constraint = constraints.get(bias_constraint)
-    self.split = split
 
   def build(self, input_shape):
     input_shape = tensor_shape.TensorShape(input_shape)
@@ -56,65 +61,36 @@ class GroupConv(Layer):
     if input_shape.dims[channel_axis].value is None:
       raise ValueError('The channel dimension of the inputs '
                        'should be defined. Found `None`.')
+    
     input_dim = int(input_shape[channel_axis])
-    kernel_shape = self.kernel_size + (input_dim, self.filters)
+    assert not input_dim % self.groups
+    input_dim_i = input_dim // self.groups
+    output_dim_i = self.filters or input_dim_i
+    output_dim = output_dim_i * self.groups
+    
+    kernel_shape = self.kernel_size + (self.groups, input_dim_i, self.filters)
+    biases_shape = (output_dim,)
 
     self.kernel = self.add_weight(
-        name='kernel',
-        shape=kernel_shape,
-        initializer=self.kernel_initializer,
-        regularizer=self.kernel_regularizer,
-        constraint=self.kernel_constraint,
-        trainable=True,
-        dtype=self.dtype)
+      name='kernel',
+      shape=kernel_shape,
+      initializer=self.kernel_initializer,
+      regularizer=self.kernel_regularizer,
+      constraint=self.kernel_constraint,
+      trainable=True,
+      dtype=self.dtype
+    )
     if self.use_bias:
-      self.bias = self.add_weight(
-          name='bias',
-          shape=(self.filters,),
-          initializer=self.bias_initializer,
-          regularizer=self.bias_regularizer,
-          constraint=self.bias_constraint,
-          trainable=True,
-          dtype=self.dtype)
+      self.biases = self.add_weight(
+        name='biases',
+        shape=biases_shape,
+        initializer=self.bias_initializer,
+        regularizer=self.bias_regularizer,
+        constraint=self.bias_constraint,
+        trainable=True,
+        dtype=self.dtype
+      )
     else:
       self.bias = None
-    self.input_spec = InputSpec(ndim=self.rank + 2,
-                                axes={channel_axis: input_dim})
-    if self.padding == 'causal':
-      op_padding = 'valid'
-    else:
-      op_padding = self.padding
-    # self._convolution_op = nn_ops.Convolution(
-    #     input_shape,
-    #     filter_shape=self.kernel.get_shape(),
-    #     dilation_rate=self.dilation_rate,
-    #     strides=self.strides,
-    #     padding=op_padding.upper(),
-    #     data_format=conv_utils.convert_data_format(self.data_format,
-    #                                                self.rank + 2))
     self._convolution_op = K.conv3d
     self.built = True
-
-  def call(self, inputs, **kwargs):
-    outputs = self._convolution_op(inputs, self.kernel)
-
-    if self.use_bias:
-      if self.data_format == 'channels_first':
-        # As of Mar 2017, direct addition is significantly slower than
-        # bias_add when computing gradients. To use bias_add, we collapse Z
-        # and Y into a single dimension to obtain a 4D input tensor.
-        outputs_shape = outputs.shape.as_list()
-        if outputs_shape[0] is None:
-          outputs_shape[0] = -1
-        outputs_4d = array_ops.reshape(outputs,
-                                       [outputs_shape[0], outputs_shape[1],
-                                        outputs_shape[2] * outputs_shape[3],
-                                        outputs_shape[4]])
-        outputs_4d = nn.bias_add(outputs_4d, self.bias, data_format='NCHW')
-        outputs = array_ops.reshape(outputs_4d, outputs_shape)
-      else:
-        outputs = nn.bias_add(outputs, self.bias, data_format='NHWC')
-
-    if self.activation is not None:
-      return self.activation(outputs)
-    return outputs
