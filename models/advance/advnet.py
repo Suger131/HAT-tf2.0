@@ -397,6 +397,45 @@ class AdvNet(NetWork):
     )(x)
     return x
 
+  def Gconv(self, x, groups:int, filters=0, kernel_size=1, strides=1, padding='same',
+            data_format=None, activation='relu', use_bias=True, use_group_bias=False,
+            kernel_initializer='glorot_uniform', bias_initializer='zeros',
+            kernel_regularizer=None, bias_regularizer=None, kernel_constraint=None,
+            bias_constraint=None, name='', **kwargs):
+    """
+      GroupConv2D Layer
+    """
+    if type(kernel_size) == int:
+      kernel_size = (kernel_size,) * 2
+    if type(strides) == int:
+      strides = (strides,) * 2
+    if not name:
+      name = ''.join([
+        f"GroupConv2D_{Counter('conv')}",
+        f"_K{'%sx%s' % kernel_size}",
+        f"_S{'%sx%s' % strides}"
+      ])
+    x = GroupConv2D(
+      groups=groups,
+      filters=filters,
+      kernel_size=kernel_size,
+      strides=strides,
+      padding=padding,
+      data_format=data_format,
+      activation=activation,
+      use_bias=use_bias,
+      use_group_bias=use_group_bias,
+      kernel_initializer=kernel_initializer,
+      bias_initializer=bias_initializer,
+      kernel_regularizer=kernel_regularizer,
+      bias_regularizer=bias_regularizer,
+      kernel_constraint=kernel_constraint,
+      bias_constraint=bias_constraint,
+      name=name,
+      **kwargs
+    )(x)
+    return x
+
   def bn(self, x, axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True,
          beta_initializer='zeros', gamma_initializer='ones', moving_mean_initializer='zeros',
          moving_variance_initializer='ones', beta_regularizer=None, gamma_regularizer=None,

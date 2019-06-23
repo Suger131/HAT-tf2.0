@@ -5,18 +5,16 @@
 # pylint: disable=useless-super-delegation
 # pylint: disable=unused-variable
 
-import tensorflow as tf
 from tensorflow.python.framework import tensor_shape
+from tensorflow.python.keras import activations
 from tensorflow.python.keras import backend as K
-from tensorflow.python.keras import (activations, constraints, initializers,
-                                     regularizers)
-from tensorflow.python.keras.layers import (Conv1D, InputSpec, Layer,
-                                            SeparableConv1D, Reshape)
+from tensorflow.python.keras import constraints, initializers, regularizers
+from tensorflow.python.keras.layers import Layer
 from tensorflow.python.keras.utils import conv_utils
-from tensorflow.python.ops import array_ops, nn, nn_ops
+from tensorflow.python.ops import array_ops, nn
 
 
-class GroupConv(Layer):
+class GroupConv2D(Layer):
   """
     Group Convolution 2D
 
@@ -26,7 +24,7 @@ class GroupConv(Layer):
       kernel_size: An int or tuple/list of 2 int, specifying the length of the convolution window.(default 1)
       others: The same as normal Convolution.
   """
-  def __init__(self, groups, filters=0, kernel_size=1, strides=1, padding='valid',
+  def __init__(self, groups:int, filters=0, kernel_size=1, strides=1, padding='valid',
                data_format=None, activation=None, use_bias=True, use_group_bias=False,
                kernel_initializer='glorot_uniform', bias_initializer='zeros',
                kernel_regularizer=None, bias_regularizer=None, kernel_constraint=None,
@@ -133,7 +131,6 @@ class GroupConv(Layer):
     # Group biases adding
     # NOTE: transpose the G & Ci, and add groups biases, then transpose back
     if self.use_group_bias:
-      print('use g b')
       if self.data_format == 'channels_first':
         outputs = K.permute_dimensions(outputs, [0, 4, 2, 3, 1])
         t_shape = outputs.shape.as_list()
@@ -152,7 +149,6 @@ class GroupConv(Layer):
         outputs = K.permute_dimensions(outputs, [0, 1, 2, 4, 3])
 
     # Processing shape (back)
-    print(outputs.shape, self.kernel.shape, self.strides)
     _shape = inputs.shape.as_list()
     if _shape[0] is None:
       _shape[0] = -1 # batch
@@ -221,10 +217,10 @@ class GroupConv(Layer):
 # test
 if __name__ == '__main__':
   x = K.placeholder((None, 8, 8, 16))
-  print(GroupConv(4)(x))
-  # print(GroupConv(4, kernel_size=3, activation='relu')(x))
-  # print(GroupConv(4, kernel_size=3, strides=2, activation='relu')(x))
-  # print(GroupConv(4, kernel_size=3, padding='same', activation='relu')(x))
-  # print(GroupConv(4, 8, kernel_size=3, padding='same', activation='relu')(x))
-  print(GroupConv(8, use_bias=False)(x))
-  print(GroupConv(8, use_bias=False, use_group_bias=True)(x))
+  print(GroupConv2D(4)(x))
+  # print(GroupConv2D(4, kernel_size=3, activation='relu')(x))
+  # print(GroupConv2D(4, kernel_size=3, strides=2, activation='relu')(x))
+  # print(GroupConv2D(4, kernel_size=3, padding='same', activation='relu')(x))
+  # print(GroupConv2D(4, 8, kernel_size=3, padding='same', activation='relu')(x))
+  print(GroupConv2D(8, use_bias=False)(x))
+  print(GroupConv2D(8, use_bias=False, use_group_bias=True)(x))
