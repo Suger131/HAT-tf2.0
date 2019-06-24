@@ -3,6 +3,7 @@
 
 import tensorflow as tf
 from tensorflow.python.keras.utils import multi_gpu_model
+from tensorflow.python.keras.models import load_model
 
 __all__ = [
   'NetWork'
@@ -23,10 +24,11 @@ class NetWork(object):
     # DATAINFO
     self.INPUT_SHAPE = ()
     self.NUM_CLASSES = 0
-    # GPUINFO
+    # XGPUINFO
     self.XGPU = False
     self.NGPU = 0
     
+    self.LOAD = False
     self.model = None
 
     self._kwargs = kwargs
@@ -35,6 +37,7 @@ class NetWork(object):
     self._dict = {}
     self._check_kwargs()
 
+    # catch argument
     self._built = True
     self.BATCH_SIZE = 0
     self.EPOCHS = 0
@@ -43,13 +46,6 @@ class NetWork(object):
     self.METRICS = []
     self.args()
     self._built = False
-
-    if self.XGPU:
-      with tf.device('/cpu:0'):
-        self.build_model()
-      self.parallel_model = multi_gpu_model(self.model, gpus=self.NGPU)
-    else:
-      self.build_model()
 
   # built-in method
 
@@ -70,8 +66,9 @@ class NetWork(object):
   def _check_kwargs(self):
     if 'DATAINFO' in self._kwargs:
       self.__dict__ = {**self.__dict__, **self._kwargs.pop('DATAINFO')}
-    if 'GPUINFO' in self._kwargs:
-      self.__dict__ = {**self.__dict__, **self._kwargs.pop('GPUINFO')}
+    if 'XGPUINFO' in self._kwargs:
+      self.XGPU = True
+      self.__dict__ = {**self.__dict__, **self._kwargs.pop('XGPUINFO')}
     self.__dict__ = {**self.__dict__, **self._kwargs}
 
   def args(self):
@@ -93,6 +90,29 @@ class NetWork(object):
   def ginfo(self):
     return self._default_dict, self._dict
 
+  def build(self, filepath=''):
+    """
+      Build model
+
+      Argument:
+        filepath: Str. If not '', use this file path to load model.
+    """
+    if filepath:
+      self.LOAD = True
+    if self.XGPU:
+      with tf.device('/cpu:0'):
+        if filepath:
+          self.model = load_model(filepath, compile=True)
+        else:
+          self.build_model()
+      try:
+        self.parallel_model = multi_gpu_model(self.model, gpus=self.NGPU)
+      except:
+        print(f'\n[WARNING] XGPU Failed. Check out the Numbers of GPU(NGPU), got {self.NGPU} \n')
+        self.XGPU = False
+    else:
+      self.build_model()
+
   def compile(self,
               optimizer,
               loss=None,
@@ -106,19 +126,7 @@ class NetWork(object):
     """
       Get compile function
     """
-    if self.XGPU:
-      self.parallel_model.compile(
-        optimizer=optimizer,
-        loss=loss,
-        metrics=metrics,
-        loss_weights=loss_weights,
-        sample_weight_mode=sample_weight_mode,
-        weighted_metrics=weighted_metrics,
-        target_tensors=target_tensors,
-        distribute=distribute,
-        **kwargs
-      )
-    else:
+    if not self.LOAD:
       self.model.compile(
         optimizer=optimizer,
         loss=loss,
@@ -130,6 +138,18 @@ class NetWork(object):
         distribute=distribute,
         **kwargs
       )
+    # if self.XGPU:
+    #   self.parallel_model.compile(
+    #     optimizer=optimizer,
+    #     loss=loss,
+    #     metrics=metrics,
+    #     loss_weights=loss_weights,
+    #     sample_weight_mode=sample_weight_mode,
+    #     weighted_metrics=weighted_metrics,
+    #     target_tensors=target_tensors,
+    #     distribute=distribute,
+    #     **kwargs
+    #   )
 
   def fit(self,
           x=None,

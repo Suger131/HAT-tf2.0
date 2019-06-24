@@ -36,5 +36,5 @@ class mlp(AdvNet):
 if __name__ == "__main__":
   # mod = mlp(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
   mod = mlp(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10},
-            GPUINFO={'XGPU': True, 'NGPU': 2})
+            XGPUINFO={'NGPU': 2})
   mod.summary()

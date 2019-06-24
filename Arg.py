@@ -48,6 +48,9 @@ class Args(object):
     self.IS_SAVE = True
     self.IS_GIMAGE = True
     self.IS_ENHANCE = False
+    self.XGPU_MODE = False
+    self.XGPU_NUM = 0
+    self.XGPU_NMAX = 4
     self.DATASETS_NAME = ''
     self.DATASET = None
     self.MODELS_NAME = ''
@@ -133,6 +136,7 @@ class Args(object):
           [['bat', 'batch_size'], 'BATCH_SIZE'],
           [['mode'             ], 'RUN_MODE'],
           [['-L' , 'lib'       ], 'MODEL_LIB'],
+          [['-X' , 'ngpu'      ], 'XGPU_NUM'],
         ]
         _check_box = [self._check_args(temp[0], *j, temp[1]) for j in _check_list]
         if not any(_check_box):
@@ -145,6 +149,7 @@ class Args(object):
           [['-T' , 'train-only'  ], 'RUN_MODE'  , 'train'],
           [['-V' , 'val-only'    ], 'RUN_MODE'  , 'val'],
           [['-E' , 'data-enhance'], 'IS_ENHANCE', True],
+          [['-X' , 'xgpu'  ], 'XGPU_MODE' , True],
         ]
         _check_box = [self._check_args(i, *j) for j in _check_list]
         if not any(_check_box):
@@ -159,6 +164,18 @@ class Args(object):
       self.MODEL_LIB = 'S'
     models = MLib(self.MODEL_LIB)
     _lib_name = NLib(self.MODEL_LIB)
+
+    # XGPU setting
+    if self.XGPU_NUM:
+      self.XGPU_MODE = True
+      if self.XGPU_NUM > self.XGPU_NMAX:
+        self._Log(f"Max NGPU {self.XGPU_NMAX}, but got {self.XGPU_NUM}. Use the Max NGPU.", _A='Warning')
+        self.XGPU_NUM = self.XGPU_NMAX
+    else:
+      self.XGPU_NUM = self.XGPU_NMAX
+    self.XGPUINFO = {
+      'NGPU': self.XGPU_NUM,
+    }
 
     # load user datasets & models (don't cover)
     self._get_args(self.USER_DICT_N)
@@ -212,28 +229,31 @@ class Args(object):
       self._Log(self.MODELS_NAME, _T='Loading Model:')
     except:
       self._error(self.MODELS_NAME, 'Not in Models:')
-    self.MODEL = call_model(DATAINFO=self.DATAINFO)
+    if self.XGPU_MODE:
+      self.MODEL = call_model(DATAINFO=self.DATAINFO, XGPUINFO=self.XGPUINFO)
+    else:
+      self.MODEL = call_model(DATAINFO=self.DATAINFO)
     _model = self.MODEL.ginfo()
     self._get_args(_model[0])
     self._paramc.extend(_model)
-    self._Log(self.MODELS_NAME, _T='Loaded Model:')
-    self._Log(_lib_name, _T='Model Lib:')
-
+    
     # load user args (don't cover)
     self._get_args(self.USER_DICT)
 
-    # check save
+    self.MODEL.build(self.LOAD_NAME if self.SAVE_EXIST else '')
+    
     if self.SAVE_EXIST:
-      self._Log(self.LOAD_NAME ,_T='Loading h5:')
-      self.MODEL.model = load_model(self.LOAD_NAME)
-      self._Log(self.LOAD_NAME ,_T='Loaded h5:')
+      # h5 include compile
+      self._Log(self.LOAD_NAME, _T='Load h5:')
     else:
       # compile model
-      self.MODEL.model.compile(
+      self.MODEL.compile(
         optimizer=self.OPT,
         loss=self.LOSS_MODE,
         metrics=self.METRICS
       )
+    self._Log(self.MODELS_NAME, _T='Loaded Model:')
+    self._Log(_lib_name, _T='Model Lib:')
 
     # get configer
     self._config = Config(f"{self.SAVE_DIR}/config")
@@ -269,6 +289,8 @@ class Args(object):
       self._Log(self.LOG_DIR + '\\', _T='logs dir:')
     if self.IS_ENHANCE:
       self._Log('Enhance data.')
+    if self.XGPU_MODE:
+      self._Log('Muti-GPUs.')
 
   def _fit(self, *args, **kwargs):
     # NOTE: if use the `histogram_freq`, then raise
@@ -283,24 +305,21 @@ class Args(object):
     for i in range(self.EPOCHS):
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
       if self.IS_ENHANCE:
-        _train = self.MODEL.model.fit_generator(
+        _train = self.MODEL.fit_generator(
           self._datagen(),
-          # steps_per_epoch=self.DATASET.NUM_TRAIN / self.BATCH_SIZE,
           epochs=1, #self.EPOCHS,
-          # initial_epoch=self._GLOBAL_EPOCH - self.EPOCHS + i,
           callbacks=[tensorboard_callback]
         )
       else:
-        _train = self.MODEL.model.fit(
+        _train = self.MODEL.fit(
           self.DATASET.train_x,
           self.DATASET.train_y,
           epochs=1, #self.EPOCHS,
           batch_size=self.BATCH_SIZE,
-          # initial_epoch=self._GLOBAL_EPOCH - self.EPOCHS + i,
           callbacks=[tensorboard_callback]
         )
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
-      _val = self.MODEL.model.evaluate(
+      _val = self.MODEL.evaluate(
           self.DATASET.val_x,
           self.DATASET.val_y,
           batch_size=self.BATCH_SIZE)
@@ -342,7 +361,7 @@ class Args(object):
 
     if not self.IS_VAL: return
 
-    _, result = self._timer.timer('val', self.MODEL.model.evaluate,
+    _, result = self._timer.timer('val', self.MODEL.evaluate,
                                   self.DATASET.val_x,
                                   self.DATASET.val_y,
                                   batch_size=self.BATCH_SIZE)
@@ -358,7 +377,7 @@ class Args(object):
 
     if not self.IS_SAVE: return
 
-    self.MODEL.model.save(self.SAVE_NAME)
+    self.MODEL.save(self.SAVE_NAME)
 
     self._Log(self.SAVE_NAME, _T='Successfully save model:')
 
@@ -378,13 +397,17 @@ class Args(object):
   
   def user(self):
     '''user train args'''
-    self.USER_DICT_N = {'DATASETS_NAME': 'mnist',
-                        'MODELS_NAME': 'mlp'}
-    self.USER_DICT = {'BATCH_SIZE': 128,
-                      'EPOCHS': 5,
-                      'OPT': 'adam',
-                      'LOSS_MODE': 'sparse_categorical_crossentropy',
-                      'METRICS' : ['accuracy']}
+    self.USER_DICT_N = {
+      'DATASETS_NAME': 'mnist',
+      'MODELS_NAME': 'mlp'
+    }
+    self.USER_DICT = {
+      'BATCH_SIZE': 128,
+      'EPOCHS': 5,
+      'OPT': 'adam',
+      'LOSS_MODE': 'sparse_categorical_crossentropy',
+      'METRICS': ['accuracy']
+    }
 
   def run(self):
 
