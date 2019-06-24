@@ -102,7 +102,7 @@ class NetWork(object):
     if self.XGPU:
       with tf.device('/cpu:0'):
         if filepath:
-          self.model = load_model(filepath, compile=True)
+          self.model = load_model(filepath)
         else:
           self.build_model()
       try:
@@ -111,7 +111,10 @@ class NetWork(object):
         print(f'\n[WARNING] XGPU Failed. Check out the Numbers of GPU(NGPU), got {self.NGPU} \n')
         self.XGPU = False
     else:
-      self.build_model()
+      if filepath:
+        self.model = load_model(filepath)
+      else:
+        self.build_model()
 
   def compile(self,
               optimizer,
@@ -126,18 +129,17 @@ class NetWork(object):
     """
       Get compile function
     """
-    if not self.LOAD:
-      self.model.compile(
-        optimizer=optimizer,
-        loss=loss,
-        metrics=metrics,
-        loss_weights=loss_weights,
-        sample_weight_mode=sample_weight_mode,
-        weighted_metrics=weighted_metrics,
-        target_tensors=target_tensors,
-        distribute=distribute,
-        **kwargs
-      )
+    self.model.compile(
+      optimizer=optimizer,
+      loss=loss,
+      metrics=metrics,
+      loss_weights=loss_weights,
+      sample_weight_mode=sample_weight_mode,
+      weighted_metrics=weighted_metrics,
+      target_tensors=target_tensors,
+      distribute=distribute,
+      **kwargs
+    )
     # if self.XGPU:
     #   self.parallel_model.compile(
     #     optimizer=optimizer,
