@@ -24,7 +24,6 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
-from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 
@@ -136,7 +135,7 @@ class Args(object):
           [['bat', 'batch_size'], 'BATCH_SIZE'],
           [['mode'             ], 'RUN_MODE'],
           [['-L' , 'lib'       ], 'MODEL_LIB'],
-          [['-X' , 'ngpu'      ], 'XGPU_NUM'],
+          [['-X' , 'xgpu'      ], 'XGPU_NUM'],
         ]
         _check_box = [self._check_args(temp[0], *j, temp[1]) for j in _check_list]
         if not any(_check_box):
@@ -149,7 +148,7 @@ class Args(object):
           [['-T' , 'train-only'  ], 'RUN_MODE'  , 'train'],
           [['-V' , 'val-only'    ], 'RUN_MODE'  , 'val'],
           [['-E' , 'data-enhance'], 'IS_ENHANCE', True],
-          [['-X' , 'xgpu'  ], 'XGPU_MODE' , True],
+          [['-X' , 'xgpu'        ], 'XGPU_MODE' , True],
         ]
         _check_box = [self._check_args(i, *j) for j in _check_list]
         if not any(_check_box):
@@ -159,7 +158,7 @@ class Args(object):
 
   def _envs_processing(self):
 
-    # set models lib
+    # models lib setting
     if not self.MODEL_LIB:
       self.MODEL_LIB = 'S'
     models = MLib(self.MODEL_LIB)
@@ -177,12 +176,15 @@ class Args(object):
       'NGPU': self.XGPU_NUM,
     }
 
-    # load user datasets & models (don't cover)
+    # load user datasets & models (not cover)
     self._get_args(self.USER_DICT_N)
 
     # dir args
     self.SAVE_DIR = f'logs/{_lib_name}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
     self.H5_NAME = f'{self.SAVE_DIR}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
+    if self.XGPU_MODE:
+      self.SAVE_DIR += '_xgpu'
+      self.H5_NAME += '_xgpu'
     
     # make dir
     self._dir_list.extend([self.SAVE_DIR])
@@ -191,16 +193,18 @@ class Args(object):
         os.makedirs(i)
 
     # check save exist
-    self.SAVE_EXIST = True
-    self.SAVE_TIME = 0
-    if not os.path.exists(f'{self.H5_NAME}_{self.SAVE_TIME}.h5'):
-      self.SAVE_EXIST = False
-    else:
-      while os.path.exists(f'{self.H5_NAME}_{self.SAVE_TIME}.h5'):
+    self.SAVE_TIME = 1
+    while True:
+      if os.path.exists(f'{self.H5_NAME}_{self.SAVE_TIME}.h5'):
         self.SAVE_TIME += 1
-      self.LOAD_NAME = f'{self.H5_NAME}_{self.SAVE_TIME-1}.h5'
-    self.SAVE_NAME = f'{self.H5_NAME}_{self.SAVE_TIME}.h5'
-
+      else:
+        if self.SAVE_TIME == 1:
+          self.LOAD_NAME = ''
+        else:
+          self.LOAD_NAME = f'{self.H5_NAME}_{self.SAVE_TIME-1}.h5'
+        self.SAVE_NAME = f'{self.H5_NAME}_{self.SAVE_TIME}.h5'
+        break
+    
     # NOTE: Windows Bug
     # a Windows-specific bug in TensorFlow.
     # The fix is to use the platform-appropriate path separators in log_dir
@@ -240,18 +244,18 @@ class Args(object):
     # load user args (don't cover)
     self._get_args(self.USER_DICT)
 
-    self.MODEL.build(self.LOAD_NAME if self.SAVE_EXIST else '')
+    self.MODEL.build(self.LOAD_NAME)
     
-    if self.SAVE_EXIST:
-      # h5 include compile
+    # compile model
+    if self.LOAD_NAME:
+      # NOTE: normally, h5 include compile.
+      # but in XGPU mode, h5 doesn't include compile
       self._Log(self.LOAD_NAME, _T='Load h5:')
-    else:
-      # compile model
-      self.MODEL.compile(
-        optimizer=self.OPT,
-        loss=self.LOSS_MODE,
-        metrics=self.METRICS
-      )
+    self.MODEL.compile(
+      optimizer=self.OPT,
+      loss=self.LOSS_MODE,
+      metrics=self.METRICS
+    )
     self._Log(self.MODELS_NAME, _T='Loaded Model:')
     self._Log(_lib_name, _T='Model Lib:')
 
@@ -283,9 +287,9 @@ class Args(object):
       self._Log(self.BATCH_SIZE, _T='Batch size:')
       self._Log('', _L=['Model Optimizer exist.', f'Using Optimizer: {self.OPT}'], _B=self.OPT != None)
       if self.RUN_MODE == 'val':
-        self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.SAVE_EXIST)
+        self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.LOAD_NAME)
       else:
-        self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.SAVE_EXIST)
+        self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.LOAD_NAME)
       self._Log(self.LOG_DIR + '\\', _T='logs dir:')
     if self.IS_ENHANCE:
       self._Log('Enhance data.')
