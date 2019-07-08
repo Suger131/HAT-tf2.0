@@ -63,6 +63,7 @@ class Args(object):
     self.METRICS = []
     self.LIB = None
     self.LIB_NAME = ''
+    self.ADDITION = ''
     # build
     self.IN_ARGS = input('=>').split(' ')
     self._Log = Log(log_dir='logs/logger')
@@ -131,15 +132,23 @@ class Args(object):
       elif '=' in i:
         temp = i.split('=')
         _check_list = [
-          [['dat', 'datasets'  ], 'DATASETS_NAME'],
-          [['mod', 'models'    ], 'MODELS_NAME'],
-          [['ep' , 'epochs'    ], 'EPOCHS'],
-          [['bat', 'batch_size'], 'BATCH_SIZE'],
-          [['mode'             ], 'RUN_MODE'],
-          [['-L' , 'lib'       ], 'MODEL_LIB'],
-          [['-X' , 'xgpu'      ], 'XGPU_NUM'],
+          [['dat', 'datasets'     ], 'DATASETS_NAME'],
+          [['mod', 'models'       ], 'MODELS_NAME'],
+          [['ep' , 'epochs'       ], 'EPOCHS'],
+          [['bat', 'batch_size'   ], 'BATCH_SIZE'],
+          [['mode','runmode'      ], 'RUN_MODE'],
+          [['-L' , 'lib'          ], 'MODEL_LIB'],
+          [['-X',  'xgpu'         ], 'XGPU_NUM'],
+          [['-A', 'add','addition'], 'ADDITION', 'force_str'],
         ]
-        _check_box = [self._check_args(temp[0], *j, temp[1]) for j in _check_list]
+        _check_box = [
+          self._check_args(
+            temp[0],
+            j[0],
+            j[1],
+            temp[1],
+            force_str=True if 'force_str' in j else False)
+          for j in _check_list]
         if not any(_check_box):
           self._warning_args.append(temp[0])
           
@@ -182,12 +191,14 @@ class Args(object):
     self._get_args(self.USER_DICT_N)
 
     # dir args
-    self.SAVE_DIR = f'logs/{self.LIB_NAME}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
-    self.H5_NAME = f'{self.SAVE_DIR}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
+    self.SAVE_DIR = f'logs/{self.LIB_NAME}/{self.MODELS_NAME}_{self.DATASETS_NAME}'
     if self.XGPU_MODE:
       self.SAVE_DIR += '_xgpu'
-      self.H5_NAME += '_xgpu'
-    
+    # name addition setting
+    if self.ADDITION:
+      self.SAVE_DIR += self.ADDITION
+    self.H5_NAME = f'{self.SAVE_DIR}/save'
+
     # make dir
     self._dir_list.extend([self.SAVE_DIR])
     for i in self._dir_list:
@@ -298,10 +309,8 @@ class Args(object):
     # AttributeError: 'NoneType' object has no attribute 'fetches'
     # unknown bug
     self.LOG_DIR = os.path.join(
-      f'logs',
-      f'{self.LIB_NAME}',
-      f'{self.DATASETS_NAME}_{self.MODELS_NAME}',
-      f'{self.DATASETS_NAME}_{self.MODELS_NAME}_{self.SAVE_TIME}',)
+      self.SAVE_DIR,
+      f'TB_{self.SAVE_TIME}',)
     self._Log(self.LOG_DIR + '\\', _T='logs dir:')
     tensorboard_callback = TensorBoard(log_dir=self.LOG_DIR,
                                        update_freq='batch',
