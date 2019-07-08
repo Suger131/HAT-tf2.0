@@ -1,5 +1,12 @@
 """
   Google Efficient Net B0
+  for ImageNet
+  Params: 5.3M
+
+  Total params: 5,330,564
+  Trainable params: 5,288,548
+  Non-trainable params: 42,016
+
 """
 
 # pylint: disable=no-name-in-module
