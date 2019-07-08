@@ -61,6 +61,8 @@ class Args(object):
     self.OPT = None
     self.LOSS_MODE = None
     self.METRICS = []
+    self.LIB = None
+    self.LIB_NAME = ''
     # build
     self.IN_ARGS = input('=>').split(' ')
     self._Log = Log(log_dir='logs/logger')
@@ -161,8 +163,8 @@ class Args(object):
     # models lib setting
     if not self.MODEL_LIB:
       self.MODEL_LIB = 'S'
-    models = MLib(self.MODEL_LIB)
-    _lib_name = NLib(self.MODEL_LIB)
+    self.LIB = MLib(self.MODEL_LIB)
+    self.LIB_NAME = NLib(self.MODEL_LIB)
 
     # XGPU setting
     if self.XGPU_NUM:
@@ -180,7 +182,7 @@ class Args(object):
     self._get_args(self.USER_DICT_N)
 
     # dir args
-    self.SAVE_DIR = f'logs/{_lib_name}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
+    self.SAVE_DIR = f'logs/{self.LIB_NAME}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
     self.H5_NAME = f'{self.SAVE_DIR}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
     if self.XGPU_MODE:
       self.SAVE_DIR += '_xgpu'
@@ -205,16 +207,6 @@ class Args(object):
         self.SAVE_NAME = f'{self.H5_NAME}_{self.SAVE_TIME}.h5'
         break
     
-    # NOTE: Windows Bug
-    # a Windows-specific bug in TensorFlow.
-    # The fix is to use the platform-appropriate path separators in log_dir
-    # rather than hard-coding forward slashes:
-    self.LOG_DIR = os.path.join(
-      f'logs',
-      f'{_lib_name}',
-      f'{self.DATASETS_NAME}_{self.MODELS_NAME}',
-      f'{self.DATASETS_NAME}_{self.MODELS_NAME}_{self.SAVE_TIME}',)
-
     # get dataset object
     call_dataset = globals().get(self.DATASETS_NAME)
     if callable(call_dataset):
@@ -229,7 +221,7 @@ class Args(object):
 
     # get model object
     try:
-      call_model = getattr(models, self.MODELS_NAME)
+      call_model = getattr(self.LIB, self.MODELS_NAME)
       self._Log(self.MODELS_NAME, _T='Loading Model:')
     except:
       self._error(self.MODELS_NAME, 'Not in Models:')
@@ -257,7 +249,7 @@ class Args(object):
       metrics=self.METRICS
     )
     self._Log(self.MODELS_NAME, _T='Loaded Model:')
-    self._Log(_lib_name, _T='Model Lib:')
+    self._Log(self.LIB_NAME, _T='Model Lib:')
 
     # get configer
     self._config = Config(f"{self.SAVE_DIR}/config")
@@ -290,18 +282,28 @@ class Args(object):
         self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.LOAD_NAME)
       else:
         self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.LOAD_NAME)
-      self._Log(self.LOG_DIR + '\\', _T='logs dir:')
+      
     if self.IS_ENHANCE:
       self._Log('Enhance data.')
     if self.XGPU_MODE:
       self._Log('Muti-GPUs.')
 
   def _fit(self, *args, **kwargs):
+    
+    # NOTE: Windows Bug
+    # a Windows-specific bug in TensorFlow.
+    # The fix is to use the platform-appropriate path separators in log_dir
+    # rather than hard-coding forward slashes:
     # NOTE: if use the `histogram_freq`, then raise
     # AttributeError: 'NoneType' object has no attribute 'fetches'
     # unknown bug
+    self.LOG_DIR = os.path.join(
+      f'logs',
+      f'{self.LIB_NAME}',
+      f'{self.DATASETS_NAME}_{self.MODELS_NAME}',
+      f'{self.DATASETS_NAME}_{self.MODELS_NAME}_{self.SAVE_TIME}',)
+    self._Log(self.LOG_DIR + '\\', _T='logs dir:')
     tensorboard_callback = TensorBoard(log_dir=self.LOG_DIR,
-                                      #  histogram_freq=1,
                                        update_freq='batch',
                                        write_graph=False,
                                        write_images=True)
