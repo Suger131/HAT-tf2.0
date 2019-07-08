@@ -123,8 +123,6 @@ class NetWork(object):
         self.parallel_model = multi_gpu_model(
           self.model,
           gpus=self.NGPU,
-          cpu_merge=True,
-          cpu_relocation=True
         )
       except ValueError:
         print(f'\n[WARNING] XGPU Failed. Check out the Numbers of GPU(NGPU), got {self.NGPU} \n')

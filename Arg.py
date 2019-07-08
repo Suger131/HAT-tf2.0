@@ -359,7 +359,8 @@ class Args(object):
       self.DATASET.train_x, 
       self.DATASET.train_y, 
       batch_size=self.BATCH_SIZE,
-      shuffle=True)
+      shuffle=True
+    )
 
   # public method
 
