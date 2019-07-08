@@ -28,8 +28,7 @@ class lenet(AdvNet):
     x_in = self.input(self.INPUT_SHAPE)
 
     # conv
-    x = x_in
-    x = self.conv(x, self.CONV[0], self.SIZE, activation='relu')
+    x = self.conv(x_in, self.CONV[0], self.SIZE, activation='relu')
     x = self.maxpool(x, self.POOL_SIZE, self.POOL_STEP)
     x = self.conv(x, self.CONV[1], self.SIZE, activation='relu')
     x = self.maxpool(x, self.POOL_SIZE, self.POOL_STEP)
@@ -40,11 +39,10 @@ class lenet(AdvNet):
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='lenet')
+    return self.Model(inputs=x_in, outputs=x, name='lenet')
 
 
 # test part
 if __name__ == "__main__":
-  mod = lenet(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = lenet(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

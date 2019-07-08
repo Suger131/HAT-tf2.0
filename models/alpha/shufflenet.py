@@ -1,9 +1,9 @@
 """
   Shuffle Net
   本模型默认总参数量[参考基准：car10]：
-    Total params:           36,497,146
-    Trainable params:       36,479,194
-    Non-trainable params:   17,952
+    Total params:           160,786
+    Trainable params:       155,666
+    Non-trainable params:   5,120
 """
 
 # pylint: disable=no-name-in-module
@@ -11,12 +11,14 @@
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import Lambda
 from hat.models.advance import AdvNet
+from hat.utils import Counter
 
 
 class shufflenet(AdvNet):
   """
     Shuffle Net
   """
+
   def args(self):
     self.HEAD_CONV = [24, 48]
     
@@ -25,7 +27,9 @@ class shufflenet(AdvNet):
     self.DROP = 0
 
   def build_model(self):
+    
     self.axis = -1
+    
     x_in = self.input(self.INPUT_SHAPE)
     
     x = self._head(x_in)
@@ -40,9 +44,10 @@ class shufflenet(AdvNet):
 
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='shufflenet')
+    return self.Model(inputs=x_in, outputs=x, name='shufflenet')
 
   def _head(self, x_in):
+    
     x = self.conv_bn(x_in, 24, 3, 2)
     x = self.conv_bn(x, 24, 3, padding='valid')
     x = self.conv_bn(x, 48, 3, 2, padding='valid')
@@ -50,6 +55,7 @@ class shufflenet(AdvNet):
     return x
 
   def stage(self, x_in, filters, n, crop=True):
+    
     n = n - 1
     x = self._block_d(x_in, filters, crop)
     x = self.repeat(self._block_c, n)(x)
@@ -99,16 +105,16 @@ class shufflenet(AdvNet):
 
   def _split(self, x_in):
     
-    _channels = K.int_shape(x_in)[self.axis]
-    _hc = _channels // 2
-    _side = Lambda(lambda z:z[:,:,:,0:_hc])(x_in)
-    _stem = Lambda(lambda z:z[:,:,:,_hc: ])(x_in)
+    count = Counter('split')
+    channels = K.int_shape(x_in)[self.axis]
+    hc = channels // 2
+    side = Lambda(lambda z:z[:,:,:,0:hc], name=f"Split_Side_{count}")(x_in)
+    stem = Lambda(lambda z:z[:,:,:,hc: ], name=f"Split_Stem_{count}")(x_in)
     
-    return _side, _stem
+    return side, stem
 
 
 # test part
 if __name__ == "__main__":
-  mod = shufflenet(DATAINFO={'INPUT_SHAPE': (300, 300, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = shufflenet(DATAINFO={'INPUT_SHAPE': (300, 300, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

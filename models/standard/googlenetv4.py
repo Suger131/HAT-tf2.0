@@ -58,7 +58,7 @@ class googlenetv4(AdvNet):
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='googlenetv4')
+    return self.Model(inputs=x_in, outputs=x, name='googlenetv4')
 
   def _Stem(self, x_in):
     
@@ -177,8 +177,5 @@ class googlenetv4(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = googlenetv4(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
-  # mod.model.compile('adam', 'sparse_categorical_crossentropy', metrics=['accuracy'])
-  # mod.model.save('googlenetv4.h5', include_optimizer=False)
+  mod = googlenetv4(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

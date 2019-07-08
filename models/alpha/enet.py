@@ -133,7 +133,7 @@ class enet(AdvNet):
       activation='softmax'
     )
 
-    self.Model(inputs=x_in, outputs=x, name='enet')
+    return self.Model(inputs=x_in, outputs=x, name='enet')
 
   def MBConv(self,
         n, x_in, filters, kernel_size, strides, expand_ratio, se_rate,
@@ -227,9 +227,8 @@ class enet(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = enet(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 1000})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = enet(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 1000}, built=True)
+  mod.summary()
 
   # from tensorflow.python.keras.utils import plot_model
 

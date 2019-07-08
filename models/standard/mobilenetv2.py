@@ -55,7 +55,7 @@ class mobilenetv2(AdvNet):
     x = self.conv(x, self.NUM_CLASSES, 1, activation='softmax', name='Softmax')  # 加速
     x = self.flatten(x)
 
-    self.Model(inputs=x_in, outputs=x, name='mobilenetv2')
+    return self.Model(inputs=x_in, outputs=x, name='mobilenetv2')
 
   def _bottleneck(self, x_in, filters, k, strides=1, first=False, crop=False, crop_down=False):
 
@@ -97,6 +97,5 @@ class mobilenetv2(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = mobilenetv2(DATAINFO={'INPUT_SHAPE': (300, 300, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = mobilenetv2(DATAINFO={'INPUT_SHAPE': (300, 300, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

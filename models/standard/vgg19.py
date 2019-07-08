@@ -52,10 +52,9 @@ class vgg19(AdvNet):
       x = self.dropout(x, i[1]) if i[1] else x
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='vgg19')
+    return self.Model(inputs=x_in, outputs=x, name='vgg19')
 
 # test part
 if __name__ == "__main__":
-  mod = vgg19(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = vgg19(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

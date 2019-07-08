@@ -114,7 +114,7 @@ class enb0_ci(AdvNet):
       activation='softmax'
     )
 
-    self.Model(inputs=x_in, outputs=x, name='enb0_ci')
+    return self.Model(inputs=x_in, outputs=x, name='enb0_ci')
 
   def MBConv(self,
         n, x_in, filters, kernel_size, strides, expand_ratio, se_rate,
@@ -208,9 +208,8 @@ class enb0_ci(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = enb0_ci(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = enb0_ci(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()
 
   # from tensorflow.python.keras.utils import plot_model
 

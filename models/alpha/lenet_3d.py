@@ -66,11 +66,10 @@ class lenet_3d(AdvNet):
     x = self.dropout(x, self.DROP_RATE)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='lenet_3d')
+    return self.Model(inputs=x_in, outputs=x, name='lenet_3d')
 
 
 # test part
 if __name__ == "__main__":
-  mod = lenet_3d(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = lenet_3d(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

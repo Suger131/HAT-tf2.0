@@ -52,7 +52,7 @@ class vss(AdvNet):
 
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='vss')
+    return self.Model(inputs=x_in, outputs=x, name='vss')
 
   def conv_s(self, x_in, filters, kernel_size=3):
     
@@ -93,6 +93,5 @@ class vss(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = vss(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = vss(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

@@ -34,12 +34,14 @@ class AdvNet(NetWork):
 
     你需要重写的方法有:
       args 模型的各种参数，在此定义的所有量都会被写入config里面。另，可定义BATCH_SIZE, EPOCHS, OPT
-      build_model 构建网络模型，应该包含self.model的定义。可用self.Model完成。
+      build_model 构建网络模型，应该返回一个keras.Model对象。
       Sample: 
     
     ```python
-      self.Model(inputs=x_in, outputs=x, name='mlp') # or
-      self.model = Model(inputs=x_in, outputs=x, name='mlp')
+      return self.Model(inputs=x_in, outputs=x, name='mlp') 
+      # or
+      from tensorflow.python.keras.models import Model
+      return Model(inputs=x_in, outputs=x, name='mlp')
     ```
   """
 
@@ -56,7 +58,7 @@ class AdvNet(NetWork):
 
   def build_model(self):
     """
-      构建网络模型，应该包含self.model的定义
+      构建网络模型，应该返回一个keras.Model对象。
     """
     super().build_model()
 
@@ -64,7 +66,7 @@ class AdvNet(NetWork):
     """
       Model Builder
     """
-    self.model = Model(inputs=inputs, outputs=outputs, name=name, **kwargs)
+    return Model(inputs=inputs, outputs=outputs, name=name, **kwargs)
 
   def input(self, shape, batch_size=None, dtype=None, sparse=False, tensor=None,
             **kwargs):

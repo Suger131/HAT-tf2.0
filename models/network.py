@@ -1,7 +1,7 @@
 # pylint: disable=unnecessary-pass
 # pylint: disable=no-name-in-module
 
-import tensorflow as tf
+# import tensorflow as tf
 from tensorflow.python.keras.utils import multi_gpu_model
 from tensorflow.python.keras.models import load_model
 
@@ -28,8 +28,10 @@ class NetWork(object):
     self.XGPU = False
     self.NGPU = 0
     
+    self._pre_built = False
     self.LOAD = False
     self.model = None
+    self.parallel_model = None
 
     self._kwargs = kwargs
     self._default_list = ['BATCH_SIZE', 'EPOCHS', 'OPT', 'LOSS_MODE', 'METRICS']
@@ -46,6 +48,10 @@ class NetWork(object):
     self.METRICS = []
     self.args()
     self._built = False
+
+    # pre build
+    if self._pre_built:
+      self.build()
 
   # built-in method
 
@@ -64,12 +70,26 @@ class NetWork(object):
   # private method
 
   def _check_kwargs(self):
+    if 'built' in self._kwargs:
+      self._pre_built = self._kwargs.pop('built')
     if 'DATAINFO' in self._kwargs:
       self.__dict__ = {**self.__dict__, **self._kwargs.pop('DATAINFO')}
     if 'XGPUINFO' in self._kwargs:
-      self.XGPU = True
       self.__dict__ = {**self.__dict__, **self._kwargs.pop('XGPUINFO')}
+      if self.NGPU <= 1:
+        print(f'\n[WARNING] XGPU Failed. The Number of GPU(NGPU) must more than 1, got {self.NGPU} \n')
+      else:
+        self.XGPU = True
     self.__dict__ = {**self.__dict__, **self._kwargs}
+
+  def _load_model(self, filepath=''):
+    if filepath:
+      self.LOAD = True
+      self.model = load_model(filepath)
+    else:
+      self.model = self.build_model()
+
+  # rewrite method
 
   def args(self):
     """
@@ -95,26 +115,23 @@ class NetWork(object):
       Build model
 
       Argument:
-        filepath: Str. If not '', use this file path to load model.
+        filepath: Str. If something, use this file path to load model.
     """
-    if filepath:
-      self.LOAD = True
+    self._load_model(filepath)
     if self.XGPU:
-      with tf.device('/cpu:0'):
-        if filepath:
-          self.model = load_model(filepath)
-        else:
-          self.build_model()
       try:
-        self.parallel_model = multi_gpu_model(self.model, gpus=self.NGPU)
-      except:
+        self.parallel_model = multi_gpu_model(
+          self.model,
+          gpus=self.NGPU,
+          cpu_merge=True,
+          cpu_relocation=True
+        )
+      except ValueError:
         print(f'\n[WARNING] XGPU Failed. Check out the Numbers of GPU(NGPU), got {self.NGPU} \n')
         self.XGPU = False
+        self.parallel_model = self.model
     else:
-      if filepath:
-        self.model = load_model(filepath)
-      else:
-        self.build_model()
+      self.parallel_model = self.model
 
   def compile(self,
               optimizer,
@@ -129,29 +146,30 @@ class NetWork(object):
     """
       Get compile function
     """
-    self.model.compile(
-      optimizer=optimizer,
-      loss=loss,
-      metrics=metrics,
-      loss_weights=loss_weights,
-      sample_weight_mode=sample_weight_mode,
-      weighted_metrics=weighted_metrics,
-      target_tensors=target_tensors,
-      distribute=distribute,
-      **kwargs
-    )
-    # if self.XGPU:
-    #   self.parallel_model.compile(
-    #     optimizer=optimizer,
-    #     loss=loss,
-    #     metrics=metrics,
-    #     loss_weights=loss_weights,
-    #     sample_weight_mode=sample_weight_mode,
-    #     weighted_metrics=weighted_metrics,
-    #     target_tensors=target_tensors,
-    #     distribute=distribute,
-    #     **kwargs
-    #   )
+    if not (self.LOAD or self.XGPU):
+      self.model.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics,
+        loss_weights=loss_weights,
+        sample_weight_mode=sample_weight_mode,
+        weighted_metrics=weighted_metrics,
+        target_tensors=target_tensors,
+        distribute=distribute,
+        **kwargs
+      )
+    if self.XGPU:
+      self.parallel_model.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics,
+        loss_weights=loss_weights,
+        sample_weight_mode=sample_weight_mode,
+        weighted_metrics=weighted_metrics,
+        target_tensors=target_tensors,
+        distribute=distribute,
+        **kwargs
+      )
 
   def fit(self,
           x=None,
@@ -175,48 +193,26 @@ class NetWork(object):
     """
       Get fit function
     """
-    if self.XGPU:
-      return self.parallel_model.fit(
-        x=x,
-        y=y,
-        batch_size=batch_size,
-        epochs=epochs,
-        verbose=verbose,
-        callbacks=callbacks,
-        validation_split=validation_split,
-        validation_data=validation_data,
-        shuffle=shuffle,
-        class_weight=class_weight,
-        sample_weight=sample_weight,
-        initial_epoch=initial_epoch,
-        steps_per_epoch=steps_per_epoch,
-        validation_steps=validation_steps,
-        max_queue_size=max_queue_size,
-        workers=workers,
-        use_multiprocessing=use_multiprocessing,
-        **kwargs
-      )
-    else:
-      return self.model.fit(
-        x=x,
-        y=y,
-        batch_size=batch_size,
-        epochs=epochs,
-        verbose=verbose,
-        callbacks=callbacks,
-        validation_split=validation_split,
-        validation_data=validation_data,
-        shuffle=shuffle,
-        class_weight=class_weight,
-        sample_weight=sample_weight,
-        initial_epoch=initial_epoch,
-        steps_per_epoch=steps_per_epoch,
-        validation_steps=validation_steps,
-        max_queue_size=max_queue_size,
-        workers=workers,
-        use_multiprocessing=use_multiprocessing,
-        **kwargs
-      )
+    return self.parallel_model.fit(
+      x=x,
+      y=y,
+      batch_size=batch_size,
+      epochs=epochs,
+      verbose=verbose,
+      callbacks=callbacks,
+      validation_split=validation_split,
+      validation_data=validation_data,
+      shuffle=shuffle,
+      class_weight=class_weight,
+      sample_weight=sample_weight,
+      initial_epoch=initial_epoch,
+      steps_per_epoch=steps_per_epoch,
+      validation_steps=validation_steps,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing,
+      **kwargs
+    )
 
   def evaluate(self,
                x=None,
@@ -231,30 +227,17 @@ class NetWork(object):
     """
       Get evaluate function
     """
-    if self.XGPU:
-      return self.parallel_model.evaluate(
-        x=x,
-        y=y,
-        batch_size=batch_size,
-        verbose=verbose,
-        sample_weight=sample_weight,
-        steps=steps,
-        max_queue_size=max_queue_size,
-        workers=workers,
-        use_multiprocessing=use_multiprocessing
-      )
-    else:
-      return self.model.evaluate(
-        x=x,
-        y=y,
-        batch_size=batch_size,
-        verbose=verbose,
-        sample_weight=sample_weight,
-        steps=steps,
-        max_queue_size=max_queue_size,
-        workers=workers,
-        use_multiprocessing=use_multiprocessing
-      )
+    return self.parallel_model.evaluate(
+      x=x,
+      y=y,
+      batch_size=batch_size,
+      verbose=verbose,
+      sample_weight=sample_weight,
+      steps=steps,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing
+    )
 
   def predict(self,
               x,
@@ -267,26 +250,15 @@ class NetWork(object):
     """
       Get predict function
     """
-    if self.XGPU:
-      return self.parallel_model.predict(
-        x,
-        batch_size=batch_size,
-        verbose=verbose,
-        steps=steps,
-        max_queue_size=max_queue_size,
-        workers=workers,
-        use_multiprocessing=use_multiprocessing
-      )
-    else:
-      return self.model.predict(
-        x,
-        batch_size=batch_size,
-        verbose=verbose,
-        steps=steps,
-        max_queue_size=max_queue_size,
-        workers=workers,
-        use_multiprocessing=use_multiprocessing
-      )
+    return self.parallel_model.predict(
+      x,
+      batch_size=batch_size,
+      verbose=verbose,
+      steps=steps,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing
+    )
 
   def fit_generator(self,
                     generator,
@@ -305,38 +277,21 @@ class NetWork(object):
     """
       Get fit_generator function
     """
-    if self.XGPU:
-      return self.parallel_model.fit_generator(
-        generator,
-        steps_per_epoch=steps_per_epoch,
-        epochs=epochs,
-        verbose=verbose,
-        callbacks=callbacks,
-        validation_data=validation_data,
-        validation_steps=validation_steps,
-        class_weight=class_weight,
-        max_queue_size=max_queue_size,
-        workers=workers,
-        use_multiprocessing=use_multiprocessing,
-        shuffle=shuffle,
-        initial_epoch=initial_epoch
-      )
-    else:
-      return self.model.fit_generator(
-        generator,
-        steps_per_epoch=steps_per_epoch,
-        epochs=epochs,
-        verbose=verbose,
-        callbacks=callbacks,
-        validation_data=validation_data,
-        validation_steps=validation_steps,
-        class_weight=class_weight,
-        max_queue_size=max_queue_size,
-        workers=workers,
-        use_multiprocessing=use_multiprocessing,
-        shuffle=shuffle,
-        initial_epoch=initial_epoch
-      )
+    return self.parallel_model.fit_generator(
+      generator,
+      steps_per_epoch=steps_per_epoch,
+      epochs=epochs,
+      verbose=verbose,
+      callbacks=callbacks,
+      validation_data=validation_data,
+      validation_steps=validation_steps,
+      class_weight=class_weight,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing,
+      shuffle=shuffle,
+      initial_epoch=initial_epoch
+    )
 
   def save(self,
            filepath,
@@ -345,7 +300,11 @@ class NetWork(object):
     """
       Get save function
     """
-    self.model.save(filepath, overwrite=overwrite, include_optimizer=include_optimizer)
+    self.model.save(
+      filepath,
+      overwrite=overwrite,
+      include_optimizer=include_optimizer
+    )
 
   def summary(self,
               line_length=100,
@@ -354,4 +313,8 @@ class NetWork(object):
     """
       Get summary function
     """
-    self.model.summary(line_length=line_length, positions=positions, print_fn=print_fn)
+    self.model.summary(
+      line_length=line_length,
+      positions=positions,
+      print_fn=print_fn
+    )

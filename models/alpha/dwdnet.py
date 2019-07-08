@@ -50,7 +50,7 @@ class dwdnet(AdvNet):
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='dwdnet')
+    return self.Model(inputs=x_in, outputs=x, name='dwdnet')
 
   def _head(self, x_in):
     """
@@ -107,6 +107,5 @@ class dwdnet(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = dwdnet(DATAINFO={'INPUT_SHAPE': (300, 300, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = dwdnet(DATAINFO={'INPUT_SHAPE': (300, 300, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

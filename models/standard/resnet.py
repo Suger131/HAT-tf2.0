@@ -126,7 +126,7 @@ class resnet(AdvNet):
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name=self.NAME)
+    return self.Model(inputs=x_in, outputs=x, name=self.NAME)
 
   def _block(self, x_in, times, filters1, filters2, strides=2):
     x = self._bottle(x_in, filters1, filters2, strides=strides, _t=True)
@@ -294,6 +294,5 @@ def resnext152(**kwargs):
 
 # test part
 if __name__ == "__main__":
-  mod = resnext50(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = resnext50(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()
