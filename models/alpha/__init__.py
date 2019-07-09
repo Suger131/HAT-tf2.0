@@ -14,5 +14,4 @@ from hat.models.alpha.shufflenet import shufflenet
 from hat.models.alpha.enet import enet
 from hat.models.alpha.enb0_ci import enb0_ci
 from hat.models.alpha.lsg import lsg
-from hat.models.alpha.vss import vss
 from hat.models.alpha.lg import lg
