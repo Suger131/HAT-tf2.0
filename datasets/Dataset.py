@@ -1,13 +1,12 @@
 class Dataset(object):
-
   """
-  这是一个数据集基类。
+    这是一个数据集基类。
 
-  你需要重写的方法是: 
-  
-    args()
+    你需要重写的方法是: 
+    
+      args()
 
-  args里应当包含self._MISSION_LIST的定义，指定数据集可以执行的任务。
+    args里应当包含self._MISSION_LIST的定义，指定数据集可以执行的任务。
   """
 
   def __init__(self, *args, **kwargs):

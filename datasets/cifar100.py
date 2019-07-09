@@ -4,7 +4,7 @@ from tensorflow.python.keras import datasets as ds
 
 class cifar100(Dataset):
   """
-  cifar100 数据集
+    cifar100 数据集
   """
 
   def args(self):

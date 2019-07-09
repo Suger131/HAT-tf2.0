@@ -4,7 +4,7 @@ from tensorflow.python.keras import datasets as ds
 
 class f_mnist(Dataset):
   """
-  fashion_mnist 数据集
+    fashion_mnist 数据集
   """
 
   def args(self):
