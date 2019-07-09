@@ -8,3 +8,4 @@ back_logs/
 test*.py
 datasets/car*/
 sample/
+datasets/dogs/

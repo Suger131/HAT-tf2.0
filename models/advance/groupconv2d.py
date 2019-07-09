@@ -33,7 +33,7 @@ class GroupConv2D(Layer):
     self.groups = groups
     self.filters = filters
     self.kernel_size = conv_utils.normalize_tuple(kernel_size, 2, 'kernel_size')
-    self.strides = conv_utils.normalize_tuple(strides, 2, 'strides') + (1,)
+    self.strides = conv_utils.normalize_tuple(strides, 2, 'strides') 
     self.padding = conv_utils.normalize_padding(padding)
     self.data_format = conv_utils.normalize_data_format(data_format)
     self.activation = activations.get(activation)
@@ -123,7 +123,7 @@ class GroupConv2D(Layer):
     outputs = self._convolution_op(
       outputs,
       self.kernel,
-      strides=self.strides,
+      strides=self.strides + (1,),
       padding=self.padding,
       data_format=self.data_format,
     )
@@ -149,7 +149,7 @@ class GroupConv2D(Layer):
         outputs = K.permute_dimensions(outputs, [0, 1, 2, 4, 3])
 
     # Processing shape (back)
-    _shape = inputs.shape.as_list()
+    _shape = outputs.shape.as_list()
     if _shape[0] is None:
       _shape[0] = -1 # batch
     if self.data_format == 'channels_first':
@@ -173,24 +173,32 @@ class GroupConv2D(Layer):
   def compute_output_shape(self, input_shape):
     input_shape = tensor_shape.TensorShape(input_shape).as_list()
 
-    if not self.filters:
-      return tensor_shape.TensorShape(input_shape)
+    if self.data_format == 'channels_first':
+      axis = 1
+      space = input_shape[2:]
     else:
-      space = input_shape[2:] if self.data_format == 'channels_first' else input_shape[1:-1]
-      new_space = []
-      for i in range(len(space)):
-        new_dim = conv_utils.conv_output_length(
-          space[i],
-          self.kernel_size[i],
-          padding=self.padding,
-          stride=self.strides[i],
-        )
-      new_space.append(new_dim)
+      axis = -1
+      space = input_shape[1:-1]
 
-      if self.data_format == 'channels_first':
-        return tensor_shape.TensorShape([input_shape[0], self.groups * self.filters] + new_space)
-      else:
-        return tensor_shape.TensorShape([input_shape[0]] + new_space + [self.groups * self.filters])
+    if not self.filters:
+      output_channels = input_shape[axis]
+    else:
+      output_channels = self.groups * self.filters
+
+    new_space = []
+    for i in range(len(space)):
+      new_dim = conv_utils.conv_output_length(
+        space[i],
+        self.kernel_size[i],
+        padding=self.padding,
+        stride=self.strides[i],
+      )
+    new_space.append(new_dim)
+
+    if self.data_format == 'channels_first':
+      return tensor_shape.TensorShape([input_shape[0], output_channels] + new_space)
+    else:
+      return tensor_shape.TensorShape([input_shape[0]] + new_space + [output_channels])
 
   def get_config(self):
     config = {
@@ -222,5 +230,5 @@ if __name__ == '__main__':
   # print(GroupConv2D(4, kernel_size=3, strides=2, activation='relu')(x))
   # print(GroupConv2D(4, kernel_size=3, padding='same', activation='relu')(x))
   # print(GroupConv2D(4, 8, kernel_size=3, padding='same', activation='relu')(x))
-  print(GroupConv2D(8, use_bias=False)(x))
-  print(GroupConv2D(8, use_bias=False, use_group_bias=True)(x))
+  # print(GroupConv2D(8, use_bias=False)(x))
+  print(GroupConv2D(8, kernel_size=3, strides=2, padding='same')(x))# , use_bias=False, use_group_bias=True

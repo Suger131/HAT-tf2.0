@@ -150,7 +150,8 @@ class resnet(AdvNet):
       x = self.conv(x, filters1 * 2, 1)
       x = self.bn(x)
       x = self.relu(x)
-      x = self.groupconv(x, 32, filters1 // 16, 3, strides=strides)
+      x = self.Gconv(x, 32, kernel_size=3, strides=strides)
+      # x = self.groupconv(x, 32, filters1 // 16, 3, strides=strides)
     else:
       x = self.conv(x, filters1, 1)
       x = self.bn(x)
