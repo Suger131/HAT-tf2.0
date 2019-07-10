@@ -21,7 +21,7 @@ class dogs(Dataset):
     self.NUM_VAL = 1200
     self.NUM_TEST = 0
     self.NUM_CLASSES = 120
-    self.INPUT_SHAPE = (300, 300, 3)
+    self.INPUT_SHAPE = (256, 256, 3)
     self.PKL_NUM = 4096
     self.PKL_SIZE = self.INPUT_SHAPE[0] * self.INPUT_SHAPE[1] * self.INPUT_SHAPE[2] * self.PKL_NUM
     self.DATA_DIR = 'datasets/dogs'
