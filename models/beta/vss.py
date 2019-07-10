@@ -93,5 +93,5 @@ class vss(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = vss(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod = vss(DATAINFO={'INPUT_SHAPE': (256, 256, 3), 'NUM_CLASSES': 120}, built=True)
   mod.summary()
