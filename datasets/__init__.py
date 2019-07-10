@@ -11,4 +11,7 @@ from hat.datasets.imagenet import imagenet
 
 from hat.datasets.car10 import car10
 from hat.datasets.car10x import car10x
+from hat.datasets.car10a import car10a
+from hat.datasets.car10b import car10b
 from hat.datasets.dogs import dogs
+from hat.datasets.dogx import dogx

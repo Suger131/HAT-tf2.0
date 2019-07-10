@@ -1,24 +1,23 @@
-# pylint: disable=attribute-defined-outside-init
+
 
 from hat.datasets.Dataset import Dataset
 from hat.datasets.utils import DSBuilder
 
-
-class dogs(Dataset):
+class car10a(Dataset):
   """
-    dogs 数据集
+    Car10a 数据集
   """
   
   def args(self):
     self._MISSION_LIST = ['classfication']
     self.SHUFFLE = True
-    self.NUM_TRAIN = 19380
-    self.NUM_VAL = 1200
-    self.NUM_TEST = 0
-    self.NUM_CLASSES = 120
+    self.NUM_TRAIN = 1400
+    self.NUM_VAL = 200
+    self.NUM_TEST = 200
+    self.NUM_CLASSES = 10
     self.INPUT_SHAPE = (256, 256, 3)
-    self.DATA_DIR = 'datasets/dogs'
-
+    self.DATA_DIR = 'datasets/car10a'
+    
     self.dsb = DSBuilder(
       self.DATA_DIR,
       self.INPUT_SHAPE[0:2],
@@ -27,9 +26,7 @@ class dogs(Dataset):
     (self.train_x, self.train_y), (self.val_x, self.val_y), self.test_x = self.dsb.get_all('fillx')
 
 
-# test part
 if __name__ == "__main__":
   from pprint import pprint
-  data = dogs()
-  pprint(data.CLASSES_DICT)
-  print(data.train_x.shape)
+  car10a = car10a()
+  pprint(car10a.CLASSES_DICT)

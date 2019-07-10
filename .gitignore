@@ -5,5 +5,5 @@
 *.jpg
 logs/
 datasets/car*/
-datasets/dogs/
+datasets/dog*/
 unpush/
