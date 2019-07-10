@@ -6,4 +6,5 @@
 logs/
 datasets/car*/
 datasets/dog*/
+datasets/flower*/
 unpush/
