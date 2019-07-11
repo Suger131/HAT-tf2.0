@@ -12,8 +12,8 @@ class flower5(Dataset):
   def args(self):
     self._MISSION_LIST = ['classfication']
     self.SHUFFLE = True
-    self.NUM_TRAIN = 3603
-    self.NUM_VAL = 720
+    self.NUM_TRAIN = 3498
+    self.NUM_VAL = 700
     self.NUM_TEST = 0
     self.NUM_CLASSES = 5
     self.INPUT_SHAPE = (256, 256, 3)
@@ -34,4 +34,4 @@ if __name__ == "__main__":
   pprint(data.CLASSES_DICT)
   print(data.train_x.shape)
   from PIL import Image
-  Image.fromarray(data.train_x[0]).show()
+  Image.fromarray(data.train_x[5]).show()

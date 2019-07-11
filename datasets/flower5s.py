@@ -12,8 +12,8 @@ class flower5s(Dataset):
   def args(self):
     self._MISSION_LIST = ['classfication']
     self.SHUFFLE = True
-    self.NUM_TRAIN = 3603
-    self.NUM_VAL = 720
+    self.NUM_TRAIN = 3498
+    self.NUM_VAL = 700
     self.NUM_TEST = 0
     self.NUM_CLASSES = 5
     self.INPUT_SHAPE = (64, 64, 3)
