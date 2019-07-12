@@ -17,3 +17,4 @@ from hat.datasets.dogs import dogs
 from hat.datasets.dogx import dogx
 from hat.datasets.flower5 import flower5
 from hat.datasets.flower5s import flower5s
+from hat.datasets.fruits import fruits
