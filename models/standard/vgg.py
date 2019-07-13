@@ -15,8 +15,8 @@ from tensorflow.python.keras.optimizers import SGD
 # import setting
 __all__ = [
   'vgg',
-  'vgg10',
-  'vgg12',
+  'vgg11',
+  'vgg13',
   'vgg16',
   'vgg19',
 ]
@@ -62,28 +62,28 @@ class vgg(AdvNet):
     return self.Model(inputs=x_in, outputs=x, name=self.NAME)
 
 
-def vgg10(**kwargs):
+def vgg11(**kwargs):
   """
-    VGG-10
+    VGG-11
     
     Times: [1, 1, 2, 2, 2]
   """
   return vgg(
     times=[1, 1, 2, 2, 2],
-    name='vgg10',
+    name='vgg11',
     **kwargs
   )
 
 
-def vgg12(**kwargs):
+def vgg13(**kwargs):
   """
-    VGG-12
+    VGG-13
     
     Times: [2, 2, 2, 2, 2]
   """
   return vgg(
     times=[2, 2, 2, 2, 2],
-    name='vgg12',
+    name='vgg13',
     **kwargs
   )
 
