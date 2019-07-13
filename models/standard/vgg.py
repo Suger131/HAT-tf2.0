@@ -1,5 +1,5 @@
 """
-  VGG-16
+  VGG
   本模型默认总参数量[参考基准：cifar10]：
     Total params:           37,721,154
     Trainable params:       37,712,706
