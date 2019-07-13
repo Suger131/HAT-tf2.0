@@ -116,5 +116,5 @@ class shufflenet(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = shufflenet(DATAINFO={'INPUT_SHAPE': (300, 300, 3), 'NUM_CLASSES': 10}, built=True)
+  mod = shufflenet(DATAINFO={'INPUT_SHAPE': (100, 100, 3), 'NUM_CLASSES': 114}, built=True)
   mod.summary()
