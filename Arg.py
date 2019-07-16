@@ -64,6 +64,7 @@ class Args(object):
     self.LIB = None
     self.LIB_NAME = ''
     self.ADDITION = ''
+    self.LR_ALT = False
     # build
     self.IN_ARGS = input('=>').split(' ')
     self._Log = Log(log_dir='logs/logger')
@@ -160,6 +161,7 @@ class Args(object):
           [['-V' , 'val-only'    ], 'RUN_MODE'  , 'val'],
           [['-E' , 'data-enhance'], 'IS_ENHANCE', True],
           [['-X' , 'xgpu'        ], 'XGPU_MODE' , True],
+          [['-L' , 'lr-alt'      ], 'LR_ALT'    , True],
         ]
         _check_box = [self._check_args(i, *j) for j in _check_list]
         if not any(_check_box):
@@ -264,8 +266,15 @@ class Args(object):
 
     # get configer
     self._config = Config(f"{self.SAVE_DIR}/config")
-    # processing special config
+    # processing config
     self._special_config()
+    self._paramc.append({
+      'BATCH_SIZE': self.BATCH_SIZE,
+      'EPOCHS': self.EPOCHS,
+      'OPT': self.OPT,
+      'LOSS_MODE': self.LOSS_MODE,
+      'METRICS': self.METRICS,
+    })
 
     # mode envs
     if self.RUN_MODE == 'no-gimage':
@@ -298,6 +307,8 @@ class Args(object):
       self._Log('Enhance data.')
     if self.XGPU_MODE:
       self._Log('Muti-GPUs.')
+    if self.LR_ALT:
+      self._Log('Learning Rate Alterable.')
 
   def _fit(self, *args, **kwargs):
     
@@ -318,6 +329,13 @@ class Args(object):
                                        write_images=True)
     _history = []
     for i in range(self.EPOCHS):
+      if self.LR_ALT:
+        lr_rt = self._lr_update(i)
+        if lr_rt:
+          self._Log(f"LR Update: {lr_rt}")
+        # if i % 50 == 0:
+        #   stage = i // 50 if i < 200 else 3
+        #   self._Log(f"LR Update: {self._lr_update(stage)}")
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
       if self.IS_ENHANCE:
         _train = self.MODEL.fit_generator(
@@ -347,7 +365,7 @@ class Args(object):
       Image Data Enhancement
     """
     datagen = ImageDataGenerator(
-      rotation_range=10,
+      rotation_range=30,
       width_shift_range=0.05,
       height_shift_range=0.05,
       shear_range=0.05,
@@ -361,6 +379,30 @@ class Args(object):
       batch_size=self.BATCH_SIZE,
       shuffle=True
     )
+
+  def _lr_update(self, i):
+    st_list = [0, 100, 150, 200]
+    lr_list = [0.1, 0.03, 0.009, 0.0027]
+    if any([True for st in st_list if i==st]):
+      # stage
+      if i < st_list[1]:
+        stage = 0
+      elif i < st_list[2]:
+        stage = 1
+      elif i < st_list[3]:
+        stage = 2
+      else:
+        stage = 3
+      from tensorflow.python.keras.optimizers import SGD
+      opt = SGD(lr=lr_list[stage], momentum=.9, decay=5e-4)
+      self.MODEL.compile(
+        optimizer=opt,
+        loss=self.LOSS_MODE,
+        metrics=self.METRICS
+      )
+      return lr_list[stage]
+    else:
+      return None
 
   # public method
 
