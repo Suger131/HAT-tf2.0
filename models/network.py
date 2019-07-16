@@ -144,7 +144,7 @@ class NetWork(object):
     """
       Get compile function
     """
-    if not (self.LOAD or self.XGPU):
+    if not self.XGPU:
       self.model.compile(
         optimizer=optimizer,
         loss=loss,
