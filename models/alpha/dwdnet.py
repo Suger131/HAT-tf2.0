@@ -17,7 +17,7 @@
 # pylint: disable=no-name-in-module
 
 from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.optimizers import Adagrad
+from tensorflow.python.keras.optimizers import SGD
 from hat.models.advance import AdvNet
 
 
@@ -27,14 +27,14 @@ class dwdnet(AdvNet):
   """
   def args(self):
     self.CONV_BIAS = False
-    self.SE_T = 4
+    self.SE_T = 8
     self.THETA = 0.5
     self.DROP = 0.5
     self.HEAD_CONV = [24, 32, 48]
     self.CONV = [48, 96, 192]
     self.TIME = [3, 3, 3]
 
-    self.OPT = Adagrad(lr=5e-3)
+    self.OPT = SGD(lr=1e-3, momentum=.9, decay=5e-4)
 
   def build_model(self):
     self.axis = -1
@@ -50,9 +50,11 @@ class dwdnet(AdvNet):
     x = self.repeat(self._dense, self.TIME[1], self.CONV[1])(x)
     x = self._transition(x)
     x = self.repeat(self._dense, self.TIME[2], self.CONV[2])(x)
+    # x = self._transition(x)
 
     # Output
     x = self.GAPool(x)
+    x = self.flatten(x)
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
