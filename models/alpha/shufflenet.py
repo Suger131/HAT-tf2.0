@@ -20,11 +20,11 @@ class shufflenet(AdvNet):
   """
 
   def args(self):
-    self.HEAD_CONV = [24, 48]
+    self.HEAD_CONV = [32, 64]
     
-    self.STAGE_CONV = [64, 96, 128, 192]
+    self.STAGE_CONV = [64, 128, 256, 768]
     self.STAGE_TIME = [3, 7, 3]
-    self.DROP = 0
+    self.DROP = 0.5
 
   def build_model(self):
     
@@ -49,9 +49,9 @@ class shufflenet(AdvNet):
   def _head(self, x_in):
     
     x = self.conv_bn(x_in, 24, 3, 2)
-    x = self.conv_bn(x, 24, 3, padding='valid')
-    x = self.conv_bn(x, 48, 3, 2, padding='valid')
-    x = self.conv_bn(x, 48, 3, padding='valid')
+    x = self.conv_bn(x, 24, 3)
+    x = self.conv_bn(x, 48, 3, 2)
+    x = self.conv_bn(x, 48, 3)
     return x
 
   def stage(self, x_in, filters, n, crop=True):
@@ -67,14 +67,14 @@ class shufflenet(AdvNet):
     _pad = 'valid' if crop else 'same'
     _hc = filters // 2
 
-    x1 = self.dwconv(x_in, 3, 2, padding=_pad)
+    x1 = self.dwconv(x_in, 3, 2)
     x1 = self.bn(x1)
     x1 = self.conv(x1, _hc, 1)
 
     x2 = self.conv(x_in, _hc, 1)
     x2 = self.bn(x2)
     x2 = self.relu(x2)
-    x2 = self.dwconv(x2, 3, 2, padding=_pad)
+    x2 = self.dwconv(x2, 3, 2)
     x2 = self.bn(x2)
     x2 = self.conv(x2, _hc, 1)
 
