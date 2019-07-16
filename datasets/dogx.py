@@ -33,3 +33,5 @@ if __name__ == "__main__":
   data = dogx()
   pprint(data.CLASSES_DICT)
   print(data.train_x.shape)
+  from PIL import Image
+  imgl = [Image.fromarray(data.train_x[i]).save(f'{data.DATA_DIR}/{i}.jpg') for i in range(4)]

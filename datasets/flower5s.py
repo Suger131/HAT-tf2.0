@@ -34,4 +34,4 @@ if __name__ == "__main__":
   pprint(data.CLASSES_DICT)
   print(data.train_x.shape)
   from PIL import Image
-  Image.fromarray(data.train_x[5]).show()
+  imgl = [Image.fromarray(data.train_x[i]).save(f'{data.DATA_DIR}/{i}.jpg') for i in range(40)]
