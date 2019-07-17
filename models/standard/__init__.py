@@ -17,3 +17,4 @@ from hat.models.standard.resnet import *
 from hat.models.standard.densenet import *
 from hat.models.standard.mobilenetv2 import mobilenetv2
 from hat.models.standard.cnn import *
+from hat.models.standard.enet import *
