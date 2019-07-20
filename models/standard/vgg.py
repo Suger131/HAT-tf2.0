@@ -49,7 +49,7 @@ class vgg(AdvNet):
 
     # conv part
     for i in list(zip(self.TIME, self.CONV)):
-      x = self.repeat(self.conv_bn, i[0], i[1], 3)(x)
+      x = self.repeat(self.conv_bn, *i, 3)(x)
       x = self.maxpool(x, 3, 2)
 
     # local part
