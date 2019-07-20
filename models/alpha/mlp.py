@@ -36,3 +36,5 @@ class mlp(AdvNet):
 if __name__ == "__main__":
   mod = mlp(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
   mod.summary()
+  mod.flops()
+  
