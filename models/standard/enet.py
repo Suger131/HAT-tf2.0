@@ -14,6 +14,7 @@ import math
 
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import ZeroPadding2D, Cropping2D
+from tensorflow.python.keras.optimizers import SGD
 from hat.models.advance import AdvNet, ENCI, ENDI
 
 
@@ -78,6 +79,8 @@ class enet(AdvNet):
     self.MB_SIZE = [3 , 3 , 5 , 3 , 5  , 5  , 3  ]
     self.MB_STEP = [1 , 2 , 2 , 2 , 1  , 2  , 1  ]
     self.MB_EXPD = [1 , 6 , 6 , 6 , 6  , 6  , 6  ]
+    
+    self.OPT = 'adam' # SGD(lr=1e-2, momentum=.9, decay=5e-4)
 
   def build_model(self):
 
@@ -475,5 +478,5 @@ def enetb7(**kwargs):
 
 
 if __name__ == "__main__":
-  mod = enetb0(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 1000}, built=True)
+  mod = enetb0(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 100}, built=True)
   mod.summary()
