@@ -46,6 +46,7 @@ class Args(object):
     self.IS_VAL = True
     self.IS_SAVE = True
     self.IS_GIMAGE = True
+    self.IS_FLOPS = True
     self.IS_ENHANCE = False
     self.XGPU_MODE = False
     self.XGPU_NUM = 0
@@ -162,6 +163,7 @@ class Args(object):
           [['-E' , 'data-enhance'], 'IS_ENHANCE', True],
           [['-X' , 'xgpu'        ], 'XGPU_MODE' , True],
           [['-L' , 'lr-alt'      ], 'LR_ALT'    , True],
+          [['-NF', 'no-flops'    ], 'IS_FLOPS'  , False],
         ]
         _check_box = [self._check_args(i, *j) for j in _check_list]
         if not any(_check_box):
@@ -441,17 +443,26 @@ class Args(object):
 
   def gimage(self):
 
-    if not self.IS_GIMAGE: return
+    img_name = f'{self.H5_NAME}_model.png'
+    ops_name = f'{self.SAVE_DIR}/flops.txt'
 
-    if os.path.exists(f'{self.H5_NAME}_model.png'): return
+    if self.IS_GIMAGE and not os.path.exists(img_name): 
 
-    from tensorflow.python.keras.utils import plot_model
+      from tensorflow.python.keras.utils import plot_model
 
-    plot_model(self.MODEL.model,
-               to_file=f'{self.H5_NAME}_model.png',
-               show_shapes=True)
+      plot_model(self.MODEL.model,
+                to_file=img_name,
+                show_shapes=True)
 
-    self._Log(f'{self.H5_NAME}_model.png', _T='Successfully save model image:')
+      self._Log(img_name, _T='Successfully save model image:')
+
+    if self.IS_FLOPS and not os.path.exists(ops_name):
+
+      self._paramc.append({
+        'FLOPs': self.MODEL.flops(filename=ops_name)
+      })
+
+      self._Log(ops_name, _T='Successfully write FLOPs infomation:')
   
   def user(self):
     '''user train args'''

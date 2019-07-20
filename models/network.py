@@ -1,7 +1,8 @@
 # pylint: disable=unnecessary-pass
 # pylint: disable=no-name-in-module
 
-# import tensorflow as tf
+import tensorflow as tf
+from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.utils import multi_gpu_model
 from tensorflow.python.keras.models import load_model
 
@@ -316,3 +317,22 @@ class NetWork(object):
       positions=positions,
       print_fn=print_fn
     )
+
+  def flops(self, filename='', hide_re=''):
+    run_meta = tf.RunMetadata()
+    opts = tf.profiler.ProfileOptionBuilder.float_operation()
+    if filename:
+      opts['output'] = f'file:outfile={filename}'
+    ignore = ['training.*', 'loss.*']
+    if hide_re:
+      ignore.append(hide_re)
+    opts['hide_name_regexes'] = ignore
+    flops = tf.profiler.profile(
+      graph=K.get_session().graph,
+      run_meta=run_meta,
+      cmd='graph',
+      options=opts
+    )
+    outputs = flops.total_float_ops
+    print(f'FLOPs: {outputs}')
+    return outputs
