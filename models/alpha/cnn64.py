@@ -47,5 +47,5 @@ class cnn64(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = cnn64(DATAINFO={'INPUT_SHAPE': (64, 64, 3), 'NUM_CLASSES': 100}, built=True)
+  mod = cnn64(DATAINFO={'INPUT_SHAPE': (100, 100, 3), 'NUM_CLASSES': 114}, built=True)
   mod.summary()

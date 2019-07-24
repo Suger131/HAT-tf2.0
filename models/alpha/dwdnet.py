@@ -54,7 +54,7 @@ class dwdnet(AdvNet):
 
     # Output
     x = self.GAPool(x)
-    x = self.flatten(x)
+    # x = self.flatten(x)
     x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
@@ -63,10 +63,10 @@ class dwdnet(AdvNet):
   def _head(self, x_in):
     """
       INPUT: 
-        (256,256, 3)
+        (224,224, 3)
       
       OUTPUT:
-        (32, 32, 48)
+        (56, 56, 48)
     """
     # Conv with bn, to (256,256,a1)
     x = self.conv_bn(x_in, self.HEAD_CONV[0], 3, use_bias=self.CONV_BIAS)
