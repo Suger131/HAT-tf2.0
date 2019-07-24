@@ -237,7 +237,7 @@ class DSBuilder(object):
 
     if img.mode != 'RGB':
       print(filename, img.mode)
-      img.convert('RGB')
+      img = img.convert('RGB')
     
     if mode == 'ignore':
       img = np.array(img)
