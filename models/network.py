@@ -241,7 +241,7 @@ class NetWork(object):
   def predict(self,
               x,
               batch_size=None,
-              verbose=0,
+              verbose=1,
               steps=None,
               max_queue_size=10,
               workers=1,
@@ -290,6 +290,25 @@ class NetWork(object):
       use_multiprocessing=use_multiprocessing,
       shuffle=shuffle,
       initial_epoch=initial_epoch
+    )
+
+  def evaluate_generator(self,
+                         generator,
+                         steps=None,
+                         max_queue_size=10,
+                         workers=1,
+                         use_multiprocessing=False,
+                         verbose=1):
+    """
+      Get evaluate_generator function
+    """
+    return self.parallel_model.evaluate_generator(
+      generator,
+      steps=steps,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing,
+      verbose=verbose,
     )
 
   def save(self,
