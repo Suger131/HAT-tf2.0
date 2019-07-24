@@ -7,5 +7,5 @@ logs/
 datasets/car*/
 datasets/dog*/
 datasets/flower*/
-datasets/fruits/
+datasets/fruits*/
 unpush/
