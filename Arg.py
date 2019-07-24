@@ -329,32 +329,46 @@ class Args(object):
                                        update_freq='batch',
                                        write_graph=False,
                                        write_images=True)
-    _history = []
+    _history=[]
+    
+    # Data
+    if self.DATASET.trian_x == None:
+      if self.IS_ENHANCE:
+        self.DATASET.get_generator(self.BATCH_SIZE, self.AUG)
+        train = self.DATASET.trian_generator
+      else:
+        self.DATASET.get_generator(self.BATCH_SIZE)
+        train = self.DATASET.trian_generator
+    elif self.IS_ENHANCE:
+      train = self._datagen()
+    
     for i in range(self.EPOCHS):
       if self.LR_ALT:
         lr_rt = self._lr_update(i)
         if lr_rt:
           self._Log(f"LR Update: {lr_rt}")
-        # if i % 50 == 0:
-        #   stage = i // 50 if i < 200 else 3
-        #   self._Log(f"LR Update: {self._lr_update(stage)}")
+
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
-      if self.IS_ENHANCE:
+      if self.DATASET.train_x == None or self.IS_ENHANCE:
         _train = self.MODEL.fit_generator(
-          self._datagen(),
-          epochs=1, #self.EPOCHS,
+          train,
+          epochs=1,
           callbacks=[tensorboard_callback]
         )
       else:
         _train = self.MODEL.fit(
           self.DATASET.train_x,
           self.DATASET.train_y,
-          epochs=1, #self.EPOCHS,
+          epochs=1,
           batch_size=self.BATCH_SIZE,
           callbacks=[tensorboard_callback]
         )
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
-      _val = self.MODEL.evaluate(
+      if self.DATASET.val_x == None:
+        _val = self.MODEL.evaluate_generator(
+          self.DATASET.val_generator)
+      else:
+        _val = self.MODEL.evaluate(
           self.DATASET.val_x,
           self.DATASET.val_y,
           batch_size=self.BATCH_SIZE)
@@ -366,16 +380,7 @@ class Args(object):
     """
       Image Data Enhancement
     """
-    datagen = ImageDataGenerator(
-      rotation_range=30,
-      width_shift_range=0.05,
-      height_shift_range=0.05,
-      shear_range=0.05,
-      zoom_range=0.05,
-      horizontal_flip=True,
-    )
-    datagen.fit(self.DATASET.train_x)
-    return datagen.flow(
+    return self.AUG.flow(
       self.DATASET.train_x, 
       self.DATASET.train_y, 
       batch_size=self.BATCH_SIZE,
@@ -420,11 +425,20 @@ class Args(object):
   def val(self):
 
     if not self.IS_VAL: return
-
-    _, result = self._timer.timer('val', self.MODEL.evaluate,
-                                  self.DATASET.val_x,
-                                  self.DATASET.val_y,
-                                  batch_size=self.BATCH_SIZE)
+    
+    def _val():
+      if self.DATASET.val_x == None:
+        self.DATASET.get_generator(self.BATCH_SIZE)
+        _val = self.MODEL.evaluate_generator(
+          self.DATASET.val_generator)
+      else:
+        _val = self.MODEL.evaluate(
+          self.DATASET.val_x,
+          self.DATASET.val_y,
+          batch_size=self.BATCH_SIZE)
+      return _val
+    
+    _, result = self._timer.timer('val', _val)
     self._Log(result[0], _T='total loss:')
     self._Log(result[1], _T='accuracy:')
     self._logc.append(_)
@@ -466,6 +480,14 @@ class Args(object):
   
   def user(self):
     '''user train args'''
+    self.AUG = ImageDataGenerator(
+      rotation_range=30,
+      width_shift_range=0.05,
+      height_shift_range=0.05,
+      shear_range=0.05,
+      zoom_range=0.05,
+      horizontal_flip=True,
+    )
     self.USER_DICT_N = {
       'DATASETS_NAME': 'mnist',
       'MODELS_NAME': 'mlp'
