@@ -222,6 +222,7 @@ class Args(object):
     
     # Set Logger
     self._Log = Log(log_dir=self.SAVE_DIR)
+    self._Log(self.SAVE_DIR, _T='Logs dir:')
     self._Log(self._warning_list, _A='Warning')
     self._Log(self._log_list)
     self._timer = Timer(self._Log)
@@ -434,21 +435,18 @@ class Args(object):
       self.LOG_DIR = os.path.join(
         self.SAVE_DIR,
         f'TB_{self.SAVE_TIME}',)
-      self._Log(self.LOG_DIR + '\\', _T='logs dir:')
-      tensorboard_callback = TensorBoard(log_dir=self.LOG_DIR,
-                                        update_freq='batch',
-                                        write_graph=False,
-                                        write_images=True)
+      tensorboard_callback = TensorBoard(
+        log_dir=self.LOG_DIR,
+        update_freq='batch',
+        write_graph=False,
+        write_images=True
+      )
       _history=[]
       
       # Data
       if self.DATASET.train_x is None:
-        if self.IS_ENHANCE:
-          self.DATASET.get_generator(self.BATCH_SIZE, self.AUG)
-          train = self.DATASET.trian_generator
-        else:
-          self.DATASET.get_generator(self.BATCH_SIZE)
-          train = self.DATASET.trian_generator
+        self.DATASET.get_generator(self.BATCH_SIZE, aug=self.AUG if self.IS_ENHANCE else None)
+        train = self.DATASET.trian_generator
       elif self.IS_ENHANCE:
         train = self._datagen()
       
