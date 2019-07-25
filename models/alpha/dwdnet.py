@@ -114,7 +114,7 @@ class dwdnet(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = dwdnet(DATAINFO={'INPUT_SHAPE': (100, 100, 3), 'NUM_CLASSES': 114}, built=True)
+  mod = dwdnet(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 1000}, built=True)
   mod.summary()
 
 
