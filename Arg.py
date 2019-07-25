@@ -39,7 +39,8 @@ class Args(object):
     self._paramc = []
     self._logc = []
     self._specialc = []
-    self._warning_args = []
+    self._warning_list = []
+    self._log_list = []
     self._dir_list = []
     # envs args
     self.IS_TRAIN = True
@@ -68,8 +69,7 @@ class Args(object):
     self.LR_ALT = False
     # build
     self.IN_ARGS = input('=>').split(' ')
-    self._Log = Log(log_dir='logs/logger')
-    self._timer = Timer(self._Log)
+    self._Log = None
     self._config = None
     self.user()
     self._input_processing()
@@ -152,7 +152,7 @@ class Args(object):
             force_str=True if 'force_str' in j else False)
           for j in _check_list]
         if not any(_check_box):
-          self._warning_args.append(temp[0])
+          self._warning_list.append(f'Unsupported option: {temp[0]}')
           
       else:
         _check_list = [
@@ -167,9 +167,7 @@ class Args(object):
         ]
         _check_box = [self._check_args(i, *j) for j in _check_list]
         if not any(_check_box):
-          self._warning_args.append(i)
-    
-    self._Log(self._warning_args, _A='Warning', text='Unsupported option:')
+          self._warning_list.append(f'Unsupported option: {i}')
 
   def _envs_processing(self):
 
@@ -183,7 +181,7 @@ class Args(object):
     if self.XGPU_NUM:
       self.XGPU_MODE = True
       if self.XGPU_NUM > self.XGPU_NMAX:
-        self._Log(f"Max NGPU {self.XGPU_NMAX}, but got {self.XGPU_NUM}. Use the Max NGPU.", _A='Warning')
+        self._warning_list.append(f"Max NGPU {self.XGPU_NMAX}, but got {self.XGPU_NUM}. Use the Max NGPU.")
         self.XGPU_NUM = self.XGPU_NMAX
     else:
       self.XGPU_NUM = self.XGPU_NMAX
@@ -222,6 +220,12 @@ class Args(object):
         self.SAVE_NAME = f'{self.H5_NAME}_{self.SAVE_TIME}.h5'
         break
     
+    # Set Logger
+    self._Log = Log(log_dir=self.SAVE_DIR)
+    self._Log(self._warning_list, _A='Warning')
+    self._Log(self._log_list)
+    self._timer = Timer(self._Log)
+
     # get dataset object
     call_dataset = globals().get(self.DATASETS_NAME)
     if callable(call_dataset):
@@ -418,7 +422,71 @@ class Args(object):
     if not self.IS_TRAIN: return
 
     self._Log(f'{self._GLOBAL_EPOCH-self.EPOCHS}/{self._GLOBAL_EPOCH}', _T='Global Epochs:')
-    _, result = self._timer.timer('train', self._fit)
+
+    def _fit(*args, **kwargs):
+      # NOTE: Windows Bug
+      # a Windows-specific bug in TensorFlow.
+      # The fix is to use the platform-appropriate path separators in log_dir
+      # rather than hard-coding forward slashes:
+      # NOTE: if use the `histogram_freq`, then raise
+      # AttributeError: 'NoneType' object has no attribute 'fetches'
+      # unknown bug
+      self.LOG_DIR = os.path.join(
+        self.SAVE_DIR,
+        f'TB_{self.SAVE_TIME}',)
+      self._Log(self.LOG_DIR + '\\', _T='logs dir:')
+      tensorboard_callback = TensorBoard(log_dir=self.LOG_DIR,
+                                        update_freq='batch',
+                                        write_graph=False,
+                                        write_images=True)
+      _history=[]
+      
+      # Data
+      if self.DATASET.train_x is None:
+        if self.IS_ENHANCE:
+          self.DATASET.get_generator(self.BATCH_SIZE, self.AUG)
+          train = self.DATASET.trian_generator
+        else:
+          self.DATASET.get_generator(self.BATCH_SIZE)
+          train = self.DATASET.trian_generator
+      elif self.IS_ENHANCE:
+        train = self._datagen()
+      
+      for i in range(self.EPOCHS):
+        if self.LR_ALT:
+          lr_rt = self._lr_update(i)
+          if lr_rt:
+            self._Log(f"LR Update: {lr_rt}")
+
+        self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
+        if self.DATASET.train_x is None or self.IS_ENHANCE:
+          _train = self.MODEL.fit_generator(
+            train,
+            epochs=1,
+            callbacks=[tensorboard_callback]
+          )
+        else:
+          _train = self.MODEL.fit(
+            self.DATASET.train_x,
+            self.DATASET.train_y,
+            epochs=1,
+            batch_size=self.BATCH_SIZE,
+            callbacks=[tensorboard_callback]
+          )
+        self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
+        if self.DATASET.val_x is None:
+          _val = self.MODEL.evaluate_generator(
+            self.DATASET.val_generator)
+        else:
+          _val = self.MODEL.evaluate(
+            self.DATASET.val_x,
+            self.DATASET.val_y,
+            batch_size=self.BATCH_SIZE)
+        _history.extend([{f"epoch{i+1}_train_{item}": _train.history[item][0] for item in _train.history},
+                        dict(zip([f'epoch{i+1}_val_loss', f'epoch{i+1}_val_accuracy'], _val))])
+      return _history
+
+    _, result = self._timer.timer('train', _fit)
 
     self._logc.extend([_, *result])
 
@@ -427,7 +495,7 @@ class Args(object):
     if not self.IS_VAL: return
     
     def _val():
-      if self.DATASET.val_x == None:
+      if self.DATASET.val_x is None:
         self.DATASET.get_generator(self.BATCH_SIZE)
         _val = self.MODEL.evaluate_generator(
           self.DATASET.val_generator)
