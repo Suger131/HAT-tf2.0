@@ -342,7 +342,7 @@ class NetWork(object):
     opts = tf.profiler.ProfileOptionBuilder.float_operation()
     if filename:
       opts['output'] = f'file:outfile={filename}'
-    ignore = ['training.*', 'loss.*']
+    ignore = ['training.*', 'loss.*', 'replica.*']
     if hide_re:
       ignore.append(hide_re)
     opts['hide_name_regexes'] = ignore
