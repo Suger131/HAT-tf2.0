@@ -547,7 +547,7 @@ class Args(object):
   def user(self):
     '''user train args'''
     self.AUG = ImageDataGenerator(
-      rotation_range=30,
+      rotation_range=10,
       width_shift_range=0.05,
       height_shift_range=0.05,
       shear_range=0.05,
