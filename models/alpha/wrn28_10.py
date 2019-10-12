@@ -26,12 +26,12 @@ class wrn28_10(AdvNet):
     self.S = 16
     self.K = 10
     self.N = 3
-    self.D = 0
+    self.D = 0.2
 
     # train args
     self.EPOCHS = 384
     self.BATCH_SIZE = 128
-    self.OPT = SGD(lr=0.1, momentum=0.9, decay=5e-4, nesterov=True)
+    self.OPT = SGD(lr=1e-4, momentum=0.9)# , decay=5e-4, nesterov=True)
 
 
   def build_model(self):
@@ -64,7 +64,7 @@ class wrn28_10(AdvNet):
     xi = self.bn(x_in)
     xi = self.relu(xi)
     
-    x_aux = self.conv(xi, F, 3, strides=strides)
+    x_aux = self.conv(xi, F, 1, strides=strides)
 
     x = self.conv(xi, F, 3, strides=strides)
     x = self.bn(x)
@@ -83,7 +83,7 @@ class wrn28_10(AdvNet):
     x = self.relu(x)
     x = self.conv(x, F, 3)
 
-    x = self.dropout(x, self.D)
+    if self.D: x = self.dropout(x, self.D)
 
     x = self.bn(x)
     x = self.relu(x)

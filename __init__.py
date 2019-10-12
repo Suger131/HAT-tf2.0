@@ -16,22 +16,19 @@
   HAT
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import as _absolute_import
+from __future__ import division as _division
+from __future__ import print_function as _print_function
 
 import os as _os
 import sys as _sys
-
-from hat import datasets
-from hat import models
-from hat import utils
-
-_names_with_underscore = ['__version__', '__git_version__', '__compiler_version__', '__cxx11_abi_flag__', '__monolithic_build__']
-__all__ = [_s for _s in dir() if not _s.startswith('_')]
-__all__.extend([_s for _s in _names_with_underscore])
 
 _hat_dir = _os.path.dirname(_os.path.abspath(__file__))
 if _hat_dir not in _sys.path:
   _sys.path.append(_hat_dir)
 
+# from hat import datasets
+# from hat import models
+# from hat import utils
+
+del _os, _sys, _absolute_import, _division, _print_function

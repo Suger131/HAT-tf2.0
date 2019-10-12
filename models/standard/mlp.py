@@ -23,8 +23,9 @@ class mlp(AdvNet):
   def build_model(self):
 
     x_in = self.input(self.INPUT_SHAPE)
-
-    x = self.flatten(x_in)
+    x = x_in
+    x = self.dwconv(x, 3, 2)
+    x = self.flatten(x)
     x = self.local(x, self.LOCAL_SIZE)
     x = self.dropout(x, self.DROP_RATE)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')

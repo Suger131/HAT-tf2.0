@@ -8,8 +8,10 @@
 
 # pylint: disable=no-name-in-module
 
-from hat.models.advance import AdvNet
+import math
 from tensorflow.python.keras.optimizers import SGD
+from tensorflow.python.keras.layers import Conv2DTranspose
+from hat.models.advance import AdvNet
 
 
 # import setting
@@ -35,6 +37,8 @@ class vgg(AdvNet):
   def args(self):
 
     self.TIME = self.TIME
+    self.USE_MIN_SIZE = True
+    self.MIN_SIZE = 100
 
     self.CONV = [64, 128, 256, 512, 512]
     self.LOCAL = [4096, 4096]
@@ -46,6 +50,14 @@ class vgg(AdvNet):
 
     x_in = self.input(self.INPUT_SHAPE)
     x = x_in
+    # proc_input
+    i1 = self.INPUT_SHAPE[0]
+    if self.USE_MIN_SIZE and i1 < self.MIN_SIZE:
+      s1 = math.ceil(self.MIN_SIZE / i1)
+      s2 = math.floor(self.MIN_SIZE / i1)
+      s = s1 if abs(self.MIN_SIZE - i1 * s1 - 7 + s1) < abs(self.MIN_SIZE - i1 * s2 - 7 + s2) else s2
+      x = Conv2DTranspose(self.INPUT_SHAPE[-1], 7, strides=s, padding='valid')(x)
+      x = self.proc_input(x, self.MIN_SIZE)
 
     # conv part
     for i in list(zip(self.TIME, self.CONV)):

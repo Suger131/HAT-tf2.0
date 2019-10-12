@@ -27,9 +27,11 @@ class SqueezeExcitation(Layer):
   def __init__(self, input_filters=None, rate=16, activation='sigmoid', data_format=None,
                use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
                kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
-               kernel_constraint=None, bias_constraint=None, **kwargs):
+               kernel_constraint=None, bias_constraint=None, trainable=True, **kwargs):
     super(SqueezeExcitation, self).__init__(
-        activity_regularizer=regularizers.get(activity_regularizer), **kwargs)
+      trainable=trainable,
+      activity_regularizer=regularizers.get(activity_regularizer),
+      **kwargs)
     
     self.input_filters = input_filters
     self.rate = rate

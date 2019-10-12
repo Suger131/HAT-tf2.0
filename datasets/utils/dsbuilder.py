@@ -2,6 +2,7 @@
 import gzip
 import os
 import pickle
+import math
 
 import numpy as np
 from PIL import Image
@@ -50,10 +51,11 @@ class DSBuilder(object):
       dsdir: Str. Path of Dataset.
   """
 
-  def __init__(self, dsdir, size:list, shuffle=False, pklen=None, pklname='filelist.txt'):
+  def __init__(self, dsdir, size:list, pkldir=None, shuffle=False, pklen=None, pklname='filelist.txt'):
     
     self.dsdir = dsdir
     self.size = size
+    self.pkldir = pkldir or dsdir
     self.shuffle = shuffle
     self.pklen = pklen or self._cpklen(size)
     self.pklname = pklname
@@ -140,6 +142,9 @@ class DSBuilder(object):
 
   def save(self, train, val, test=None, suffix='.gz'):
     
+    if not os.path.exists(self.pkldir):
+      os.mkdir(self.pkldir)
+
     file_list = []
     
     num_train = len(train[0])
@@ -154,7 +159,7 @@ class DSBuilder(object):
           'train_x': train[0][i*self.pklen:],
           'train_y': train[1][i*self.pklen:],
         }
-      with gzip.open(f"{self.dsdir}/train{i}{suffix}", 'wb') as f:
+      with gzip.open(f"{self.pkldir}/train{i}{suffix}", 'wb') as f:
         pickle.dump(dtrain, f)
       file_list.append(f'train{i}{suffix}\n')
 
@@ -170,11 +175,11 @@ class DSBuilder(object):
           'val_x': val[0][i*self.pklen:],
           'val_y': val[1][i*self.pklen:],
         }
-      with gzip.open(f"{self.dsdir}/val{i}{suffix}", 'wb') as f:
+      with gzip.open(f"{self.pkldir}/val{i}{suffix}", 'wb') as f:
         pickle.dump(dval, f)
       file_list.append(f'val{i}{suffix}\n')
 
-    if test != None:
+    if test is not None:
       num_test = len(test)
       for i in range((num_test + self.pklen - 1) // self.pklen):
         if (i + 1) * self.pklen <= num_test:
@@ -185,24 +190,24 @@ class DSBuilder(object):
           dtest = {
             'test_x': test[i*self.pklen:],
           }
-        with gzip.open(f"{self.dsdir}/test{i}{suffix}", 'wb') as f:
+        with gzip.open(f"{self.pkldir}/test{i}{suffix}", 'wb') as f:
           pickle.dump(dtest, f)
         file_list.append(f'test{i}{suffix}\n')
     
-    with open(f"{self.dsdir}/{self.pklname}", 'w') as f:
+    with open(f"{self.pkldir}/{self.pklname}", 'w') as f:
       f.writelines(file_list)
 
   def load(self):
-    if not os.path.exists(f"{self.dsdir}/{self.pklname}"):
+    if not os.path.exists(f"{self.pkldir}/{self.pklname}"):
       return [], [], []
     
-    with open(f"{self.dsdir}/{self.pklname}", 'r') as f:
+    with open(f"{self.pkldir}/{self.pklname}", 'r') as f:
       filelist = [i.strip() for i in f.readlines()]
 
     train_list = [i for i in filelist if 'train' in i]
     train_x, train_y = [], []
     for i in train_list:
-      with gzip.open(f"{self.dsdir}/{i}", 'rb') as f:
+      with gzip.open(f"{self.pkldir}/{i}", 'rb') as f:
         train = pickle.load(f)
         train_x.append(train['train_x'])
         train_y.append(train['train_y'])
@@ -212,7 +217,7 @@ class DSBuilder(object):
     val_list = [i for i in filelist if 'val' in i]
     val_x, val_y = [], []
     for i in val_list:
-      with gzip.open(f"{self.dsdir}/{i}", 'rb') as f:
+      with gzip.open(f"{self.pkldir}/{i}", 'rb') as f:
         val = pickle.load(f)
         val_x.append(val['val_x'])
         val_y.append(val['val_y'])
@@ -223,7 +228,7 @@ class DSBuilder(object):
     if test_list:
       test_x = []
       for i in test_list:
-        with gzip.open(f"{self.dsdir}/{i}", 'rb') as f:
+        with gzip.open(f"{self.pkldir}/{i}", 'rb') as f:
           test = pickle.load(f)
           test_x.append(test['test_x'])
       test_x = np.concatenate(test_x)
@@ -300,6 +305,30 @@ class DSBuilder(object):
       if w < self.size[1]:
         pw = self.size[1] - w
         lw = [pw // 2, pw - pw // 2]
+        img = np.pad(img, (0, lw, (0, 0)), 'constant', constant_values=0)
+    elif mode == 'imagenet':
+      w, h = img.size
+      if w <= h:
+        nw = int(math.pow(2, math.ceil(math.log2(self.size[1]))))
+        nh = int(h / w * nw)
+      else:
+        nh = int(math.pow(2, math.ceil(math.log2(self.size[0]))))
+        nw = int(w / h * nh)
+      img = img.resize((nw, nh))
+
+      # w, h = img.size
+      img = np.array(img)
+      ph = abs(nh - self.size[0])
+      lh = [ph // 2, ph - ph // 2]
+      pw = abs(nw - self.size[1])
+      lw = [pw // 2, pw - pw // 2]
+      if nh >= self.size[0]:
+        img = img[lh[0]:nh - lh[1],:]
+      else:
+        img = np.pad(img, (lh, 0, (0, 0)), 'constant', constant_values=0)
+      if nw >= self.size[1]:
+        img = img[:,lw[0]:nw - lw[1]]
+      else:
         img = np.pad(img, (0, lw, (0, 0)), 'constant', constant_values=0)
 
     return img

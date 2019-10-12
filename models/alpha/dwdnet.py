@@ -114,6 +114,7 @@ class dwdnet(AdvNet):
 
 # test part
 if __name__ == "__main__":
+  K.set_floatx('float16')
   mod = dwdnet(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 1000}, built=True)
   mod.summary()
 

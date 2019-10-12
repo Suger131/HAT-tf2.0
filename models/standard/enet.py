@@ -96,14 +96,12 @@ class enet(AdvNet):
       strides=self.STEM_STEP,
       kernel_initializer=ENCI(),
       padding='same',
-      use_bias=False
-    )
+      use_bias=False)
     x = self.bn(
       x,
       axis=self.axis,
       momentum=self.batch_norm_momentum,
-      epsilon=self.batch_norm_epsilon
-    )
+      epsilon=self.batch_norm_epsilon)
     x = self.swish(x)
 
     # MBConv part
@@ -125,14 +123,12 @@ class enet(AdvNet):
       strides=1,
       kernel_initializer=ENCI(),
       padding='same',
-      use_bias=False
-    )
+      use_bias=False)
     x = self.bn(
       x,
       axis=self.axis,
       momentum=self.batch_norm_momentum,
-      epsilon=self.batch_norm_epsilon
-    )
+      epsilon=self.batch_norm_epsilon)
     x = self.swish(x)
 
     # output part
@@ -478,5 +474,11 @@ def enetb7(**kwargs):
 
 
 if __name__ == "__main__":
-  mod = enetb0(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 100}, built=True)
+  mod = enetb0(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 1000}, built=True)
   mod.summary()
+
+  from tensorflow.python.keras.utils import plot_model
+
+  plot_model(mod.model,
+            to_file='Enet.jpg',
+            show_shapes=True)

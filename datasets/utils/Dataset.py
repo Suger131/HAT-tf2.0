@@ -9,7 +9,7 @@ class Dataset(object):
     args里应当包含self._MISSION_LIST的定义，指定数据集可以执行的任务。
   """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, dtype='float32', *args, **kwargs):
 
     self.INPUT_SHAPE = ()
     self.NUM_CLASSES = 0
@@ -18,6 +18,8 @@ class Dataset(object):
     self._dict = {}
     self._info_list = ['NUM_TRAIN', 'NUM_TEST', 'NUM_VAL', 'DATAINFO']
     self._info_dict = {}
+
+    self.dtype = dtype
 
     self._built = True
     self.mission = 'classfication'

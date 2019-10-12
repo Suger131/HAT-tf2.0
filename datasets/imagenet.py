@@ -10,7 +10,7 @@ from PIL import Image
 from random import shuffle
 
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
-from hat.datasets.Dataset import Dataset
+from hat.datasets.utils import Dataset
 from hat.datasets.utils import DG
 
 
@@ -38,7 +38,7 @@ class imagenet(Dataset):
     self.TRAIN_PKL_NUM = 260
     self.VAL_PKL_NUM = 10
 
-    self.trian_x = None
+    self.train_x = None
     self.train_y = None
     self.val_x = None
     self.val_y = None
@@ -262,7 +262,7 @@ class imagenet(Dataset):
         suffix: Str.
     """
     data_len = {'train': self.NUM_TRAIN, 'val': self.NUM_VAL}[mode]
-    return DG(os.path.join(self.DATA_DIR, 'pkl'), mode, batch_size, data_len, aug, suffix)
+    return DG(os.path.join(self.DATA_DIR, 'pkl'), mode, batch_size, data_len, self.dtype, aug, suffix)
 
   def load(self):
 

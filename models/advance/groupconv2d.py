@@ -28,8 +28,8 @@ class GroupConv2D(Layer):
                data_format=None, activation=None, use_bias=True, use_group_bias=False,
                kernel_initializer='glorot_uniform', bias_initializer='zeros',
                kernel_regularizer=None, bias_regularizer=None, kernel_constraint=None,
-               bias_constraint=None, **kwargs):
-    super().__init__(**kwargs)
+               bias_constraint=None, trainable=True, **kwargs):
+    super().__init__(trainable=trainable, **kwargs)
     self.groups = groups
     self.filters = filters
     self.kernel_size = conv_utils.normalize_tuple(kernel_size, 2, 'kernel_size')
@@ -57,7 +57,7 @@ class GroupConv2D(Layer):
                        'should be defined. Found `None`.')
     
     input_dim = int(input_shape[channel_axis])
-    assert not input_dim % self.groups
+    assert not input_dim % self.groups, f'{input_dim}, {self.groups}'
     self.input_dim_i = input_dim // self.groups
     self.output_dim_i = self.filters or self.input_dim_i
     self.output_dim = self.output_dim_i * self.groups

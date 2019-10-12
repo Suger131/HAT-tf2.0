@@ -16,11 +16,12 @@ class DG(Sequence):
     Data Generator
   """
   def __init__(self, path: str, mode: str, batch_size: int, data_len: int,
-        aug: ImageDataGenerator=None, suffix='.gz'):
+        dtype=None, aug: ImageDataGenerator=None, suffix='.gz'):
     self.path = path
     self.mode = mode
     self.batch_size = batch_size
     self.data_len = data_len
+    self.dtype = dtype or 'float32'
     self.aug = aug
     self.suffix = suffix
 
@@ -56,6 +57,9 @@ class DG(Sequence):
     if self.aug:
       batch_x = next(self.aug.flow(batch_x, batch_size=self.batch_size))
 
+    batch_x = batch_x / 255.0
+    batch_x = batch_x.astype(self.dtype)
+    
     return batch_x, batch_y
 
 

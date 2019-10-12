@@ -8,6 +8,8 @@
 
 # pylint: disable=no-name-in-module
 
+import math
+from tensorflow.python.keras.layers import Conv2DTranspose
 from hat.models.advance import AdvNet
 from tensorflow.python.keras.optimizers import SGD
 
@@ -35,6 +37,9 @@ class cnn(AdvNet):
 
   def args(self):
 
+    self.USE_MIN_SIZE = True
+    self.MIN_SIZE = 100
+
     self.CONV = self.CONV
     self.LOCAL = self.LOCAL
 
@@ -45,9 +50,18 @@ class cnn(AdvNet):
   def build_model(self):
 
     x_in = self.input(self.INPUT_SHAPE)
+    x = x_in
+
+    # proc_input
+    i1 = self.INPUT_SHAPE[0]
+    if self.USE_MIN_SIZE and i1 < self.MIN_SIZE:
+      s1 = math.ceil(self.MIN_SIZE / i1)
+      s2 = math.floor(self.MIN_SIZE / i1)
+      s = s1 if abs(self.MIN_SIZE - i1 * s1 - 7 + s1) < abs(self.MIN_SIZE - i1 * s2 - 7 + s2) else s2
+      x = Conv2DTranspose(self.INPUT_SHAPE[-1], 7, strides=s, padding='valid')(x)
+      x = self.proc_input(x, self.MIN_SIZE)
 
     # conv
-    x = x_in
     for i in self.CONV:
       x = self.conv(x, i, 5, activation='relu')
       x = self.maxpool(x)
@@ -129,5 +143,5 @@ def cnn256(**kwargs):
 
 # test part
 if __name__ == "__main__":
-  mod = cnn64(DATAINFO={'INPUT_SHAPE': (64, 64, 3), 'NUM_CLASSES': 100}, built=True)
+  mod = cnn64(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
   mod.summary()

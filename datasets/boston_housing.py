@@ -1,4 +1,4 @@
-from hat.datasets.Dataset import Dataset
+from hat.datasets.utils import Dataset
 from tensorflow.python.keras import datasets as ds
 
 
@@ -14,7 +14,8 @@ class boston_housing(Dataset):
     self.NUM_CLASSES = 1
     self.INPUT_SHAPE = (13,)
     (self.train_x, self.train_y), (self.val_x, self.val_y) = ds.boston_housing.load_data()
-
+    self.train_x = self.train_x.astype(self.dtype)
+    self.val_x = self.val_x.astype(self.dtype)
 
 # test mode
 if __name__ == "__main__":
