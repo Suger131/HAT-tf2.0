@@ -1,5 +1,5 @@
 """
-  factory
+  hat.utils.factory
 """
 
 

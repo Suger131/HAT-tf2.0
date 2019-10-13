@@ -1,5 +1,5 @@
 """
-  dataset
+  hat.dataset
 """
 
 # pylint: disable=wildcard-import

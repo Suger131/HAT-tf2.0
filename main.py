@@ -1,3 +1,7 @@
+"""
+  main
+"""
+
 # pylint: disable=wildcard-import
 
 
@@ -9,3 +13,4 @@ if __name__ == "__main__":
   F = factory()
 
   print(C.input_shape)
+  C.model.summary()

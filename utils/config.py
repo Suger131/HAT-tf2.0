@@ -1,5 +1,5 @@
 """
-  config
+  hat.utils.config
 """
 
 # pylint: disable=no-name-in-module
@@ -16,11 +16,13 @@ __all__ = [
 
 import os
 
+import tensorflow as tf
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 
 from hat.utils.logger import logger
 from hat.utils.timer import timer
 from hat.dataset import *
+from hat.model import *
 
 
 class config(object):
@@ -28,6 +30,11 @@ class config(object):
     config
   """
   def __init__(self, *args, **kwargs):
+    # set gpu memory growth
+    self.gpus = tf.config.experimental.list_physical_devices('GPU')
+    for gpu in self.gpus:
+      tf.config.experimental.set_memory_growth(gpu, True)
+    
     self.raw_input = input('=>')
     self._default()
     self._envs()
@@ -67,63 +74,68 @@ class config(object):
       ## set
 
       # dataset_name
-      'D': {'n': 'dataset_name'},
+      'd': {'n': 'dataset_name'},
       'dat': {'n': 'dataset_name'},
       'dataset': {'n': 'dataset_name'},
       # lib_name
-      'L': {'n': 'lib_name'},
+      'l': {'n': 'lib_name'},
       'lib': {'n': 'lib_name'},
       # model_name
-      'M': {'n': 'model_name'},
+      'm': {'n': 'model_name'},
       'mod': {'n': 'model_name'},
       'model': {'n': 'model_name'},
       # batch_size
-      'B': {'n': 'batch_size'},
-      'bat': {'n': 'batch_size'},
-      'batchsize': {'n': 'batch_size'},
+      'b': {'n': 'batch_size', 'l': True},
+      'bat': {'n': 'batch_size', 'l': True},
+      'batchsize': {'n': 'batch_size', 'l': True},
       # epochs
-      'E': {'n': 'epochs'},
-      'ep': {'n': 'epochs'},
-      'epochs': {'n': 'epochs'},
+      'e': {'n': 'epochs', 'l': True},
+      'ep': {'n': 'epochs', 'l': True},
+      'epochs': {'n': 'epochs', 'l': True},
+      # opt
+      'o': {'n': 'opt', 'l': True},
+      'opt': {'n': 'opt', 'l': True},
       # run_mode
-      'R': {'n': 'run_mode'},
+      'r': {'n': 'run_mode'},
       'rm': {'n': 'run_mode'},
       'runmode': {'n': 'run_mode'},
       # addition
-      'A': {'n': 'addition', 'force_str': True},
+      'a': {'n': 'addition', 'force_str': True},
       'add': {'n': 'addition', 'force_str': True},
       'addition': {'n': 'addition', 'force_str': True},
 
       ## tag
 
       # gimage
-      '-G': {'n': 'run_mode', 'd': 'gimage'},
+      '-g': {'n': 'run_mode', 'd': 'gimage'},
       'gimage': {'n': 'run_mode', 'd': 'gimage'},
       # no-gimage
-      '-NG': {'n': 'run_mode', 'd': 'no-gimage'},
+      '-ng': {'n': 'run_mode', 'd': 'no-gimage'},
       'no-gimage': {'n': 'run_mode', 'd': 'no-gimage'},
       # train-only
-      '-T': {'n': 'run_mode', 'd': 'train'},
+      '-t': {'n': 'run_mode', 'd': 'train'},
       'train-only': {'n': 'run_mode', 'd': 'train'},
       # val-only
-      '-V': {'n': 'run_mode', 'd': 'val'},
+      '-v': {'n': 'run_mode', 'd': 'val'},
       'val-only': {'n': 'run_mode', 'd': 'val'},
       # data enhance
-      '-E': {'n': 'is_enhance', 'd': True},
+      '-e': {'n': 'is_enhance', 'd': True},
       'd-e': {'n': 'is_enhance', 'd': True},
       'data-enhance': {'n': 'is_enhance', 'd': True},
       # xgpu
 
       # learning rate alterable
-      '-L': {'n': 'lr_alt', 'd': True},
+      '-l': {'n': 'lr_alt', 'd': True},
       'lr-alt': {'n': 'lr_alt', 'd': True},
       # no-flops
-      '-NF': {'n': 'is_flops', 'd': False},
+      '-nf': {'n': 'is_flops', 'd': False},
       'no-flops': {'n': 'is_flops', 'd': False},
     }
 
   def _envs(self):
+
     self._warning_list = []
+    self._input_late_parameters = {}
 
     self.is_train = True
     self.is_val = True
@@ -134,7 +146,7 @@ class config(object):
 
     self.xgpu = False
     self.xgpu_num = 0
-    self.xgpu_max = 4
+    self.xgpu_max = len(self.gpus)
 
     self.run_mode = ''
     self.addition = ''
@@ -187,7 +199,10 @@ class config(object):
         data = temp[1]
         var_name = var['n']
         var_data = int(data) if type(data) == str and data.isdigit() and 'force_str' not in var else data
-        self.__dict__[var_name] = var_data
+        if 'l' in var:
+          self._input_late_parameters[var_name] = var_data
+        else:
+          self.__dict__[var_name] = var_data
         continue
 
       if i not in self.name_map:
@@ -198,9 +213,10 @@ class config(object):
 
   def _proc_envs(self):
 
-    ## lib
-    # self.lib_name = NLib(self.lib_name)
-    # self.lib = MLib(self.lib_name)
+    # lib
+    _importer = importer()
+    self.lib_name = _importer.nlib(self.lib_name)
+    self.lib = _importer.mlib(self.lib_name)
 
     ## xgpu
     # pass
@@ -241,20 +257,26 @@ class config(object):
       self.log(self.dataset_name, t='Loading Dataset:')
     else:
       self._error(self.dataset_name, 'Not in Datasets:')
-    self.dataset = dataset_caller(self)
+    dataset_caller(self)
     self.log(self.dataset_name, t='Loaded Dataset:')
 
     ## model
-    # self.log(self.lib_name, _T='Model Lib:')
-    # try:
-    #   model_caller = getattr(self.lib, self.model_name)
-    # except:
-    #   self._error(self.model_name, 'Not in Models:')
-    # self.log(self.model_name, _T='Loading Model:')
-    # self.model = model_caller(self)
-    # # ...
-    # # h5
-    # self.log(self.model_name, _T='Loaded Model:')
+    self.log(self.lib_name, t='Model Lib:')
+    try:
+      model_caller = getattr(self.lib, self.model_name)
+    except:
+      self._error(self.model_name, 'Not in Models:')
+    self.log(self.model_name, t='Loading Model:')
+    model_caller(self)
+    # ...
+    # h5
+    self.log(self.model_name, _T='Loaded Model:')
+
+    # late parameters
+    for item in self._input_late_parameters:
+      # opt is special
+      if item == 'opt': continue
+      self.__dict__[item] = self._input_late_parameters[item]
 
     ## run mode && other info
     if self.run_mode == 'no-gimage':

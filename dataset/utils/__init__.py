@@ -1,5 +1,5 @@
 """
-  dataset.utils
+  hat.dataset.utils
 """
 
 from hat.dataset.utils.Dataset import Dataset

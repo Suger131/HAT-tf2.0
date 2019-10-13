@@ -1,5 +1,5 @@
 """
-  utils
+  hat.utils
 """
 
 from hat.utils.factory import factory

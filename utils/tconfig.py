@@ -1,5 +1,5 @@
 """
-  tconfig
+  hat.utils.tconfig
 """
 
 # pylint: disable=no-name-in-module
@@ -18,4 +18,5 @@ class tconfig(object):
   """
   def __init__(self, *args, **kwargs):
     self.dtype = 'float32'
+    self.xgpu = False
 

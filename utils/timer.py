@@ -1,5 +1,5 @@
 """
-  timer
+  hat.utils.timer
 """
 
 

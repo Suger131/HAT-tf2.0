@@ -1,0 +1,5 @@
+"""
+  hat.model.beta
+"""
+
+

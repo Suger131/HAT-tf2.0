@@ -1,5 +1,5 @@
 """
-  logger
+  hat.utils.logger
 """
 
 

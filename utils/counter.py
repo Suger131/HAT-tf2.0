@@ -1,6 +1,5 @@
 """
-  计数器类
-
+  hat.utils.counter
 """
 
 
