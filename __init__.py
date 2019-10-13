@@ -31,4 +31,4 @@ del _os, _sys, _absolute_import, _division, _print_function
 
 # from hat import datasets
 # from hat import models
-# from hat import utils
+from hat import utils
