@@ -1,4 +1,12 @@
-from hat.utils.Log import Log
-from hat.utils.timer import Timer
-from hat.utils.counter import Counter
-from hat.utils.config import Config
+"""
+  utils
+"""
+
+# pylint: disable=wildcard-import
+
+from hat.utils.factory import *
+from hat.utils.config import *
+from hat.utils.logger import *
+from hat.utils.timer import *
+from hat.utils.counter import *
+

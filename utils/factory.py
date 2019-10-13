@@ -1,17 +1,18 @@
 """
-  config
+  factory
 """
 
 
 __all__ = [
-  'config'
+  'factory'
 ]
 
 
-class config(object):
+class factory(object):
   """
-    config
+    factory
   """
   def __init__(self, *args, **kwargs):
     pass
+
 

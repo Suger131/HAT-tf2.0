@@ -27,8 +27,8 @@ _hat_dir = _os.path.dirname(_os.path.abspath(__file__))
 if _hat_dir not in _sys.path:
   _sys.path.append(_hat_dir)
 
+del _os, _sys, _absolute_import, _division, _print_function
+
 # from hat import datasets
 # from hat import models
 # from hat import utils
-
-del _os, _sys, _absolute_import, _division, _print_function
