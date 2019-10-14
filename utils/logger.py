@@ -24,12 +24,12 @@ class logger(object):
   """
     logger
   """
-  def __init__(self, log_dir, log_name=None, ext='.txt', **kwargs):
+  def __init__(self, log_dir, log_name=None, suffix='.txt', **kwargs):
     if not log_dir: raise Exception(f"log_dir must not be a null value.")
     if not os.path.exists(log_dir): os.makedirs(log_dir)
     self._log_name = log_name or self._time
-    self._ext = ext
-    self._log_dir = f'{log_dir}/{self._log_name}{self._ext}'
+    self._suffix = suffix
+    self._log_dir = f'{log_dir}/{self._log_name}{self._suffix}'
     self._call(f'Logger has been Loaded.')
 
   def __call__(self, *args, **kwargs):
