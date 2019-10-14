@@ -136,6 +136,7 @@ class config(object):
 
     self._warning_list = []
     self._input_late_parameters = {}
+    self._logc = []
 
     self.is_train = True
     self.is_val = True
@@ -165,6 +166,7 @@ class config(object):
     self.save_name = ''
     self.save_dir = ''
     self.save_time = 1
+    self.tb_dir = ''
 
     # dataset parameters
     self.mission_list = []
@@ -242,6 +244,10 @@ class config(object):
         self.load_name = ''
         break
       self.load_name = f'{self.h5_name}_{self.save_time-1}.h5'
+    self.tb_dir = os.path.join(
+      self.save_dir,
+      f'tb_{self.save_time}'
+    )
 
     ## logger
     self.log = logger(log_dir=self.save_dir)
@@ -268,15 +274,17 @@ class config(object):
       self._error(self.model_name, 'Not in Models:')
     self.log(self.model_name, t='Loading Model:')
     model_caller(self)
-    # ...
-    # h5
-    self.log(self.model_name, _T='Loaded Model:')
-
     # late parameters
     for item in self._input_late_parameters:
       # opt is special
       if item == 'opt': continue
       self.__dict__[item] = self._input_late_parameters[item]
+    self.model.compile(
+      optimizer=self.opt,
+      loss=self.loss,
+      metrics=self.metrics,
+    )
+    self.log(self.model_name, _T='Loaded Model:')
 
     ## run mode && other info
     if self.run_mode == 'no-gimage':
