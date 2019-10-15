@@ -46,7 +46,7 @@ class Network_v1(object):
     self.args()
     # feedback to config
     for item in self.parameter_dict:
-      self.config.__dict__[item] = self.__dict__[item]
+      self.config.__dict__[item] = self.__dict__[item] or self.config.__dict__[item]
     # pre build
     if self._pre_built:
       self.setup()

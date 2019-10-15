@@ -12,5 +12,7 @@ if __name__ == "__main__":
   C = config()
   F = factory(C)
 
-  print(C.input_shape)
-  C.model.summary()
+  F.train()
+
+  # print(C.input_shape)
+  # C.model.summary()

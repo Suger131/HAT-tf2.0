@@ -2,6 +2,10 @@
   hat.utils.factory
 """
 
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
+# pylint: disable=no-member
+
 
 __all__ = [
   'factory'
@@ -43,14 +47,14 @@ class factory(object):
     _history = []
 
     ## data
-    if self.config.trian_x is None:
+    if self.config.train_x is None:
       # NOTE: NTF
       # data generater
-      if self.is_enhance:
+      if self.config.is_enhance:
         train = self._datagen()
       else:
         train = self._datagen()
-    elif self.is_enhance:
+    elif self.config.is_enhance:
       train = self._datagen()
   
     ## train
@@ -61,15 +65,15 @@ class factory(object):
       self.config.log(f"Epoch: {i+1}/{self.config.epochs} train")
 
       # pattern match
-      if self.config.trian_x is None or self.config.is_enhance:
+      if self.config.train_x is None or self.config.is_enhance:
         _train = self.config.model.fit_generator(
-          trian,
+          train,
           epochs=1,
           callbacks=[tb_callback]
         )
       else:
         _train = self.config.model.fit(
-          self.config.trian_x,
+          self.config.train_x,
           self.config.train_y,
           epochs=1,
           batch_size=self.config.batch_size,

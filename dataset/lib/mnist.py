@@ -5,6 +5,10 @@
   fashion_mnist 数据集
 """
 
+# pylint: disable=no-name-in-module
+# pylint: disable=import-error
+# pylint: disable=no-member
+
 
 __all__ = [
   'mnist',

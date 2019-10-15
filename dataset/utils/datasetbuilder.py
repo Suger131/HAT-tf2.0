@@ -235,7 +235,7 @@ class DatasetBuilder(object):
   def _save(self, data, suffix='.gz'):
 
     train, val, test = data
-    filelist = []
+    file_list = []
 
     ## train
     num_train = len(train[0])
@@ -304,7 +304,7 @@ class DatasetBuilder(object):
       for item in self.classes_dict:
         _dir = f"{self.dsdir}/{name}/{self.classes_dict[item]}/"
         for i in os.listdir(_dir):
-          img = self.img_func(_dir + i + suffix, img_mode)
+          img = self._img_func(_dir + i + suffix, img_mode)
           images.append(img)
           labels.append(item)
       if self.shuffle:
@@ -316,8 +316,8 @@ class DatasetBuilder(object):
       if not os.path.exists(_dir):
         return None
       for files in os.listdir(_dir):
-          img = self.img_func(_dir + files, img_mode)
-          images.append(img)
+        img = self._img_func(_dir + files, img_mode)
+        images.append(img)
       return np.array(images)
 
   # Public method

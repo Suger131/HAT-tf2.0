@@ -7,6 +7,7 @@
 # pylint: disable=wildcard-import
 # pylint: disable=unused-argument
 # pylint: disable=protected-access
+# pylint: disable=bare-except
 
 
 __all__ = [
