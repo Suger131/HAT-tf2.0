@@ -122,6 +122,7 @@ class Network_v1(object):
           initial_epoch=0,
           steps_per_epoch=None,
           validation_steps=None,
+          validation_freq=1,
           max_queue_size=10,
           workers=1,
           use_multiprocessing=False,
@@ -144,6 +145,7 @@ class Network_v1(object):
       initial_epoch=initial_epoch,
       steps_per_epoch=steps_per_epoch,
       validation_steps=validation_steps,
+      validation_freq=validation_freq,
       max_queue_size=max_queue_size,
       workers=workers,
       use_multiprocessing=use_multiprocessing,
@@ -157,6 +159,7 @@ class Network_v1(object):
                verbose=1,
                sample_weight=None,
                steps=None,
+               callbacks=None,
                max_queue_size=10,
                workers=1,
                use_multiprocessing=False):
@@ -170,6 +173,7 @@ class Network_v1(object):
       verbose=verbose,
       sample_weight=sample_weight,
       steps=steps,
+      callbacks=callbacks,
       max_queue_size=max_queue_size,
       workers=workers,
       use_multiprocessing=use_multiprocessing

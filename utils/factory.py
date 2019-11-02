@@ -13,7 +13,7 @@ __all__ = [
 
 
 import os
-from tensorflow.python.keras.callbacks import TensorBoard
+from tensorflow.keras.callbacks import TensorBoard
 
 
 class factory(object):
@@ -41,8 +41,8 @@ class factory(object):
     tb_callback = TensorBoard(
       log_dir=self.config.tb_dir,
       update_freq='batch',
-      write_graph=False,
-      write_images=True
+      # write_graph=False,
+      # write_images=True
     )
     _history = []
 
@@ -64,7 +64,7 @@ class factory(object):
       # log: epoch train start
       self.config.log(f"Epoch: {i+1}/{self.config.epochs} train")
 
-      # pattern match
+      # train pattern match
       if self.config.train_x is None or self.config.is_enhance:
         _train = self.config.model.fit_generator(
           train,
@@ -83,7 +83,10 @@ class factory(object):
       # log: epoch val start
       self.config.log(f"Epochs: {i+1}/{self.config.epochs} val")
 
-      # pattern match
+      # val pattern match
+      # NOTE: NTF
+      # [TF BUG]: evaluate print error
+      # use `verbose=2` instead of `verbose=1`
       if self.config.val_x is None:
         _val = self.config.model.evaluate_generator(
           self.config.val_generator
@@ -92,13 +95,15 @@ class factory(object):
         _val = self.config.model.evaluate(
           self.config.val_x,
           self.config.val_y,
-          batch_size=self.config.batch_size
+          batch_size=self.config.batch_size,
+          verbose=2
         )
 
       # collect history
       _history.extend([{f"epoch{i+1}_train_{item}": _train.history[item][0] for item in _train.history},
                       dict(zip([f'epoch{i+1}_val_loss', f'epoch{i+1}_val_accuracy'], _val))])
-      return _history
+    
+    return _history
 
   def _val(self, *args, **kwargs):
     if self.config.val_x is None:
