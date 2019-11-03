@@ -115,7 +115,8 @@ class factory(object):
       _val = self.config.model.evaluate(
         self.config.val_x,
         self.config.val_y,
-        batch_size=self.config.batch_size
+        batch_size=self.config.batch_size,
+        verbose=2
       )
     return _val
 

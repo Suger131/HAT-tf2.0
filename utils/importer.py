@@ -35,7 +35,8 @@ class importer(object):
     # model:
       import the model class from the given lib. For example: load mlp from standard lib.
   """
-  def __init__(self, *args, **kwargs):
+  def __init__(self, config, *args, **kwargs):
+    self.config = config
     self.lib_dict = {
       'D': 'dataset',
       'd': 'dataset',
@@ -69,10 +70,6 @@ class importer(object):
     """
     lib = self.get_fullname(lib)
     return self.get_class(lib, name)
-    # try:
-    #   return importlib.import_module(f'hat.model.{lib}')
-    # except:
-    #   raise Exception(f'{lib} not in Model lib')
 
   def get_fullname(self, lib):
     if lib in self.lib_dict:
@@ -124,9 +121,12 @@ class importer(object):
           break
       pass
     if target is None:
-      raise Exception(f'{name} not in {lib} lib')
+      self.config.log.error(f'{name} not in {lib} lib')
+      # raise Exception(f'{name} not in {lib} lib')
     if try_bool:
-      print(f'[Warning] {name} was not in {try_name} but in {for_name}. Please check the naming specification.')
+      self.config.log(f'{name} was not in {try_name} but in {for_name}.', a='Warning')
+      self.config.log(f'Please check the naming specification.', a='Warning')
+      # print(f'[Warning] {name} was not in {try_name} but in {for_name}. Please check the naming specification.')
     return target
 
 
@@ -146,8 +146,9 @@ if __name__ == "__main__":
   # print(filelist)
   from hat.utils.tconfig import tconfig
   tc = tconfig()
-  data = importer().load('d', 'mnist')(tc)
+  i = importer(tc)
+  data = i.load('d', 'mnist')(tc)
   print(tc.train_x.shape)
-  model = importer().load('s', 'mlp')(tc)
+  model = i.load('s', 'mlp')(tc)
   tc.model.summary()
 

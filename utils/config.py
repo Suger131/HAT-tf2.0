@@ -48,10 +48,6 @@ class config(object):
   def _set(self, name, data):
     self.__dict__[name] = data
 
-  def _error(self, args, text):
-    self.log(args, t=text, a='Error')
-    os._exit(1)
-
   def _default(self):
     self.dataset_name = 'mnist'
     self.lib_name = 'standard'
@@ -217,7 +213,7 @@ class config(object):
   def _proc_envs(self):
 
     # lib
-    _importer = importer()
+    _importer = importer(self)
     self.lib_name = _importer.get_fullname(self.lib_name)
 
     ## xgpu

@@ -107,6 +107,13 @@ class logger(object):
     if _text: _form.append(f' {_text}')
     return f''.join(_form)
 
+  # public method
+
+  def error(self, args, text=''):
+    self._call(args, t=text, a='Error')
+    os._exit(1)
+
+
 if __name__ == "__main__": 
   a = logger(log_dir='./')
   a(['/', '123'], text='Unsupported option:', _A='Warning')

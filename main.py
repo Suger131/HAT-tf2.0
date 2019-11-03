@@ -13,6 +13,7 @@ if __name__ == "__main__":
   F = factory(C)
 
   F.train()
+  F.val()
 
   # print(C.input_shape)
   # C.model.summary()
