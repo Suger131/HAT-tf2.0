@@ -20,6 +20,7 @@ import os
 import tensorflow as tf
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 
+from hat.utils.importer import importer
 from hat.utils.logger import logger
 from hat.utils.timer import timer
 from hat.dataset import *
@@ -39,7 +40,7 @@ class config(object):
     self.raw_input = input('=>')
     self._default()
     self._envs()
-    self._proc_input(self.raw_input)
+    self._proc_input()
     self._proc_envs()
 
   # Built-in method
@@ -155,7 +156,6 @@ class config(object):
     self.lr_alt = False
 
     self.dataset = None
-    self.lib = None
     self.model = None
     self.log = None
     self.timer = None
@@ -183,8 +183,8 @@ class config(object):
     self.test_x = None
     self.test_y = None
 
-  def _proc_input(self, in_args:str):
-    in_list = in_args.split(' ')
+  def _proc_input(self):
+    in_list = self.raw_input.split(' ')
     for i in in_list:
 
       if i in ['', ' ']:
@@ -218,8 +218,7 @@ class config(object):
 
     # lib
     _importer = importer()
-    self.lib_name = _importer.nlib(self.lib_name)
-    self.lib = _importer.mlib(self.lib_name)
+    self.lib_name = _importer.get_fullname(self.lib_name)
 
     ## xgpu
     # pass
@@ -259,20 +258,13 @@ class config(object):
     self.timer = timer(self.log)
     
     ## dataset
-    dataset_caller = globals().get(self.dataset_name)
-    if callable(dataset_caller):
-      self.log(self.dataset_name, t='Loading Dataset:')
-    else:
-      self._error(self.dataset_name, 'Not in Datasets:')
+    dataset_caller = _importer.load('d', self.dataset_name)
     dataset_caller(self)
     self.log(self.dataset_name, t='Loaded Dataset:')
 
     ## model
     self.log(self.lib_name, t='Model Lib:')
-    try:
-      model_caller = getattr(self.lib, self.model_name)
-    except:
-      self._error(self.model_name, 'Not in Models:')
+    model_caller = _importer.load(self.lib_name, self.model_name)
     self.log(self.model_name, t='Loading Model:')
     model_caller(self)
     # late parameters

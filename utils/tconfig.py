@@ -19,4 +19,7 @@ class tconfig(object):
   def __init__(self, *args, **kwargs):
     self.dtype = 'float32'
     self.xgpu = False
+    self.batch_size = 128
+    self.epochs = 5
+    self.opt = None
 
