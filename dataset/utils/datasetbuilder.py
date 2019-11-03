@@ -182,9 +182,29 @@ class DatasetBuilder(object):
       return img
 
     ## mode: imagenet
-    # NOTE: NTF
     if mode in ['imagenet', 'in']:
-      pass
+      w, h = img.size
+      if w <= h:
+        nw = 256
+        nh = int(h / w * 256)
+      else:
+        nw = int(w / h * 256)
+        nh = 256
+      img = img.resize((nw, nh))
+      img = np.array(img)
+      ph = abs(nh - self.size[0])
+      lh = [ph // 2, ph - ph // 2]
+      pw = abs(nw - self.size[1])
+      lw = [pw // 2, pw - pw // 2]
+      if nh >= self.size[0]:
+        img = img[lh[0]:nh - lh[1],:]
+      else:
+        img = np.pad(img, (lh, 0, (0, 0)), 'constant', constant_values=0)
+      if nw >= self.size[1]:
+        img = img[:,lw[0]:nw - lw[1]]
+      else:
+        img = np.pad(img, (0, lw, (0, 0)), 'constant', constant_values=0)
+      return img
 
     raise Exception('An incorrect mode was passed in:', mode)
 
