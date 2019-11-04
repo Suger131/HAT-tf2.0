@@ -350,6 +350,95 @@ def conv2d(
   )
 
 @hat_nn
+def conv3d(
+  filters, 
+  kernel_size, 
+  strides=1, 
+  padding='same',
+  data_format=None, 
+  dilation_rate=(1, 1, 1), 
+  activation=None, 
+  use_bias=True,
+  kernel_initializer='glorot_uniform', 
+  bias_initializer='zeros',
+  kernel_regularizer=None, 
+  bias_regularizer=None, 
+  activity_regularizer=None,
+  kernel_constraint=None, 
+  bias_constraint=None, 
+  name=None,
+  block:Block=None,
+  **kwargs):
+  """
+    Conv2D Layer
+  """
+  if name is None:
+    name = get_name('Conv3D', block=block)
+  return tf.keras.layers.Conv2D(
+    filters=filters,
+    kernel_size=kernel_size,
+    strides=strides,
+    padding=padding,
+    data_format=data_format,
+    dilation_rate=dilation_rate,
+    activation=activation,
+    use_bias=use_bias,
+    kernel_initializer=kernel_initializer,
+    bias_initializer=bias_initializer,
+    kernel_regularizer=kernel_regularizer,
+    bias_regularizer=bias_regularizer,
+    activity_regularizer=activity_regularizer,
+    kernel_constraint=kernel_constraint,
+    bias_constraint=bias_constraint,
+    name=name,
+    **kwargs
+  )
+
+@hat_nn
+def dwconv2d(
+  kernel_size, 
+  strides=1, 
+  padding='same',
+  depth_multiplier=1,
+  data_format=None, 
+  activation=None, 
+  use_bias=True,
+  depthwise_initializer='glorot_uniform', 
+  bias_initializer='zeros',
+  depthwise_regularizer=None, 
+  bias_regularizer=None, 
+  activity_regularizer=None,
+  depthwise_constraint=None, 
+  bias_constraint=None, 
+  name=None,
+  block:Block=None,
+  **kwargs):
+  """
+    Conv2D Layer
+  """
+  if name is None:
+    name = get_name('DepthwiseConv2D', block=block)
+  return tf.keras.layers.DepthwiseConv2D(
+    kernel_size=kernel_size,
+    strides=strides,
+    padding=padding,
+    depth_multiplier=depth_multiplier,
+    data_format=data_format,
+    activation=activation,
+    use_bias=use_bias,
+    depthwise_initializer=depthwise_initializer,
+    bias_initializer=bias_initializer,
+    depthwise_regularizer=depthwise_regularizer,
+    bias_regularizer=bias_regularizer,
+    activity_regularizer=activity_regularizer,
+    depthwise_constraint=depthwise_constraint,
+    bias_constraint=bias_constraint,
+    name=name,
+    # kernel_initializer=depthwise_initializer, # bug fix
+    **kwargs
+  )
+
+@hat_nn
 def relu(
   max_value=6,
   negative_slope=0,
@@ -456,6 +545,7 @@ avgpool = avgpool2d
 gmpool = globalmaxpool2d
 gapool = globalavgpool2d
 conv = conv2d
+dwconv = dwconv2d
 bn = batchnormalization
 
 
