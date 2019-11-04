@@ -4,10 +4,15 @@
   Neural Network Redefine Layers
 """
 
+# pylint: disable=unused-argument
+# pylint: disable=unused-variable
+# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-builtin
 
-__all__ = [
-  'nn'
-]
+
+# __all__ = [
+  
+# ]
 
 
 import tensorflow as tf
@@ -21,7 +26,7 @@ class Block(object):
   """
   def __init__(self, 
     name=None,
-    *args, **kwargs):
+    **kwargs):
     if name is None:
       name = f"Block{Counter('_block')}"
     self.name = name.capitalize()
@@ -86,8 +91,8 @@ def repeat(layer, times, *args, **kwargs):
     ```
   """
   def _func(x):
-    for i in range(time):
-      x = func(*args, **kwargs)(x)
+    for i in range(times):
+      x = layer(*args, **kwargs)(x)
     return x
   return _func
 
@@ -348,7 +353,7 @@ def conv2d(
 def relu(
   max_value=6,
   negative_slope=0,
-  threshold=0
+  threshold=0,
   name=None,
   block:Block=None,
   **kwargs
@@ -456,14 +461,14 @@ bn = batchnormalization
 
 # test
 if __name__ == "__main__":
-  x_in = Input((28,28,1))
+  x_in = input((28,28,1))
   b1 = Block('Stem')
   b2 = Block()
   x = flatten(block=b1)(x_in)
   x = dense(128, block=b2)(x)
   x = dropout(0.5, block=b2)(x)
   x = dense(10, activation='softmax', block=b2)(x)
-  model = Model(x_in, x)
+  model = model(x_in, x)
   model.summary()
 
   # try to get layers through Block.name
