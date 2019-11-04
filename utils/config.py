@@ -265,6 +265,7 @@ class config(object):
     model_caller(self)
     # late parameters
     for item in self._input_late_parameters:
+      ## NOTE:NTF
       # opt is special
       if item == 'opt': continue
       self.__dict__[item] = self._input_late_parameters[item]

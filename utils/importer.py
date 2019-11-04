@@ -122,11 +122,9 @@ class importer(object):
       pass
     if target is None:
       self.config.log.error(f'{name} not in {lib} lib')
-      # raise Exception(f'{name} not in {lib} lib')
     if try_bool:
       self.config.log(f'{name} was not in {try_name} but in {for_name}.', a='Warning')
       self.config.log(f'Please check the naming specification.', a='Warning')
-      # print(f'[Warning] {name} was not in {try_name} but in {for_name}. Please check the naming specification.')
     return target
 
 

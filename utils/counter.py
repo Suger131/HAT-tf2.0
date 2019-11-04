@@ -1,16 +1,16 @@
 """
-  hat.utils.counter
+  hat.utils.Counter
 """
 
 
 __all__ = [
-  'counter'
+  'Counter'
 ]
 
 
-class counter(object):
+class Counter(object):
   """
-    counter 
+    Counter 
     
     to count and remember the number.
 
@@ -21,7 +21,7 @@ class counter(object):
       A `str` number.
 
     Usage:
-      The `counter` can be used as a `str` object.
+      The `Counter` can be used as a `str` object.
       Or like a function. 
       This two method use the `default initial value 1`.
       And each visit will automatically increase by 1.
@@ -31,11 +31,11 @@ class counter(object):
 
     Sample:
     ```python
-      x = f"{counter('a')}"
-      print(counter('a'))
-      counter()('a')
+      x = f"{Counter('a')}"
+      print(Counter('a'))
+      Counter()('a')
 
-      a=counter()
+      a=Counter()
       a.set('b', 5)
       a.get('b')
     ```
@@ -47,20 +47,20 @@ class counter(object):
 
   def __str__(self):
     if self.name:
-      if self.name not in counter.count:
-        counter.count[self.name] = 1
+      if self.name not in Counter.count:
+        Counter.count[self.name] = 1
       else:
-        counter.count[self.name] += 1
-      return str(counter.count[self.name])
+        Counter.count[self.name] += 1
+      return str(Counter.count[self.name])
     return None
   
   def __call__(self, name):
     if name:
-      if name not in counter.count:
-        counter.count[name] = 1
+      if name not in Counter.count:
+        Counter.count[name] = 1
       else:
-        counter.count[name] += 1
-      return str(counter.count[name])
+        Counter.count[name] += 1
+      return str(Counter.count[name])
     return None
 
   def get(self, name):
@@ -70,8 +70,8 @@ class counter(object):
       Argument:\n
         name: `str`, the count number's name.
     """
-    if name in counter.count:
-      return str(counter.count[name])
+    if name in Counter.count:
+      return str(Counter.count[name])
     return None
       
   def set(self, name, value):
@@ -84,16 +84,16 @@ class counter(object):
     """
     if type(value) != int:
       raise Exception(f"Value must be a int, but got {type(value).__name__}")
-    counter.count[name] = value
+    Counter.count[name] = value
 
 
 if __name__ == "__main__":
-  a = counter()
+  a = Counter()
   print(a.get('a'))
   a.set('b', 5)
   print(a.get('b'))
-  print(counter('b'))
+  print(Counter('b'))
   print(a('b'))
-  print(counter()('b'))
+  print(Counter()('b'))
   print(a.get('b'))
   a.set('c', 'b')
