@@ -20,7 +20,7 @@ from tensorflow.python.keras.models import load_model
 
 class Network_v1(object):
   """
-    这是一个网络模型集类
+    这是一个网络模型基类
 
     需要重写的方法有:
       args: 模型的各种参数

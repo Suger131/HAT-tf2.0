@@ -43,9 +43,23 @@ class Block(object):
 
 
 def hat_nn(func):
+  """A `Decorator` of `hat.Network_v2.layers`
+
+    What it does is to automatically apply `Block` processing to the layer that the function return.
+    `Block` is `hat.model.utils.nn.Block`
+
+    Usage:
+
+    ```python
+    @hat_nn
+    def function(*args):
+      return layer # Inherited from tf.keras.layers.Layer
+    ```
+  """
   def _inner(*args, **kwargs):
+    # get output layer from function
     layer = func(*args, **kwargs)
-    # proc
+    # check block and apply
     if 'block' in kwargs:
       block = kwargs['block']
       # ensure block is not None
@@ -56,8 +70,13 @@ def hat_nn(func):
 
 
 def get_name(name, tag=None, block:Block=None):
-  """
-    Get Layer Name
+  """A `Function` to get Layer name
+
+    The function uses the `Counter`(hat.utils.counter.Counter) to count the layers.
+    Then combine the number with the layer name.
+
+    Return: 
+      Str. The new name of the layer.
   """
   if tag is None:
     tag = name
@@ -70,6 +89,15 @@ def get_name(name, tag=None, block:Block=None):
 
 
 # Public Function
+
+
+def get_block_layer(model:tf.keras.models.Model, block:Block):
+  """A `Function` to get layers that belong to the block
+
+    Return:
+      List of `tf.keras.layers.Layer` or Empty List.
+  """
+  return [l for l in model.layers if block.name in l.name]
 
 
 def repeat(layer, times, *args, **kwargs):
@@ -540,6 +568,7 @@ def batchnormalization(
 input = tf.keras.layers.Input
 model = tf.keras.models.Model
 concat = concatenate
+local = dense
 maxpool = maxpool2d
 avgpool = avgpool2d
 gmpool = globalmaxpool2d
@@ -562,12 +591,13 @@ if __name__ == "__main__":
   model.summary()
 
   # try to get layers through Block.name
-  _layers = model.layers
-  _temp = []
-  for l in _layers:
-    if b2.name in l.name:
-      _temp.append(l)
-  print(_layers)
-  print(_temp)
+  # _layers = model.layers
+  # _temp = []
+  # for l in _layers:
+  #   if b2.name in l.name:
+  #     _temp.append(l)
+  # print(_layers)
+  # print(_temp)
+  print(get_block_layer(model, b2))
   # Successed
 
