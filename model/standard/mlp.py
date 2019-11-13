@@ -5,10 +5,10 @@
 
 
 import tensorflow as tf
-from hat.model.utils.Network_v1 import Network_v1
+import hat
 
 
-class mlp(Network_v1):
+class mlp(hat.Network_v1):
   """
     MLP
   """
@@ -28,8 +28,7 @@ class mlp(Network_v1):
 
 # test
 if __name__ == "__main__":
-  from hat.utils._TC import _TC
-  t = _TC()
+  t = hat._TC()
   t.input_shape = (28, 28, 1)
   t.output_shape = (10,)
   mod = mlp(t)

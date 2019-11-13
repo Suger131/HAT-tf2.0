@@ -23,8 +23,6 @@ from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 from hat.utils.Importer import Importer
 from hat.utils.Logger import Logger
 from hat.utils.Timer import Timer
-from hat.dataset import *
-from hat.model import *
 
 
 class Config(object):
@@ -33,9 +31,9 @@ class Config(object):
   """
   def __init__(self, *args, **kwargs):
     # set gpu memory growth
-    self.gpus = tf.Config.experimental.list_physical_devices('GPU')
+    self.gpus = tf.config.experimental.list_physical_devices('GPU')
     for gpu in self.gpus:
-      tf.Config.experimental.set_memory_growth(gpu, True)
+      tf.config.experimental.set_memory_growth(gpu, True)
     
     self.raw_input = input('=>')
     self._default()

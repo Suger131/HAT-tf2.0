@@ -29,6 +29,10 @@ if _hat_dir not in _sys.path:
 
 del _os, _sys, _absolute_import, _division, _print_function
 
+from hat import utils
 from hat import dataset
 from hat import model
-from hat import utils
+
+from hat.utils import *
+from hat.dataset import *
+from hat.model import *

@@ -5,10 +5,10 @@
 """
 
 
-from hat.model.utils import Network
+import hat
 
 
-class lenet(Network):
+class lenet(hat.Network):
   """
     LeNet-5
   """
@@ -35,8 +35,7 @@ class lenet(Network):
 
 # test
 if __name__ == "__main__":
-  from hat.utils._TC import _TC
-  t = _TC()
+  t = hat._TC()
   t.input_shape = (28, 28, 1)
   t.output_shape = (10,)
   mod = lenet(t)

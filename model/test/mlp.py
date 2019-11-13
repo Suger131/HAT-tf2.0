@@ -6,10 +6,10 @@
 """
 
 
-from hat.model.utils import Network
+import hat
 
 
-class mlp(Network):
+class mlp(hat.Network):
   """
     MLP
   """
@@ -29,12 +29,10 @@ class mlp(Network):
 
 # test
 if __name__ == "__main__":
-  from hat.utils._TC import _TC
-  t = _TC()
+  t = hat._TC()
   t.input_shape = (28, 28, 1)
   t.output_shape = (10,)
   mod = mlp(t)
   t.model.summary()
   print(mod.nn.get_block_layer(mod.model, mod.block))
-
 
