@@ -5,9 +5,4 @@ __pycache__/
 *.record
 *.jpg
 logs/
-datasets/car*/
-datasets/dog*/
-datasets/flower*/
-datasets/fruits*/
 unpush/
-old-file/
