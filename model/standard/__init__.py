@@ -1,3 +1,0 @@
-"""
-  hat.model.standard
-"""
