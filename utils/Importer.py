@@ -91,6 +91,7 @@ class Importer(object):
     return output
 
   def get_class(self, lib, name):
+    name = str(name)
     target = None
     try_bool = False
     for_name = ''
@@ -142,8 +143,8 @@ if __name__ == "__main__":
   # for key in ignore:
   #   filelist.remove(key)
   # print(filelist)
-  from hat.utils.tconfig import tconfig
-  tc = tconfig()
+  from hat import _TC
+  tc = _TC()
   i = Importer(tc)
   data = i.load('d', 'mnist')(tc)
   print(tc.train_x.shape)
