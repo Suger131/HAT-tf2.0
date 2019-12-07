@@ -9,6 +9,7 @@ __all__ = [
 
 
 import os
+import sys
 import time
 
 
@@ -111,7 +112,7 @@ class Logger(object):
 
   def error(self, args, text=''):
     self._call(args, t=text, a='Error')
-    os._exit(1)
+    sys.exit()
 
 
 if __name__ == "__main__": 
