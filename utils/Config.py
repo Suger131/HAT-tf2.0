@@ -25,26 +25,88 @@ from hat.utils.Logger import Logger
 from hat.utils.Timer import Timer
 
 
+_NAME_MAP = {
+  ## set
+
+  # dataset_name
+  'd': {'n': 'dataset_name'},
+  'dat': {'n': 'dataset_name'},
+  'dataset': {'n': 'dataset_name'},
+  # lib_name
+  'l': {'n': 'lib_name'},
+  'lib': {'n': 'lib_name'},
+  # model_name
+  'm': {'n': 'model_name'},
+  'mod': {'n': 'model_name'},
+  'model': {'n': 'model_name'},
+  # batch_size
+  'b': {'n': 'batch_size', 'l': True},
+  'bat': {'n': 'batch_size', 'l': True},
+  'batchsize': {'n': 'batch_size', 'l': True},
+  # epochs
+  'e': {'n': 'epochs', 'l': True},
+  'ep': {'n': 'epochs', 'l': True},
+  'epochs': {'n': 'epochs', 'l': True},
+  # opt
+  'o': {'n': 'opt', 'l': True},
+  'opt': {'n': 'opt', 'l': True},
+  # run_mode
+  'r': {'n': 'run_mode'},
+  'rm': {'n': 'run_mode'},
+  'runmode': {'n': 'run_mode'},
+  # addition
+  'a': {'n': 'addition', 'force_str': True},
+  'add': {'n': 'addition', 'force_str': True},
+  'addition': {'n': 'addition', 'force_str': True},
+
+  ## tag
+
+  # gimage
+  '-g': {'n': 'run_mode', 'd': 'gimage'},
+  'gimage': {'n': 'run_mode', 'd': 'gimage'},
+  # no-gimage
+  '-ng': {'n': 'run_mode', 'd': 'no-gimage'},
+  'no-gimage': {'n': 'run_mode', 'd': 'no-gimage'},
+  # train-only
+  '-t': {'n': 'run_mode', 'd': 'train'},
+  'train-only': {'n': 'run_mode', 'd': 'train'},
+  # val-only
+  '-v': {'n': 'run_mode', 'd': 'val'},
+  'val-only': {'n': 'run_mode', 'd': 'val'},
+  # data enhance
+  '-e': {'n': 'is_enhance', 'd': True},
+  'd-e': {'n': 'is_enhance', 'd': True},
+  'data-enhance': {'n': 'is_enhance', 'd': True},
+  # xgpu
+
+  # learning rate alterable
+  '-l': {'n': 'lr_alt', 'd': True},
+  'lr-alt': {'n': 'lr_alt', 'd': True},
+  # no-flops
+  '-nf': {'n': 'is_flops', 'd': False},
+  'no-flops': {'n': 'is_flops', 'd': False},
+  # gpu memory growth
+  '-ngg': {'n': 'gpu_growth', 'd': False},
+  'no-gpu-growth': {'n': 'gpu_growth', 'd': False},
+}
+
+
 class Config(object):
-  """
-    Config
+  """A `Config` is a Container which contains parameters.
+
+    # Usage
+    ```python
+    import hat
+    c = hat.Config()
+    ```
   """
   def __init__(self, *args, **kwargs):
-    # set gpu memory growth
-    self.gpus = tf.config.experimental.list_physical_devices('GPU')
-    for gpu in self.gpus:
-      tf.config.experimental.set_memory_growth(gpu, True)
-    
     self.raw_input = input('=>')
-    self._default()
-    self._envs()
+    self._init()
     self._proc_input()
     self._proc_envs()
 
   # Built-in method
-
-  def _set(self, name, data):
-    self.__dict__[name] = data
 
   def _default(self):
     self.dataset_name = 'mnist'
@@ -66,69 +128,9 @@ class Config(object):
       horizontal_flip=True,
     )
 
-    self.name_map = {
-      ## set
+  def _init(self):
 
-      # dataset_name
-      'd': {'n': 'dataset_name'},
-      'dat': {'n': 'dataset_name'},
-      'dataset': {'n': 'dataset_name'},
-      # lib_name
-      'l': {'n': 'lib_name'},
-      'lib': {'n': 'lib_name'},
-      # model_name
-      'm': {'n': 'model_name'},
-      'mod': {'n': 'model_name'},
-      'model': {'n': 'model_name'},
-      # batch_size
-      'b': {'n': 'batch_size', 'l': True},
-      'bat': {'n': 'batch_size', 'l': True},
-      'batchsize': {'n': 'batch_size', 'l': True},
-      # epochs
-      'e': {'n': 'epochs', 'l': True},
-      'ep': {'n': 'epochs', 'l': True},
-      'epochs': {'n': 'epochs', 'l': True},
-      # opt
-      'o': {'n': 'opt', 'l': True},
-      'opt': {'n': 'opt', 'l': True},
-      # run_mode
-      'r': {'n': 'run_mode'},
-      'rm': {'n': 'run_mode'},
-      'runmode': {'n': 'run_mode'},
-      # addition
-      'a': {'n': 'addition', 'force_str': True},
-      'add': {'n': 'addition', 'force_str': True},
-      'addition': {'n': 'addition', 'force_str': True},
-
-      ## tag
-
-      # gimage
-      '-g': {'n': 'run_mode', 'd': 'gimage'},
-      'gimage': {'n': 'run_mode', 'd': 'gimage'},
-      # no-gimage
-      '-ng': {'n': 'run_mode', 'd': 'no-gimage'},
-      'no-gimage': {'n': 'run_mode', 'd': 'no-gimage'},
-      # train-only
-      '-t': {'n': 'run_mode', 'd': 'train'},
-      'train-only': {'n': 'run_mode', 'd': 'train'},
-      # val-only
-      '-v': {'n': 'run_mode', 'd': 'val'},
-      'val-only': {'n': 'run_mode', 'd': 'val'},
-      # data enhance
-      '-e': {'n': 'is_enhance', 'd': True},
-      'd-e': {'n': 'is_enhance', 'd': True},
-      'data-enhance': {'n': 'is_enhance', 'd': True},
-      # xgpu
-
-      # learning rate alterable
-      '-l': {'n': 'lr_alt', 'd': True},
-      'lr-alt': {'n': 'lr_alt', 'd': True},
-      # no-flops
-      '-nf': {'n': 'is_flops', 'd': False},
-      'no-flops': {'n': 'is_flops', 'd': False},
-    }
-
-  def _envs(self):
+    self._default()
 
     self._warning_list = []
     self._input_late_parameters = {}
@@ -141,6 +143,8 @@ class Config(object):
     self.is_flops = True
     self.is_enhance = False
 
+    self.gpus = tf.config.experimental.list_physical_devices('GPU')
+    self.gpu_growth = True
     self.xgpu = False
     self.xgpu_num = 0
     self.xgpu_max = len(self.gpus)
@@ -186,10 +190,10 @@ class Config(object):
       
       if '=' in i:
         temp = i.split('=')
-        if temp[0] not in self.name_map:
+        if temp[0] not in _NAME_MAP:
           self._warning_list.append(f'Unsupported option: {temp[0]}')
           continue
-        var = self.name_map[temp[0]]
+        var = _NAME_MAP[temp[0]]
         if 'd' in var:
           self._warning_list.append(f"Can't assign a tag: {temp[0]}")
           continue
@@ -202,46 +206,26 @@ class Config(object):
           self.__dict__[var_name] = var_data
         continue
 
-      if i not in self.name_map:
+      if i not in _NAME_MAP:
         self._warning_list.append(f'Unsupported option: {i}')
         continue
-      var = self.name_map[i]
+      var = _NAME_MAP[i]
       self.__dict__[var['n']] = var['d']
 
   def _proc_envs(self):
 
+    # set gpu memory growth
+    self._set_gpu_memory_growth()
+
     # lib
-    _Importer = Importer(self)
-    self.lib_name = _Importer.get_fullname(self.lib_name)
+    self.importer = Importer(self)
+    self.lib_name = self.importer.get_fullname(self.lib_name)
 
     ## xgpu
     # pass
 
     ## dir
-    self.save_dir = os.path.join(
-      self.log_dir,
-      self.lib_name,
-      f"{self.model_name}_{self.dataset_name}"
-    )
-    self.h5_name = os.path.join(
-      self.save_dir,
-      'save'
-    )
-    if not os.path.exists(self.save_dir):
-      os.makedirs(self.save_dir)
-    while True:
-      if os.path.exists(f'{self.h5_name}_{self.save_time}.h5'):
-        self.save_time += 1
-        continue
-      self.save_name = f'{self.h5_name}_{self.save_time}.h5'
-      if self.save_time == 1:
-        self.load_name = ''
-        break
-      self.load_name = f'{self.h5_name}_{self.save_time-1}.h5'
-    self.tb_dir = os.path.join(
-      self.save_dir,
-      f'tb_{self.save_time}'
-    )
+    self._set_dirs()
 
     ## Logger
     self.log = Logger(log_dir=self.save_dir)
@@ -252,29 +236,16 @@ class Config(object):
     self.Timer = Timer(self.log)
     
     ## dataset
-    dataset_caller = _Importer.load('d', self.dataset_name)
-    dataset_caller(self)
-    self.log(self.dataset_name, t='Loaded Dataset:')
+    self._get_dataset()
 
     ## model
-    self.log(self.lib_name, t='Model Lib:')
-    model_caller = _Importer.load(self.lib_name, self.model_name)
-    self.log(self.model_name, t='Loading Model:')
-    model_caller(self)
-    # late parameters
-    for item in self._input_late_parameters:
-      ## NOTE:NTF
-      # opt is special
-      if item == 'opt': continue
-      self.__dict__[item] = self._input_late_parameters[item]
-    self.model.compile(
-      optimizer=self.opt,
-      loss=self.loss,
-      metrics=self.metrics,
-    )
-    self.log(self.model_name, _T='Loaded Model:')
+    self._get_model()
 
     ## run mode && other info
+    self._proc_run_mode()
+    self._proc_other_parm()
+
+  def _proc_run_mode(self):
     if self.run_mode == 'no-gimage':
       self.is_gimage = False
       self.log('Do not get model image.')
@@ -293,6 +264,8 @@ class Config(object):
     if self.run_mode != 'gimage':
       self.log(self.batch_size, t='Batch size:')
       self.log(self.epochs, t='Epochs:')
+
+  def _proc_other_parm(self):
     if self.is_enhance:
       self.log('Enhance data.')
     if self.xgpu:
@@ -300,7 +273,68 @@ class Config(object):
     if self.lr_alt:
       self.log('Learning Rate Alterable.')
 
+    def _set_gpu_memory_growth(self):
+    if self.gpu_growth:
+      for gpu in self.gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+
+  def _set(self, name, data):
+    self.__dict__[name] = data
+
+  def _set_dirs(self):
+    self.save_dir = os.path.join(
+      self.log_dir,
+      self.lib_name,
+      f"{self.model_name}_{self.dataset_name}"
+    )
+    self.h5_name = os.path.join(
+      self.save_dir,
+      'save'
+    )
+    if not os.path.exists(self.save_dir):
+      os.makedirs(self.save_dir)
+    # NOTE: TODO
+    # change save name of weights
+    while True:
+      if os.path.exists(f'{self.h5_name}_{self.save_time}.h5'):
+        self.save_time += 1
+        continue
+      self.save_name = f'{self.h5_name}_{self.save_time}.h5'
+      if self.save_time == 1:
+        self.load_name = ''
+        break
+      self.load_name = f'{self.h5_name}_{self.save_time-1}.h5'
+    self.tb_dir = os.path.join(
+      self.save_dir,
+      f'tb_{self.save_time}'
+    )
+
+  def _get_dataset(self):
+    dataset_caller = self.importer.load('d', self.dataset_name)
+    dataset_caller(self)
+    self.log(self.dataset_name, t='Loaded Dataset:')
+
+  def _get_model(self):
+    self.log(self.lib_name, t='Model Lib:')
+    model_caller = self.importer.load(self.lib_name, self.model_name)
+    self.log(self.model_name, t='Loading Model:')
+    model_caller(self)
+    # late parameters
+    for item in self._input_late_parameters:
+      ## NOTE:NTF
+      # opt is special
+      if item == 'opt': continue
+      self.__dict__[item] = self._input_late_parameters[item]
+    self.model.compile(
+      optimizer=self.opt,
+      loss=self.loss,
+      metrics=self.metrics,
+    )
+    self.log(self.model_name, _T='Loaded Model:')
+
+
 
 # test part
 if __name__ == "__main__":
   c = Config()
+

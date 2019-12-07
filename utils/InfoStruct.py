@@ -1,5 +1,5 @@
 """
-  hat.utils.infostruct
+  hat.utils.InfoStruct
 """
 
 
@@ -14,7 +14,7 @@ def _getEX(x:float):
   return '%.1e' % x
 
 
-class InfoStruct(object):
+class _InfoStruct(object):
   """
     Info Struct
   """
@@ -47,9 +47,9 @@ class InfoStruct(object):
     """
     return {key:value}
 
-  def gen(self, struct:tuple):
+  def gen(self, struct, tab=0):
     """
-      Print the InfoStruct
+      Genetare the text of InfoStruct
 
       # Parm
         struct:tuple
@@ -57,36 +57,25 @@ class InfoStruct(object):
       # Return
         Str.
     """
-    _str = ''
-    _struct = str(struct)
-    _tab = 0
-    for inx, ch in enumerate(_struct):
-
-      if ch in '()\', ':
-        continue
-      if ch == '{':
-        if _tab:
-          _str += '  ' * _tab
-        continue
-      if ch == '}':
-        _str += '\n'
-        continue
-      if ch == '[':
-        _str += '\n' + '  ' * _tab + '[\n'
-        _tab += 1
-        continue
-      if ch == ']':
-        _tab -= 1
-        if _tab:
-          _str += '  ' * _tab
-        _str += ']'
-        if _struct[inx + 1] != '}':
-          _str += '\n'
-        continue
-
-      _str += ch
-
-    return _str
+    temp = []
+    if isinstance(struct, tuple) and tab == 0:
+      for item in struct:
+        temp.append(self.gen(item, tab))
+    elif isinstance(struct, list):
+      temp.append('\n' + '  ' * tab + '[\n')
+      for item in struct:
+        temp.append(self.gen(item, tab + 1))
+      temp.append('  ' * tab + ']')
+    elif isinstance(struct, dict):
+      for item in struct:
+        temp.append('  ' * tab)
+        temp.append(f'{item}:')
+        temp.append(self.gen(struct[item], tab))
+        temp.append('\n')
+    else:
+      temp.append(str(struct))
+    
+    return ''.join(temp)
 
   def print(self, struct:tuple):
     """
@@ -117,6 +106,7 @@ class InfoStruct(object):
       'batchsize',
       'loss',
       'opt',
+      'input_shape',
     ]
 
     for item in _autolist:
@@ -197,6 +187,19 @@ class InfoStruct(object):
     return self.link(f'log{id}', _struct)
 
 
+class InfoStruct(object):
+  """
+    Info Struct
+  """
+  def __init__(self, **kwargs):
+    self._struct = []
+    pass
+
+  @property
+  def struct(self):
+    return self._struct
+
+
 # test
 if __name__ == "__main__":
   _info = {
@@ -209,16 +212,15 @@ if __name__ == "__main__":
     'opt':'adam',
     'lr':1e-3,
     'flops':345294400,
-    'global_epochs':2
-  }
+    'input_shape':(32,32,3),
+    'global_epochs':2,}
   _log1 = {
     'epochs':2,
     'enhance':True,
     'lr_alt':False,
     'time_start':'19-10-28-10-13-00',
     'time_stop':'19-10-28-11-13-00',
-    'time_cost':3600
-  }
+    'time_cost':3600,}
   _logs = [
     {
       'train_accy':0.0398,
@@ -235,10 +237,11 @@ if __name__ == "__main__":
       'val_accy':0.0574,
       'val_loss':2.9084,
       'val_time':0.9502,
-    },
-  ]
-  i = InfoStruct()
-  C = i.config(_info)
-  L = i.log(1, _log1, _logs)
-  M = i.mix(C, L)
-  i.print(M)
+    },]
+  # i = _InfoStruct()
+  # C = i.config(_info)
+  # L = i.log(1, _log1, _logs)
+  # M = i.mix(C, L)
+  # i.print(M)
+  i2 = InfoStruct()
+  print(i2.struct)

@@ -1,7 +1,7 @@
 """
   hat.utils._TC
 
-  test config
+  config object for test
 """
 
 # pylint: disable=no-name-in-module

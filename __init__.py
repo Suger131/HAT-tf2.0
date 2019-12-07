@@ -13,7 +13,11 @@
 # limitations under the License.
 # ==============================================================================
 """
-  HAT
+  HAT - Huster's Artificial neural network Trainer
+
+  Version 3.0 - alpha
+
+  Based on Tensorflow 2.0 / 1.14
 """
 
 from __future__ import absolute_import as _absolute_import

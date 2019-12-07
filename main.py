@@ -1,17 +1,18 @@
 """
-  main
-"""
+  hat.main
 
-# pylint: disable=wildcard-import
+  程序入口
+  通过Config配置参数
+  通过Factory进行训练、测试等操作
+"""
 
 
 if __name__ == "__main__":
   
-  from hat.utils import *
+  import hat
   
-  C = Config()
-  F = Factory(C)
-
+  C = hat.Config()
+  F = hat.Factory(C)
   F.train()
   F.val()
 
