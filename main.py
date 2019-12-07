@@ -1,9 +1,13 @@
-"""
-  hat.main
+# -*- coding: utf-8 -*-
+"""Main
 
-  程序入口
-  通过Config配置参数
-  通过Factory进行训练、测试等操作
+  File:
+    /hat/main
+
+  Description:
+    The entry of the program. 
+    Use Config for configuring parameters.
+    Use Factor for training, testing, and more.
 """
 
 
@@ -15,6 +19,8 @@ if __name__ == "__main__":
   F = hat.Factory(C)
   F.train()
   F.val()
+
+  # import numpy
 
   # print(C.input_shape)
   # C.model.summary()
