@@ -8,6 +8,7 @@
 # pylint: disable=unused-argument
 # pylint: disable=protected-access
 # pylint: disable=bare-except
+# pylint: disable=attribute-defined-outside-init
 
 
 __all__ = [
@@ -132,6 +133,8 @@ class Config(object):
 
     self._default()
 
+    self._name_map = _NAME_MAP
+
     self._warning_list = []
     self._input_late_parameters = {}
     self._logc = []
@@ -190,10 +193,10 @@ class Config(object):
       
       if '=' in i:
         temp = i.split('=')
-        if temp[0] not in _NAME_MAP:
+        if temp[0] not in self._name_map:
           self._warning_list.append(f'Unsupported option: {temp[0]}')
           continue
-        var = _NAME_MAP[temp[0]]
+        var = self._name_map[temp[0]]
         if 'd' in var:
           self._warning_list.append(f"Can't assign a tag: {temp[0]}")
           continue
@@ -206,10 +209,10 @@ class Config(object):
           self.__dict__[var_name] = var_data
         continue
 
-      if i not in _NAME_MAP:
+      if i not in self._name_map:
         self._warning_list.append(f'Unsupported option: {i}')
         continue
-      var = _NAME_MAP[i]
+      var = self._name_map[i]
       self.__dict__[var['n']] = var['d']
 
   def _proc_envs(self):
@@ -273,7 +276,7 @@ class Config(object):
     if self.lr_alt:
       self.log('Learning Rate Alterable.')
 
-    def _set_gpu_memory_growth(self):
+  def _set_gpu_memory_growth(self):
     if self.gpu_growth:
       for gpu in self.gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
