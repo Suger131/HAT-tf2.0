@@ -13,7 +13,13 @@ __all__ = [
 
 
 import os
+import csv
+import codecs
+
 from tensorflow.keras.callbacks import TensorBoard
+
+from hat.dataset.utils.DataGenerator import DG
+import hat.model.utils.nn as nn
 
 
 class Factory(object):
@@ -120,7 +126,45 @@ class Factory(object):
       )
     return _val
 
+  def _train2(self, *args, **kwargs):
+    dg = DG(
+      self.config.train_x,
+      self.config.train_y,
+      self.config.batch_size
+    )
+    self.config.log(f"Data Generator is ready.")
+    layers = nn.get_meaningful_layer(self.config.model.model)
+    # print(dg.__len__())
+    for ep in range(self.config.epochs):
+      self.config.log(f"Epoch: {ep+1}/{self.config.epochs} train")
+      for i in range(dg.__len__()):
+        train_x, train_y = dg.__getitem__(i)
+        loss = self.config.model.model.train_on_batch(train_x, train_y)
+        for j in layers:
+          mid_output = nn.get_layer_output(self.config.model.model, train_x, j)
+          with codecs.open(f'{self.config.save_dir}/middle_output_{j}.csv', 'a+', 'utf-8') as f:
+            writer = csv.writer(f, dialect='excel')
+            for data in mid_output:
+              writer.writerow(data.tolist())
+        print(f'Step: {i+1}/{dg.__len__()}, accuracy: {loss[1]}, loss: {loss[0]}')
+        # if i + 1 == 10:
+        #   break
+      self.config.log(f"Epoch: {ep+1}/{self.config.epochs} val")
+      _val = self.config.model.evaluate(
+        self.config.val_x,
+        self.config.val_y,
+        batch_size=self.config.batch_size,
+        verbose=2
+      )
+
   # Public method
+
+  def train2(self):
+
+    if not self.config.is_train:
+      return
+
+    self._train2()
 
   def train(self):
 
