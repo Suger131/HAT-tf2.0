@@ -52,9 +52,11 @@ class Network_v2(object):
     ```
   """
   def __init__(self, 
-    config,
+    config=None,
     built=True,
     **kwargs):
+    if not config:
+      raise Exception('No Config Object')
     self.nn = nn
     self.config = config
     self.config.model = self

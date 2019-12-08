@@ -1,29 +1,30 @@
 """
+  hat.model.test.mlp
   默认模型
   简单三层神经网络[添加了Dropout层]
+  Network v2
 """
 
 
-import tensorflow as tf
 import hat
 
 
-class mlp(hat.Network_v1):
+class mlp(hat.Network):
   """
     MLP
   """
   def args(self):
     self.node = 128
-    self.drop = .5
+    self.drop = 0.5
+    self.block = self.nn.Block('MLP')
 
   def build(self):
-    x_in = tf.keras.layers.Input(self.config.input_shape)
-    x = x_in
-    x = tf.keras.layers.Flatten()(x)
-    x = tf.keras.layers.Dense(self.node, activation='relu')(x)
-    x = tf.keras.layers.Dropout(self.drop)(x)
-    x = tf.keras.layers.Dense(self.config.output_shape[0], activation='softmax')(x)
-    return tf.keras.models.Model(x_in, x, name='mlp')
+    inputs = self.nn.input(self.config.input_shape)
+    x = self.nn.flatten(block=self.block)(inputs)
+    x = self.nn.dense(self.node, block=self.block)(x)
+    x = self.nn.dropout(self.drop)(x)
+    x = self.nn.dense(self.config.output_shape[-1], activation='softmax')(x)
+    return self.nn.model(inputs, x)
 
 
 # test
@@ -31,6 +32,7 @@ if __name__ == "__main__":
   t = hat._TC()
   t.input_shape = (28, 28, 1)
   t.output_shape = (10,)
-  mod = mlp(t)
+  mod = mlp(config=t)
   t.model.summary()
-  # mod.flops()
+  print(mod.nn.get_block_layer(mod.model, mod.block))
+

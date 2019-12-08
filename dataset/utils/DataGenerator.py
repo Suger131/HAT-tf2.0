@@ -31,6 +31,49 @@ class DataGenerator(Sequence):
     Data Generator
   """
   def __init__(self,
+    x: np.array,
+    y: np.array,
+    batch_size: int,
+    aug: ImageDataGenerator=None,
+    **kwargs):
+    self.store_x = np.array(x)
+    self.store_y = np.array(y)
+    self.batch_size = batch_size
+    self.length = len(x)
+    self.aug = aug
+
+    self.inx = 0
+    # self.x = []
+    # self.y = []
+
+  def __len__(self):
+    return math.ceil(self.length / self.batch_size)
+
+  def __getitem__(self, idx):
+
+    if self.inx == self.__len__():
+      self.inx = 0
+
+    if self.inx + 1 == self.__len__():
+      batch_x = self.store_x[self.inx * self.batch_size:]
+      batch_y = self.store_y[self.inx * self.batch_size:]
+    else:
+      batch_x = self.store_x[self.inx * self.batch_size:(self.inx + 1) * self.batch_size]
+      batch_y = self.store_y[self.inx * self.batch_size:(self.inx + 1) * self.batch_size]
+    
+    self.inx += 1
+
+    if self.aug:
+      batch_x = next(self.aug.flow(batch_x, batch_size=self.batch_size))
+
+    return batch_x, batch_y
+
+
+class PathDataGenerator(Sequence):
+  """
+    Path Data Generator
+  """
+  def __init__(self,
     path: str,
     mode: str,
     batch_size: int,
@@ -82,4 +125,17 @@ class DataGenerator(Sequence):
 
 # mini-name
 DG = DataGenerator
+
+
+# test part
+if __name__ == "__main__":
+  from hat.utils._TC import _TC
+  from hat.dataset.lib.mnist import mnist
+  t = _TC()
+  data = mnist(t)
+  # d = DG()
+  # print(data.train_x.shape)
+  d = DG(data.train_x, data.train_y, 11000)
+  for i in range(d.__len__()):
+    print(d.__getitem__(i)[0].shape)
 

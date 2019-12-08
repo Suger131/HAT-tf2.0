@@ -100,6 +100,82 @@ def get_block_layer(model:tf.keras.models.Model, block:Block):
   return [l for l in model.layers if block.name in l.name]
 
 
+def get_meaningful_layer(model):
+  """获取有意义的层
+
+    Description:
+      None
+
+    Args:
+      model: Keras.Model. 模型
+
+    Returns:
+      List
+
+    Raises:
+      None
+  """
+  blacklist_words = [
+    'flatten',
+    'dropout',
+    'activation',
+    'relu',
+    'add',
+    'concatenate',
+    'reshape'
+  ]
+  layers = [i.name for i in model.layers]
+  new_layers = []
+  for i in layers:
+    bool_i = True
+    for name in blacklist_words:
+      if name in i.lower():
+        bool_i = False
+    if bool_i:
+      new_layers.append(i)
+  return new_layers
+
+
+def get_layer_output(model, x, name):
+  """获取中间层输出
+
+    Description:
+      None
+
+    Args:
+      model: Keras.Model. 模型
+      x: np.array. 训练数据
+      name: Str. 层名
+
+    Returns:
+      np.array
+
+    Raises:
+      None
+  """
+  K = tf.keras.backend
+  layer = K.function([model.input], [model.get_layer(name=name).output])
+  return layer([x])[0]
+
+
+def input(
+    shape,
+    batch_size=None,
+    dtype=None,
+    sparse=False,
+    tensor=None,
+    **kwargs):
+  return tf.keras.layers.Input(
+    shape=shape,
+    batch_size=batch_size,
+    dtype=dtype,
+    sparse=sparse,
+    tensor=tensor,
+    name=f"Input",
+    **kwargs
+  )
+
+
 def repeat(layer, times, *args, **kwargs):
   """`repeat` is a `Function` of building Repeat Layers
 
@@ -565,7 +641,7 @@ def batchnormalization(
 
 
 # Alias
-input = tf.keras.layers.Input
+# input = tf.keras.layers.Input
 model = tf.keras.models.Model
 concat = concatenate
 local = dense

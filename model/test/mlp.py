@@ -32,7 +32,7 @@ if __name__ == "__main__":
   t = hat._TC()
   t.input_shape = (28, 28, 1)
   t.output_shape = (10,)
-  mod = mlp(t)
+  mod = mlp(config=t)
   t.model.summary()
   print(mod.nn.get_block_layer(mod.model, mod.block))
 

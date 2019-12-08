@@ -147,7 +147,7 @@ class Config(object):
     self.is_enhance = False
 
     self.gpus = tf.config.experimental.list_physical_devices('GPU')
-    self.gpu_growth = True
+    self.gpu_growth = False
     self.xgpu = False
     self.xgpu_num = 0
     self.xgpu_max = len(self.gpus)
@@ -321,7 +321,7 @@ class Config(object):
     self.log(self.lib_name, t='Model Lib:')
     model_caller = self.importer.load(self.lib_name, self.model_name)
     self.log(self.model_name, t='Loading Model:')
-    model_caller(self)
+    model_caller(config=self)
     # late parameters
     for item in self._input_late_parameters:
       ## NOTE:NTF
