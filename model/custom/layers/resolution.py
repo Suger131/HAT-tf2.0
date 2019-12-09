@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""LeNet
+"""Resolution
 
   File: 
     /hat/model/custom/layer/resolution
