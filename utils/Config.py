@@ -30,16 +30,16 @@ _NAME_MAP = {
   ## set
 
   # dataset_name
-  'd': {'n': 'dataset_name'},
-  'dat': {'n': 'dataset_name'},
-  'dataset': {'n': 'dataset_name'},
+  'd': {'n': 'dataset_name', 'force_str': True},
+  'dat': {'n': 'dataset_name', 'force_str': True},
+  'dataset': {'n': 'dataset_name', 'force_str': True},
   # lib_name
-  'l': {'n': 'lib_name'},
-  'lib': {'n': 'lib_name'},
+  'l': {'n': 'lib_name', 'force_str': True},
+  'lib': {'n': 'lib_name', 'force_str': True},
   # model_name
-  'm': {'n': 'model_name'},
-  'mod': {'n': 'model_name'},
-  'model': {'n': 'model_name'},
+  'm': {'n': 'model_name', 'force_str': True},
+  'mod': {'n': 'model_name', 'force_str': True},
+  'model': {'n': 'model_name', 'force_str': True},
   # batch_size
   'b': {'n': 'batch_size', 'l': True},
   'bat': {'n': 'batch_size', 'l': True},
@@ -48,13 +48,16 @@ _NAME_MAP = {
   'e': {'n': 'epochs', 'l': True},
   'ep': {'n': 'epochs', 'l': True},
   'epochs': {'n': 'epochs', 'l': True},
+  # steps
+  's': {'n': 'step', 'l': True},
+  'step': {'n': 'step', 'l': True},
   # opt
   'o': {'n': 'opt', 'l': True},
   'opt': {'n': 'opt', 'l': True},
   # run_mode
-  'r': {'n': 'run_mode'},
-  'rm': {'n': 'run_mode'},
-  'runmode': {'n': 'run_mode'},
+  'r': {'n': 'run_mode', 'force_str': True},
+  'rm': {'n': 'run_mode', 'force_str': True},
+  'runmode': {'n': 'run_mode', 'force_str': True},
   # addition
   'a': {'n': 'addition', 'force_str': True},
   'add': {'n': 'addition', 'force_str': True},
@@ -115,6 +118,7 @@ class Config(object):
     self.model_name = 'mlp'
     self.batch_size = 128
     self.epochs = 5
+    self.step = 0
     self.opt = 'adam'
     self.loss = 'sparse_categorical_crossentropy'
     self.metrics = ['accuracy']
@@ -266,7 +270,10 @@ class Config(object):
       self.log('Val only.')
     if self.run_mode != 'gimage':
       self.log(self.batch_size, t='Batch size:')
-      self.log(self.epochs, t='Epochs:')
+      if not self.step:
+        self.log(self.epochs, t='Epochs:')
+      else:
+        self.log(self.step, t='Steps:')
 
   def _proc_other_parm(self):
     if self.is_enhance:
@@ -333,8 +340,7 @@ class Config(object):
       loss=self.loss,
       metrics=self.metrics,
     )
-    self.log(self.model_name, _T='Loaded Model:')
-
+    self.log(self.model_name, t='Loaded Model:')
 
 
 # test part
