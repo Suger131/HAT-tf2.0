@@ -238,11 +238,11 @@ def repeat(layer, times, *args, **kwargs):
       x = nn.repeat(nn.dense, 3, 128)(x)
     ```
   """
-  def layer(x): # pylint: disable=function-redefined
+  def inner_layer(x):
     for i in range(times):
       x = layer(*args, **kwargs)(x)
     return x
-  return layer
+  return inner_layer
 
 @hat_nn
 def reshape(
