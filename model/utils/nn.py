@@ -18,6 +18,7 @@
 import tensorflow as tf
 
 from hat.utils.Counter import Counter
+from hat.model.custom.layers.resolution import *
 
 
 class Block(object):
@@ -69,7 +70,7 @@ def hat_nn(func):
   return layer
 
 
-def get_name(name, tag=None, block:Block=None):
+def get_hat_name(name, tag=None, block:Block=None):
   """A `Function` to get Layer name
 
     The function uses the `Counter`(hat.utils.counter.Counter) to count the layers.
@@ -91,7 +92,7 @@ def get_name(name, tag=None, block:Block=None):
 # Public Function
 
 
-def get_block_layer(model:tf.keras.models.Model, block:Block):
+def get_layer_with_block(model:tf.keras.models.Model, block:Block):
   """A `Function` to get layers that belong to the block
 
     Return:
@@ -100,8 +101,8 @@ def get_block_layer(model:tf.keras.models.Model, block:Block):
   return [l for l in model.layers if block.name in l.name]
 
 
-def get_meaningful_layer(model):
-  """获取有意义的层
+def get_layer_output_name(model):
+  """获取需要中间输出的层的名字
 
     Description:
       None
@@ -136,8 +137,32 @@ def get_meaningful_layer(model):
   return new_layers
 
 
+def get_layer_weight_name(model):
+  """获取需要中间权重的层的名字
+
+    Description:
+      None
+
+    Args:
+      model: Keras.Model. 模型
+
+    Returns:
+      List
+
+    Raises:
+      None
+  """
+  layers = [i.name for i in model.layers]
+  new_layers = []
+  for name in layers:
+    if model.get_layer(name=name).trainable_weights == []:
+      continue
+    new_layers.append(name)
+  return new_layers
+
+
 def get_layer_output(model, x, name):
-  """获取中间层输出
+  """获取中间输出
 
     Description:
       None
@@ -156,6 +181,25 @@ def get_layer_output(model, x, name):
   K = tf.keras.backend
   layer = K.function([model.input], [model.get_layer(name=name).output])
   return layer([x])[0]
+
+
+def get_layer_weight(model, name):
+  """获取中间权重
+
+    Description:
+      None
+
+    Args:
+      model: Keras.Model. 模型
+      name: Str. 层名
+
+    Returns:
+      List of np.array
+
+    Raises:
+      None
+  """
+  return model.get_layer(name=name).get_weights()
 
 
 def input(
@@ -210,7 +254,7 @@ def reshape(
     Reshape Layer
   """
   if name is None:
-    name = get_name('reshape', block=block)
+    name = get_hat_name('reshape', block=block)
   return tf.keras.layers.Reshape(
     target_shape=target_shape,
     name=name,
@@ -227,7 +271,7 @@ def flatten(
     Flatten Layer
   """
   if name is None:
-    name = get_name('flatten', block=block)
+    name = get_hat_name('flatten', block=block)
   return tf.keras.layers.Flatten(
     data_format=data_format,
     name=name,
@@ -245,7 +289,7 @@ def add(
     input must be a list
   """
   if name is None:
-    name = get_name('add', block=block)
+    name = get_hat_name('add', block=block)
   return tf.keras.layers.Add(
     name=name,
     **kwargs
@@ -263,7 +307,7 @@ def concatenate(
     input must be a list
   """
   if name is None:
-    name = get_name('concatenate', block=block)
+    name = get_hat_name('concatenate', block=block)
   return tf.keras.layers.Concatenate(
     axis=axis,
     name=name,
@@ -289,9 +333,9 @@ def dense(
     Full Connect Layer
   """
   if activation == 'softmax':
-    name = get_name('softmax', '', block=block) # 'Softmax'
+    name = get_hat_name('softmax', '', block=block) # 'Softmax'
   elif name is None:
-    name = get_name('dense', block=block)
+    name = get_hat_name('dense', block=block)
   return tf.keras.layers.Dense(
     units=units,
     activation=activation,
@@ -319,7 +363,7 @@ def dropout(
     Dropout Layer
   """
   if name is None:
-    name = get_name('dropout', block=block)
+    name = get_hat_name('dropout', block=block)
   return tf.keras.layers.Dropout(
     rate=rate,
     noise_shape=noise_shape,
@@ -341,7 +385,7 @@ def maxpool2d(
     Max Pooling 2D Layer
   """
   if name is None:
-    name = get_name('Maxpool2D', block=block)
+    name = get_hat_name('Maxpool2D', block=block)
   return tf.keras.layers.MaxPool2D(
     pool_size=pool_size,
     strides=strides,
@@ -364,7 +408,7 @@ def avgpool2d(
     Avg Pooling 2D Layer
   """
   if name is None:
-    name = get_name('Avgpool2D', block=block)
+    name = get_hat_name('Avgpool2D', block=block)
   return tf.keras.layers.AvgPool2D(
     pool_size=pool_size,
     strides=strides,
@@ -384,7 +428,7 @@ def globalmaxpool2d(
     Global Max Pooling 2D Layer
   """
   if name is None:
-    name = get_name('GlobalMaxpool2D', block=block)
+    name = get_hat_name('GlobalMaxpool2D', block=block)
   return tf.keras.layers.GlobalMaxPool2D(
     data_format=data_format,
     name=name,
@@ -401,7 +445,7 @@ def globalavgpool2d(
     Global Avg Pooling 2D Layer
   """
   if name is None:
-    name = get_name('GlobalAvgpool2D', block=block)
+    name = get_hat_name('GlobalAvgpool2D', block=block)
   return tf.keras.layers.GlobalAvgPool2D(
     data_format=data_format,
     name=name,
@@ -432,7 +476,7 @@ def conv2d(
     Conv2D Layer
   """
   if name is None:
-    name = get_name('Conv2D', block=block)
+    name = get_hat_name('Conv2D', block=block)
   return tf.keras.layers.Conv2D(
     filters=filters,
     kernel_size=kernel_size,
@@ -477,7 +521,7 @@ def conv3d(
     Conv2D Layer
   """
   if name is None:
-    name = get_name('Conv3D', block=block)
+    name = get_hat_name('Conv3D', block=block)
   return tf.keras.layers.Conv2D(
     filters=filters,
     kernel_size=kernel_size,
@@ -521,7 +565,7 @@ def dwconv2d(
     Conv2D Layer
   """
   if name is None:
-    name = get_name('DepthwiseConv2D', block=block)
+    name = get_hat_name('DepthwiseConv2D', block=block)
   return tf.keras.layers.DepthwiseConv2D(
     kernel_size=kernel_size,
     strides=strides,
@@ -558,7 +602,7 @@ def relu(
       max_value: 6
   """
   if name is None:
-    name = get_name('relu', block=block)
+    name = get_hat_name('relu', block=block)
   return tf.keras.layers.ReLU(
     max_value=max_value,
     negative_slope=negative_slope,
@@ -577,7 +621,7 @@ def activation(
     Activation Layer
   """
   if name is None:
-    name = get_name('activation', block=block)
+    name = get_hat_name('activation', block=block)
   return tf.keras.layers.Activation(
     activation=activation,
     name=name,
@@ -613,7 +657,7 @@ def batchnormalization(
     BatchNormalization Layer
   """
   if name is None:
-    name = get_name('BatchNormalization', block=block)
+    name = get_hat_name('BatchNormalization', block=block)
   return tf.keras.layers.BatchNormalization(
     axis=axis,
     momentum=momentum,
@@ -639,9 +683,28 @@ def batchnormalization(
     **kwargs
   )
 
+# =============
+# custom layers
+# =============
+
+def resolutionscal2d(
+    size,
+    axis=-1,
+    name=None,
+    block:Block=None,
+    **kwargs):
+  """ResolutionScaling2D"""
+  if name is None:
+    name = get_hat_name('resolutionscaling2d', block=block)
+  return ResolutionScal2D(
+    size=size,
+    axis=axis,
+    name=name,
+    **kwargs
+  )
+
 
 # Alias
-# input = tf.keras.layers.Input
 model = tf.keras.models.Model
 concat = concatenate
 local = dense
@@ -674,6 +737,6 @@ if __name__ == "__main__":
   #     _temp.append(l)
   # print(_layers)
   # print(_temp)
-  print(get_block_layer(model, b2))
+  print(get_layer_with_block(model, b2))
   # Successed
 
