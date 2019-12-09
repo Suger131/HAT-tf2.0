@@ -11,7 +11,7 @@
     3. CNN64
     4. CNN128
     5. CNN256
-    * 基于Network_v2
+    *基于Network_v2
 """
 
 
@@ -44,23 +44,35 @@ class cnn(hat.Network):
       args: 存放参数
       build: 定义了`keras.Model`并返回
   """
-  def __init__(self, conv, local, drop=0.5, name='', **kwargs):
+  def __init__(
+      self,
+      conv,
+      local,
+      kernel_size=5,
+      drop=0.5,
+      resulution=None,
+      name='',
+      **kwargs):
     self.conv = conv
     self.local = local
+    self.kernel_size = kernel_size
     self.drop = drop
+    self.resolution = resulution
     self.name = name
     super().__init__(**kwargs)
 
   def args(self):
-    self.conv_kernel_size = 5
+    pass
     # import tensorflow as tf
     # self.opt = tf.keras.optimizers.SGD(lr=0.1, momentum=.9)
 
   def build(self):
     inputs = self.nn.input(self.config.input_shape)
     x = inputs
+    if self.resolution is not None:
+      x = self.nn.resolutionscal2d(self.resolution)(x)
     for i in self.conv:
-      x = self.nn.conv(i, self.conv_kernel_size, activation='relu')(x)
+      x = self.nn.conv(i, self.kernel_size, activation='relu')(x)
       x = self.nn.maxpool()(x)
     x = self.nn.flatten()(x)
     for i in self.local:
@@ -78,10 +90,10 @@ def cnn32(**kwargs):
       Local: [512, 256]
 
     Args:
-      Consistent with Network.
+      Consistent with hat.Network
 
     Return:
-      Network.
+      hat.Network
 
     Raises:
       None
@@ -102,10 +114,10 @@ def cnn64(**kwargs):
       Local: [1024, 256]
 
     Args:
-      Consistent with Network.
+      Consistent with hat.Network
 
     Return:
-      Network.
+      hat.Network
 
     Raises:
       None
@@ -126,10 +138,10 @@ def cnn128(**kwargs):
       Local: [2048, 512]
 
     Args:
-      Consistent with Network.
+      Consistent with hat.Network
 
     Return:
-      Network.
+      hat.Network
 
     Raises:
       None
@@ -150,10 +162,10 @@ def cnn256(**kwargs):
       Local: [4096, 1024]
 
     Args:
-      Consistent with Network.
+      Consistent with hat.Network
 
     Return:
-      Network.
+      hat.Network
 
     Raises:
       None
@@ -166,10 +178,62 @@ def cnn256(**kwargs):
   )
 
 
+def lenet(**kwargs):
+  """LeNet-5
+
+    Description: 
+      LeNet-5. Based on <Gradient-Based Learning Applied to 
+      Document Recognition>.
+      SEE: http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf
+
+    Args:
+      Consistent with hat.Network
+
+    Return:
+      hat.Network
+
+    Raises:
+      None
+  """
+  return cnn(
+    conv=[6, 16],
+    local = [84],
+    resulution=32,
+    name='LeNet-5',
+    **kwargs
+  )
+
+
+def lenetc(**kwargs):
+  """LeNet-5 For Cifar-10
+
+    Description: 
+      LeNet-5. Based on <Gradient-Based Learning Applied to 
+      Document Recognition>. This version is referenced for 
+      the Cifar-10 dataset.
+      SEE: http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf
+
+    Args:
+      Consistent with hat.Network
+
+    Return:
+      hat.Network
+
+    Raises:
+      None
+  """
+  return cnn(
+    conv=[20, 50],
+    local=[500],
+    name='LeNet-c',
+    **kwargs
+  )
+
+
 # test part
 if __name__ == '__main__':
   t = hat._TC()
   t.input_shape = (28, 28, 1)
   t.output_shape = (10,)
-  mod = cnn32(config=t)
+  mod = lenetc(config=t)
   t.model.summary()
