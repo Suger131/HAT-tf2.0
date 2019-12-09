@@ -133,29 +133,46 @@ class Factory(object):
       self.config.batch_size
     )
     self.config.log(f"Data Generator is ready.")
-    layers = nn.get_meaningful_layer(self.config.model.model)
-    # print(dg.__len__())
-    for ep in range(self.config.epochs):
-      self.config.log(f"Epoch: {ep+1}/{self.config.epochs} train")
-      for i in range(dg.__len__()):
-        train_x, train_y = dg.__getitem__(i)
-        loss = self.config.model.model.train_on_batch(train_x, train_y)
-        for j in layers:
-          mid_output = nn.get_layer_output(self.config.model.model, train_x, j)
-          with codecs.open(f'{self.config.save_dir}/middle_output_{j}.csv', 'a+', 'utf-8') as f:
-            writer = csv.writer(f, dialect='excel')
-            for data in mid_output:
-              writer.writerow(data.tolist())
-        print(f'Step: {i+1}/{dg.__len__()}, accuracy: {loss[1]}, loss: {loss[0]}')
-        # if i + 1 == 10:
-        #   break
-      self.config.log(f"Epoch: {ep+1}/{self.config.epochs} val")
+    mid_output_layers = nn.get_layer_output_name(self.config.model.model)
+    mid_weight_layers = nn.get_layer_weight_name(self.config.model.model)
+    
+    def train_core(step, max_step):
+      train_x, train_y = dg.__getitem__(0)
+      loss = self.config.model.model.train_on_batch(train_x, train_y)
+      for j in mid_output_layers:
+        mid_output = nn.get_layer_output(self.config.model.model, train_x, j)
+        with codecs.open(f'{self.config.save_dir}/middle_output_{j}.csv', 'a+', 'utf-8') as f:
+          writer = csv.writer(f, dialect='excel')
+          writer.writerow(mid_output.tolist())
+      for j in mid_weight_layers:
+        mid_weight = nn.get_layer_weight(self.config.model.model, j)
+        with codecs.open(f'{self.config.save_dir}/middle_weight_{j}.csv', 'a+', 'utf-8') as f:
+          writer = csv.writer(f, dialect='excel')
+          writer.writerow([z.tolist() for z in mid_weight])
+      self.config.log(f'Step: {step}/{max_step}, accuracy: {loss[1]}, loss: {loss[0]}')
+    
+    if self.config.step:
+      for i in range(self.config.step):
+        train_core(i + 1, self.config.step)
+      self.config.log(f"Step Over, Val.")
       _val = self.config.model.evaluate(
         self.config.val_x,
         self.config.val_y,
         batch_size=self.config.batch_size,
         verbose=2
       )
+    else:
+      for ep in range(self.config.epochs):
+        self.config.log(f"Epoch: {ep+1}/{self.config.epochs} train")
+        for i in range(dg.__len__()):
+          train_core(i+1, dg.__len__())
+        self.config.log(f"Epoch: {ep+1}/{self.config.epochs} val")
+        _val = self.config.model.evaluate(
+          self.config.val_x,
+          self.config.val_y,
+          batch_size=self.config.batch_size,
+          verbose=2
+        )
 
   # Public method
 
