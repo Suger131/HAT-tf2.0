@@ -19,7 +19,7 @@ import codecs
 from tensorflow.keras.callbacks import TensorBoard
 
 from hat.dataset.utils.DataGenerator import DG
-import hat.model.utils.nn as nn
+from hat.model.utils import nn
 
 
 class Factory(object):

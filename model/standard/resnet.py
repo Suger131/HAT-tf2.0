@@ -42,6 +42,7 @@ class resnet(hat.Network):
       pool_size=3,
       pool_step=2,
       drop=0.2,
+      se_ratio=1/16,
       resulution=None,
       name='',
       **kwargs):
@@ -52,6 +53,7 @@ class resnet(hat.Network):
     self.pool_size = pool_size
     self.pool_step = pool_step
     self.drop = drop
+    self.se_ratio = se_ratio
     self.resolution = resulution
     self.name = name
     super().__init__(**kwargs)
@@ -113,8 +115,7 @@ class resnet(hat.Network):
       x = self.nn.relu()(x)
       x = self.nn.conv(filters, 1)(x)
       if self.use_se:
-        # TODO: SE
-        x = x
+        x = self.nn.se(self.se_ratio)(x)
       return self.nn.add()([x, x_])
     return bottle_layer
 

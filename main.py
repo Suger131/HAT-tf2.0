@@ -17,9 +17,9 @@ if __name__ == "__main__":
   
   C = hat.Config()
   F = hat.Factory(C)
-  F.train2()
-  # F.val()
-  # F.save()
+  F.train()
+  F.val()
+  F.save()
 
   # import numpy
 

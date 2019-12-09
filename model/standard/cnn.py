@@ -25,6 +25,8 @@ __all__ = [
   'cnn64',
   'cnn128',
   'cnn256',
+  'lenet',
+  'lenetc',
 ]
 
 

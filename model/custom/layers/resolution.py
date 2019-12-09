@@ -31,6 +31,7 @@ class ResolutionScaling2D(tf.keras.layers.Layer):
     
     Attributes:
       size: Int or list of 2 Int.
+      data_format: Str, default None. `channels_last`(None) or `channels_first`.
 
     Returns:
       tf.Tensor
@@ -45,19 +46,19 @@ class ResolutionScaling2D(tf.keras.layers.Layer):
   def __init__(
       self,
       size: list,
-      axis=-1,
+      data_format=None,
       **kwargs):
     super().__init__(trainable=False, **kwargs)
     self.size = normalize_tuple(size, 2)
-    self.axis = axis
+    self.data_format = data_format or tf.keras.backend.image_data_format()
 
   def call(self, inputs, **kwargs):
     x = inputs
-    if self.axis == -1:
-      _size = tf.keras.backend.int_shape(x)[1:3]
-    else:
-      _size = tf.keras.backend.int_shape(x)[2:4]
     
+    if self.data_format == 'channel_first':
+      _size = tf.keras.backend.int_shape(x)[2:4]
+    else:
+      _size = tf.keras.backend.int_shape(x)[1:3]
     dh = self.size[0] - _size[0]
     dw = self.size[1] - _size[1]
     nh = abs(dh) // 2
@@ -87,7 +88,7 @@ class ResolutionScaling2D(tf.keras.layers.Layer):
   def get_config(self):
     config = {
       'size': self.size,
-      'axis': self.axis,
+      'data_format': self.data_format,
     }
     return dict(list(super().get_config().items()) + list(config.items()))
 

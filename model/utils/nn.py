@@ -18,7 +18,7 @@
 import tensorflow as tf
 
 from hat.utils.Counter import Counter
-from hat.model.custom.layers.resolution import *
+from hat.model import custom
 
 
 class Block(object):
@@ -687,18 +687,41 @@ def batchnormalization(
 # custom layers
 # =============
 
+@hat_nn
 def resolutionscal2d(
     size,
-    axis=-1,
+    data_format=None,
     name=None,
     block:Block=None,
     **kwargs):
   """ResolutionScaling2D"""
   if name is None:
     name = get_hat_name('resolutionscaling2d', block=block)
-  return ResolutionScal2D(
+  return custom.ResolutionScal2D(
     size=size,
-    axis=axis,
+    data_format=data_format,
+    name=name,
+    **kwargs
+  )
+
+@hat_nn
+def sqeuuezeexcitation(
+    ratio=0.25,
+    filters=None,
+    min_filters=1,
+    data_format=None,
+    name=None,
+    block:Block=None,
+    **kwargs
+    ):
+  """SqueezeExcitation"""
+  if name is None:
+    name = get_hat_name('se', block=block)
+  return custom.SqueezeExcitation(
+    ratio=ratio,
+    filters=filters,
+    min_filters=min_filters,
+    data_format=data_format,
     name=name,
     **kwargs
   )
@@ -715,6 +738,7 @@ gapool = globalavgpool2d
 conv = conv2d
 dwconv = dwconv2d
 bn = batchnormalization
+se = sqeuuezeexcitation
 
 
 # test
