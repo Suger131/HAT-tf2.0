@@ -137,5 +137,5 @@ if __name__ == "__main__":
   # print(data.train_x.shape)
   d = DG(data.train_x, data.train_y, 11000)
   for i in range(d.__len__()):
-    print(d.__getitem__(i)[0].shape)
+    print(d.__getitem__(0)[0].shape)
 
