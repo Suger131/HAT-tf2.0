@@ -46,6 +46,10 @@ if _hat_dir not in _sys.path:
 
 del _os, _sys, _absolute_import, _division, _print_function
 
+# ============
+# Import Part
+# ============
+
 from hat.__config__ import version as __version__
 
 from hat import utils

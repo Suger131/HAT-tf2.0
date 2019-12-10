@@ -9,4 +9,8 @@
 """
 
 
+from hat.model.custom import initializers
+from hat.model.custom import layers
+from hat.model.custom import optimizers
+
 from hat.model.custom.layers import *

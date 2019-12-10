@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
+"""Dataset
+
+  File: 
+    /hat/dataset/util/dataset
+
+  Description: 
+    Dataset 基类
 """
-  hat.dataset.utils.Dataset
-
-  Dataset 基类
-"""
-
-# pylint: disable=unused-argument
 
 
+# import setting
 __all__ = [
   'Dataset'
 ]

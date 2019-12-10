@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
+"""Builder
+
+  File: 
+    /hat/dataset/util/builder
+
+  Description: 
+    自定义数据集生成/读取器
 """
-  hat.dataset.utils.DatasetBuilder
-
-  自定义数据集生成/读取器
-"""
-
-# pylint: disable=unused-argument
 
 
+# import setting
 __all__ = [
   '_shuffle',
   'DatasetBuilder',

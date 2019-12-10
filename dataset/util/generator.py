@@ -1,15 +1,15 @@
+# -*- coding: utf-8 -*-
+"""Generator
+
+  File: 
+    /hat/dataset/util/generator
+
+  Description: 
+    数据迭代器
 """
-  hat.dataset.utils.DataGenerator
-
-  数据生成器
-"""
-
-# pylint: disable=unused-argument
-# pylint: disable=attribute-defined-outside-init
-# pylint: disable=no-name-in-module
-# pylint: disable=import-error
 
 
+# import setting
 __all__ = [
   'DataGenerator',
   'DG'
@@ -22,8 +22,8 @@ import os
 import pickle
 
 import numpy as np
-from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.python.keras.utils import Sequence
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.utils import Sequence
 
 
 class DataGenerator(Sequence):

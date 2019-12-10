@@ -18,7 +18,7 @@ import codecs
 
 from tensorflow.keras.callbacks import TensorBoard
 
-from hat.dataset.utils.DataGenerator import DG
+from hat.dataset.util import generator
 from hat.model.utils import nn
 
 
@@ -127,7 +127,7 @@ class Factory(object):
     return _val
 
   def _train2(self, *args, **kwargs):
-    dg = DG(
+    dg = generator.DG(
       self.config.train_x,
       self.config.train_y,
       self.config.batch_size

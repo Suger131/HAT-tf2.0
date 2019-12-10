@@ -1,15 +1,17 @@
+# -*- coding: utf-8 -*-
+"""Mnist
+
+  File: 
+    /hat/dataset/lib/mnist
+
+  Description: 
+    mnist系列数据集，包含
+    1. mnist
+    2. fashion_mnist(f_mnist)
 """
-  hat.dataset.lib.mnist
-
-  mnist 数据集
-  fashion_mnist 数据集
-"""
-
-# pylint: disable=no-name-in-module
-# pylint: disable=import-error
-# pylint: disable=no-member
 
 
+# import setting
 __all__ = [
   'mnist',
   'fashion_mnist',
@@ -17,11 +19,12 @@ __all__ = [
 ]
 
 
-from hat.dataset.utils.Dataset import Dataset
-from tensorflow.python.keras import datasets as ds
+import tensorflow as tf
+
+from hat.dataset.util import dataset
 
 
-class mnist(Dataset):
+class mnist(dataset.Dataset):
   """
     mnist 数据集
   """
@@ -32,7 +35,7 @@ class mnist(Dataset):
     self.num_test = 0
     self.input_shape = (28, 28, 1)
     self.output_shape = (10,)
-    (self.train_x, self.train_y), (self.val_x, self.val_y) = ds.mnist.load_data()
+    (self.train_x, self.train_y), (self.val_x, self.val_y) = tf.keras.datasets.mnist.load_data()
     self.test_x = None
     self.test_y = None
 
@@ -42,7 +45,7 @@ class mnist(Dataset):
     self.val_x = self.val_x.reshape((self.num_val, *self.input_shape))
 
 
-class fashion_mnist(Dataset):
+class fashion_mnist(dataset.Dataset):
   """
     fashion_mnist 数据集
   """
@@ -53,7 +56,7 @@ class fashion_mnist(Dataset):
     self.num_test = 0
     self.input_shape = (28, 28, 1)
     self.output_shape = (10,)
-    (self.train_x, self.train_y), (self.val_x, self.val_y) = ds.fashion_mnist.load_data()
+    (self.train_x, self.train_y), (self.val_x, self.val_y) = tf.keras.datasets.fashion_mnist.load_data()
     self.test_x = None
     self.test_y = None
     
