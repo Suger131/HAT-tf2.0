@@ -26,8 +26,8 @@ class Block(object):
     Block
   """
   def __init__(self, 
-    name=None,
-    **kwargs):
+      name=None,
+      **kwargs):
     if name is None:
       name = f"Block{Counter('_block')}"
     self.name = name.capitalize()
@@ -117,14 +117,13 @@ def get_layer_output_name(model):
       None
   """
   blacklist_words = [
-    'flatten',
-    'dropout',
-    'activation',
-    'relu',
-    'add',
-    'concatenate',
-    'reshape'
-  ]
+      'flatten',
+      'dropout',
+      'activation',
+      'relu',
+      'add',
+      'concatenate',
+      'reshape']
   layers = [i.name for i in model.layers]
   new_layers = []
   for i in layers:
@@ -210,14 +209,13 @@ def input(
     tensor=None,
     **kwargs):
   return tf.keras.layers.Input(
-    shape=shape,
-    batch_size=batch_size,
-    dtype=dtype,
-    sparse=sparse,
-    tensor=tensor,
-    name=f"Input",
-    **kwargs
-  )
+      shape=shape,
+      batch_size=batch_size,
+      dtype=dtype,
+      sparse=sparse,
+      tensor=tensor,
+      name=f"Input",
+      **kwargs)
 
 
 def repeat(layer, times, *args, **kwargs):
@@ -246,43 +244,41 @@ def repeat(layer, times, *args, **kwargs):
 
 @hat_nn
 def reshape(
-  target_shape, 
-  name=None,
-  block:Block=None,
-  **kwargs):
+    target_shape, 
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Reshape Layer
   """
   if name is None:
     name = get_hat_name('reshape', block=block)
   return tf.keras.layers.Reshape(
-    target_shape=target_shape,
-    name=name,
-    **kwargs
-  )
+      target_shape=target_shape,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def flatten(
-  data_format=None, 
-  name=None,
-  block:Block=None,
-  **kwargs):
+    data_format=None, 
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Flatten Layer
   """
   if name is None:
     name = get_hat_name('flatten', block=block)
   return tf.keras.layers.Flatten(
-    data_format=data_format,
-    name=name,
-    **kwargs
-  )
+      data_format=data_format,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def add(
-  name=None,
-  block:Block=None,
-  **kwargs):
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Add Layer
 
@@ -291,16 +287,15 @@ def add(
   if name is None:
     name = get_hat_name('add', block=block)
   return tf.keras.layers.Add(
-    name=name,
-    **kwargs
-  )
+      name=name,
+      **kwargs)
 
 @hat_nn
 def concatenate(
-  axis=-1,
-  name=None,
-  block:Block=None,
-  **kwargs):
+    axis=-1,
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Concatenate Layer
 
@@ -309,26 +304,25 @@ def concatenate(
   if name is None:
     name = get_hat_name('concatenate', block=block)
   return tf.keras.layers.Concatenate(
-    axis=axis,
-    name=name,
-    **kwargs
-  )
+      axis=axis,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def dense( 
-  units, 
-  activation='relu',
-  use_bias=True, 
-  kernel_initializer='glorot_uniform',
-  bias_initializer='zeros', 
-  kernel_regularizer=None, 
-  bias_regularizer=None,
-  activity_regularizer=None, 
-  kernel_constraint=None, 
-  bias_constraint=None, 
-  name=None,
-  block:Block=None,
-  **kwargs):
+    units, 
+    activation='relu',
+    use_bias=True, 
+    kernel_initializer='glorot_uniform',
+    bias_initializer='zeros', 
+    kernel_regularizer=None, 
+    bias_regularizer=None,
+    activity_regularizer=None, 
+    kernel_constraint=None, 
+    bias_constraint=None, 
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Full Connect Layer
   """
@@ -337,264 +331,254 @@ def dense(
   elif name is None:
     name = get_hat_name('dense', block=block)
   return tf.keras.layers.Dense(
-    units=units,
-    activation=activation,
-    use_bias=use_bias,
-    kernel_initializer=kernel_initializer,
-    bias_initializer=bias_initializer,
-    kernel_regularizer=kernel_regularizer,
-    bias_regularizer=bias_regularizer,
-    activity_regularizer=activity_regularizer,
-    kernel_constraint=kernel_constraint,
-    bias_constraint=bias_constraint,
-    name=name,
-    **kwargs
-  )
+      units=units,
+      activation=activation,
+      use_bias=use_bias,
+      kernel_initializer=kernel_initializer,
+      bias_initializer=bias_initializer,
+      kernel_regularizer=kernel_regularizer,
+      bias_regularizer=bias_regularizer,
+      activity_regularizer=activity_regularizer,
+      kernel_constraint=kernel_constraint,
+      bias_constraint=bias_constraint,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def dropout(
-  rate,
-  noise_shape=None,
-  seed=None,
-  name=None,
-  block:Block=None,
-  **kwargs):
+    rate,
+    noise_shape=None,
+    seed=None,
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Dropout Layer
   """
   if name is None:
     name = get_hat_name('dropout', block=block)
   return tf.keras.layers.Dropout(
-    rate=rate,
-    noise_shape=noise_shape,
-    seed=seed,
-    name=name,
-    **kwargs
-  )
+      rate=rate,
+      noise_shape=noise_shape,
+      seed=seed,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def maxpool2d(
-  pool_size=(2, 2), 
-  strides=None, 
-  padding='same',
-  data_format=None,
-  name=None,
-  block:Block=None, 
-  **kwargs):
+    pool_size=(2, 2), 
+    strides=None, 
+    padding='same',
+    data_format=None,
+    name=None,
+    block:Block=None, 
+    **kwargs):
   """
     Max Pooling 2D Layer
   """
   if name is None:
     name = get_hat_name('Maxpool2D', block=block)
   return tf.keras.layers.MaxPool2D(
-    pool_size=pool_size,
-    strides=strides,
-    padding=padding,
-    data_format=data_format,
-    name=name,
-    **kwargs
-  )
+      pool_size=pool_size,
+      strides=strides,
+      padding=padding,
+      data_format=data_format,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def avgpool2d(
-  pool_size=(2, 2), 
-  strides=None, 
-  padding='same',
-  data_format=None,
-  name=None,
-  block:Block=None, 
-  **kwargs):
+    pool_size=(2, 2), 
+    strides=None, 
+    padding='same',
+    data_format=None,
+    name=None,
+    block:Block=None, 
+    **kwargs):
   """
     Avg Pooling 2D Layer
   """
   if name is None:
     name = get_hat_name('Avgpool2D', block=block)
   return tf.keras.layers.AvgPool2D(
-    pool_size=pool_size,
-    strides=strides,
-    padding=padding,
-    data_format=data_format,
-    name=name,
-    **kwargs
-  )
+      pool_size=pool_size,
+      strides=strides,
+      padding=padding,
+      data_format=data_format,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def globalmaxpool2d(
-  data_format=None,
-  name=None,
-  block:Block=None, 
-  **kwargs):
+    data_format=None,
+    name=None,
+    block:Block=None, 
+    **kwargs):
   """
     Global Max Pooling 2D Layer
   """
   if name is None:
     name = get_hat_name('GlobalMaxpool2D', block=block)
   return tf.keras.layers.GlobalMaxPool2D(
-    data_format=data_format,
-    name=name,
-    **kwargs
-  )
+      data_format=data_format,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def globalavgpool2d(
-  data_format=None,
-  name=None,
-  block:Block=None, 
-  **kwargs):
+    data_format=None,
+    name=None,
+    block:Block=None, 
+    **kwargs):
   """
     Global Avg Pooling 2D Layer
   """
   if name is None:
     name = get_hat_name('GlobalAvgpool2D', block=block)
   return tf.keras.layers.GlobalAvgPool2D(
-    data_format=data_format,
-    name=name,
-    **kwargs
-  )
+      data_format=data_format,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def conv2d(
-  filters, 
-  kernel_size, 
-  strides=1, 
-  padding='same',
-  data_format=None, 
-  dilation_rate=(1, 1), 
-  activation=None, 
-  use_bias=True,
-  kernel_initializer='glorot_uniform', 
-  bias_initializer='zeros',
-  kernel_regularizer=None, 
-  bias_regularizer=None, 
-  activity_regularizer=None,
-  kernel_constraint=None, 
-  bias_constraint=None, 
-  name=None,
-  block:Block=None,
-  **kwargs):
+    filters, 
+    kernel_size, 
+    strides=1, 
+    padding='same',
+    data_format=None, 
+    dilation_rate=(1, 1), 
+    activation=None, 
+    use_bias=True,
+    kernel_initializer='glorot_uniform', 
+    bias_initializer='zeros',
+    kernel_regularizer=None, 
+    bias_regularizer=None, 
+    activity_regularizer=None,
+    kernel_constraint=None, 
+    bias_constraint=None, 
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Conv2D Layer
   """
   if name is None:
     name = get_hat_name('Conv2D', block=block)
   return tf.keras.layers.Conv2D(
-    filters=filters,
-    kernel_size=kernel_size,
-    strides=strides,
-    padding=padding,
-    data_format=data_format,
-    dilation_rate=dilation_rate,
-    activation=activation,
-    use_bias=use_bias,
-    kernel_initializer=kernel_initializer,
-    bias_initializer=bias_initializer,
-    kernel_regularizer=kernel_regularizer,
-    bias_regularizer=bias_regularizer,
-    activity_regularizer=activity_regularizer,
-    kernel_constraint=kernel_constraint,
-    bias_constraint=bias_constraint,
-    name=name,
-    **kwargs
-  )
+      filters=filters,
+      kernel_size=kernel_size,
+      strides=strides,
+      padding=padding,
+      data_format=data_format,
+      dilation_rate=dilation_rate,
+      activation=activation,
+      use_bias=use_bias,
+      kernel_initializer=kernel_initializer,
+      bias_initializer=bias_initializer,
+      kernel_regularizer=kernel_regularizer,
+      bias_regularizer=bias_regularizer,
+      activity_regularizer=activity_regularizer,
+      kernel_constraint=kernel_constraint,
+      bias_constraint=bias_constraint,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def conv3d(
-  filters, 
-  kernel_size, 
-  strides=1, 
-  padding='same',
-  data_format=None, 
-  dilation_rate=(1, 1, 1), 
-  activation=None, 
-  use_bias=True,
-  kernel_initializer='glorot_uniform', 
-  bias_initializer='zeros',
-  kernel_regularizer=None, 
-  bias_regularizer=None, 
-  activity_regularizer=None,
-  kernel_constraint=None, 
-  bias_constraint=None, 
-  name=None,
-  block:Block=None,
-  **kwargs):
+    filters, 
+    kernel_size, 
+    strides=1, 
+    padding='same',
+    data_format=None, 
+    dilation_rate=(1, 1, 1), 
+    activation=None, 
+    use_bias=True,
+    kernel_initializer='glorot_uniform', 
+    bias_initializer='zeros',
+    kernel_regularizer=None, 
+    bias_regularizer=None, 
+    activity_regularizer=None,
+    kernel_constraint=None, 
+    bias_constraint=None, 
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Conv2D Layer
   """
   if name is None:
     name = get_hat_name('Conv3D', block=block)
   return tf.keras.layers.Conv2D(
-    filters=filters,
-    kernel_size=kernel_size,
-    strides=strides,
-    padding=padding,
-    data_format=data_format,
-    dilation_rate=dilation_rate,
-    activation=activation,
-    use_bias=use_bias,
-    kernel_initializer=kernel_initializer,
-    bias_initializer=bias_initializer,
-    kernel_regularizer=kernel_regularizer,
-    bias_regularizer=bias_regularizer,
-    activity_regularizer=activity_regularizer,
-    kernel_constraint=kernel_constraint,
-    bias_constraint=bias_constraint,
-    name=name,
-    **kwargs
-  )
+      filters=filters,
+      kernel_size=kernel_size,
+      strides=strides,
+      padding=padding,
+      data_format=data_format,
+      dilation_rate=dilation_rate,
+      activation=activation,
+      use_bias=use_bias,
+      kernel_initializer=kernel_initializer,
+      bias_initializer=bias_initializer,
+      kernel_regularizer=kernel_regularizer,
+      bias_regularizer=bias_regularizer,
+      activity_regularizer=activity_regularizer,
+      kernel_constraint=kernel_constraint,
+      bias_constraint=bias_constraint,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def dwconv2d(
-  kernel_size, 
-  strides=1, 
-  padding='same',
-  depth_multiplier=1,
-  data_format=None, 
-  activation=None, 
-  use_bias=True,
-  depthwise_initializer='glorot_uniform', 
-  bias_initializer='zeros',
-  depthwise_regularizer=None, 
-  bias_regularizer=None, 
-  activity_regularizer=None,
-  depthwise_constraint=None, 
-  bias_constraint=None, 
-  name=None,
-  block:Block=None,
-  **kwargs):
+    kernel_size, 
+    strides=1, 
+    padding='same',
+    depth_multiplier=1,
+    data_format=None, 
+    activation=None, 
+    use_bias=True,
+    depthwise_initializer='glorot_uniform', 
+    bias_initializer='zeros',
+    depthwise_regularizer=None, 
+    bias_regularizer=None, 
+    activity_regularizer=None,
+    depthwise_constraint=None, 
+    bias_constraint=None, 
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Conv2D Layer
   """
   if name is None:
     name = get_hat_name('DepthwiseConv2D', block=block)
   return tf.keras.layers.DepthwiseConv2D(
-    kernel_size=kernel_size,
-    strides=strides,
-    padding=padding,
-    depth_multiplier=depth_multiplier,
-    data_format=data_format,
-    activation=activation,
-    use_bias=use_bias,
-    depthwise_initializer=depthwise_initializer,
-    bias_initializer=bias_initializer,
-    depthwise_regularizer=depthwise_regularizer,
-    bias_regularizer=bias_regularizer,
-    activity_regularizer=activity_regularizer,
-    depthwise_constraint=depthwise_constraint,
-    bias_constraint=bias_constraint,
-    name=name,
-    # kernel_initializer=depthwise_initializer, # bug fix
-    **kwargs
-  )
+      kernel_size=kernel_size,
+      strides=strides,
+      padding=padding,
+      depth_multiplier=depth_multiplier,
+      data_format=data_format,
+      activation=activation,
+      use_bias=use_bias,
+      depthwise_initializer=depthwise_initializer,
+      bias_initializer=bias_initializer,
+      depthwise_regularizer=depthwise_regularizer,
+      bias_regularizer=bias_regularizer,
+      activity_regularizer=activity_regularizer,
+      depthwise_constraint=depthwise_constraint,
+      bias_constraint=bias_constraint,
+      name=name,
+      # kernel_initializer=depthwise_initializer, # bug fix
+      **kwargs)
 
 @hat_nn
 def relu(
-  max_value=6,
-  negative_slope=0,
-  threshold=0,
-  name=None,
-  block:Block=None,
-  **kwargs
-  ):
+    max_value=6,
+    negative_slope=0,
+    threshold=0,
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     RuLU Layer
 
@@ -604,84 +588,81 @@ def relu(
   if name is None:
     name = get_hat_name('relu', block=block)
   return tf.keras.layers.ReLU(
-    max_value=max_value,
-    negative_slope=negative_slope,
-    threshold=threshold,
-    name=name,
-    **kwargs
-  )
+      max_value=max_value,
+      negative_slope=negative_slope,
+      threshold=threshold,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def activation(
-  activation,
-  name=None,
-  block:Block=None,
-  **kwargs):
+    activation,
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     Activation Layer
   """
   if name is None:
     name = get_hat_name('activation', block=block)
   return tf.keras.layers.Activation(
-    activation=activation,
-    name=name,
-    **kwargs
-  )
+      activation=activation,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def batchnormalization(
-  axis=-1, 
-  momentum=0.99, 
-  epsilon=1e-3, 
-  center=True, 
-  scale=True,
-  beta_initializer='zeros', 
-  gamma_initializer='ones', 
-  moving_mean_initializer='zeros',
-  moving_variance_initializer='ones', 
-  beta_regularizer=None, 
-  gamma_regularizer=None,
-  beta_constraint=None, 
-  gamma_constraint=None, 
-  renorm=False, 
-  renorm_clipping=None,
-  renorm_momentum=0.99, 
-  fused=None, 
-  trainable=True, 
-  virtual_batch_size=None,
-  adjustment=None, 
-  name=None,
-  block:Block=None,
-  **kwargs):
+    axis=-1, 
+    momentum=0.99, 
+    epsilon=1e-3, 
+    center=True, 
+    scale=True,
+    beta_initializer='zeros', 
+    gamma_initializer='ones', 
+    moving_mean_initializer='zeros',
+    moving_variance_initializer='ones', 
+    beta_regularizer=None, 
+    gamma_regularizer=None,
+    beta_constraint=None, 
+    gamma_constraint=None, 
+    renorm=False, 
+    renorm_clipping=None,
+    renorm_momentum=0.99, 
+    fused=None, 
+    trainable=True, 
+    virtual_batch_size=None,
+    adjustment=None, 
+    name=None,
+    block:Block=None,
+    **kwargs):
   """
     BatchNormalization Layer
   """
   if name is None:
     name = get_hat_name('BatchNormalization', block=block)
   return tf.keras.layers.BatchNormalization(
-    axis=axis,
-    momentum=momentum,
-    epsilon=epsilon,
-    center=center,
-    scale=scale,
-    beta_initializer=beta_initializer,
-    gamma_initializer=gamma_initializer,
-    moving_mean_initializer=moving_mean_initializer,
-    moving_variance_initializer=moving_variance_initializer,
-    beta_regularizer=beta_regularizer,
-    gamma_regularizer=gamma_regularizer,
-    beta_constraint=beta_constraint,
-    gamma_constraint=gamma_constraint,
-    renorm=renorm,
-    renorm_clipping=renorm_clipping,
-    renorm_momentum=renorm_momentum,
-    fused=fused,
-    trainable=trainable,
-    virtual_batch_size=virtual_batch_size,
-    adjustment=adjustment,
-    name=name,
-    **kwargs
-  )
+      axis=axis,
+      momentum=momentum,
+      epsilon=epsilon,
+      center=center,
+      scale=scale,
+      beta_initializer=beta_initializer,
+      gamma_initializer=gamma_initializer,
+      moving_mean_initializer=moving_mean_initializer,
+      moving_variance_initializer=moving_variance_initializer,
+      beta_regularizer=beta_regularizer,
+      gamma_regularizer=gamma_regularizer,
+      beta_constraint=beta_constraint,
+      gamma_constraint=gamma_constraint,
+      renorm=renorm,
+      renorm_clipping=renorm_clipping,
+      renorm_momentum=renorm_momentum,
+      fused=fused,
+      trainable=trainable,
+      virtual_batch_size=virtual_batch_size,
+      adjustment=adjustment,
+      name=name,
+      **kwargs)
 
 # =============
 # custom layers
@@ -698,11 +679,10 @@ def resolutionscal2d(
   if name is None:
     name = get_hat_name('resolutionscaling2d', block=block)
   return custom.ResolutionScal2D(
-    size=size,
-    data_format=data_format,
-    name=name,
-    **kwargs
-  )
+      size=size,
+      data_format=data_format,
+      name=name,
+      **kwargs)
 
 @hat_nn
 def sqeuuezeexcitation(
@@ -712,19 +692,81 @@ def sqeuuezeexcitation(
     data_format=None,
     name=None,
     block:Block=None,
-    **kwargs
-    ):
+    **kwargs):
   """SqueezeExcitation"""
   if name is None:
     name = get_hat_name('se', block=block)
   return custom.SqueezeExcitation(
-    ratio=ratio,
-    filters=filters,
-    min_filters=min_filters,
-    data_format=data_format,
-    name=name,
-    **kwargs
-  )
+      ratio=ratio,
+      filters=filters,
+      min_filters=min_filters,
+      data_format=data_format,
+      name=name,
+      **kwargs)
+
+@hat_nn
+def groupconv2d(
+    group,
+    filters=None,
+    kernel_size=(1, 1),
+    strides=(1, 1),
+    padding='valid',
+    data_format=None,
+    activation=None,
+    use_bias=True,
+    use_group_bias=False,
+    kernel_initializer='glorot_uniform',
+    kernel_regularizer=None,
+    kernel_constraint=None,
+    bias_initializer='zeros',
+    bias_regularizer=None,
+    bias_constraint=None,
+    name=None,
+    block:Block=None,
+    **kwargs):
+  """GroupConv2D"""
+  if name is None:
+    name = get_hat_name('groupconv2d', block=block)
+  return custom.GroupConv2D(
+      group=group,
+      filters=filters,
+      kernel_size=kernel_size,
+      strides=strides,
+      padding=padding,
+      data_format=data_format,
+      activation=activation,
+      use_bias=use_bias,
+      use_group_bias=use_group_bias,
+      kernel_initializer=kernel_initializer,
+      kernel_regularizer=kernel_regularizer,
+      kernel_constraint=kernel_constraint,
+      bias_initializer=bias_initializer,
+      bias_regularizer=bias_regularizer,
+      bias_constraint=bias_constraint,
+      name=name,
+      **kwargs)
+
+@hat_nn
+def addbias(
+    rank,
+    data_format=None,
+    bias_initializer='zeros',
+    bias_regularizer=None,
+    bias_constraint=None,
+    name=None,
+    block:Block=None,
+    **kwargs):
+  """AddBias"""
+  if name is None:
+    name = get_hat_name('addbias', block=block)
+  return custom.AddBias(
+      rank=rank,
+      data_format=data_format,
+      bias_initializer=bias_initializer,
+      bias_regularizer=bias_regularizer,
+      bias_constraint=bias_constraint,
+      name=name,
+      **kwargs)
 
 
 # Alias
@@ -739,6 +781,7 @@ conv = conv2d
 dwconv = dwconv2d
 bn = batchnormalization
 se = sqeuuezeexcitation
+gconv = groupconv2d
 
 
 # test

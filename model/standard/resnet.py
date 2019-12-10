@@ -17,6 +17,15 @@ import hat
 # import setting
 __all__ = [
   'resnet',
+  'resnet50',
+  'resnet101',
+  'resnet152',
+  'resnetse50',
+  'resnetse101',
+  'resnetse152',
+  'resnext50',
+  'resnext101',
+  'resnext152',
 ]
 
 
@@ -66,6 +75,7 @@ class resnet(hat.Network):
     self.res_strides = [1, 2, 2, 2]
     if self.config.input_shape[0] // 32 < 4:
       self.res_strides[3] = 1
+    self.group = 32
 
   def build(self):
     inputs = self.nn.input(self.config.input_shape)
@@ -103,8 +113,11 @@ class resnet(hat.Network):
       else:
         x_ = inputs
       if self.use_group:
-        # TODO: GroupConv
-        x = x
+        x = self.nn.conv(filters // 2, 1, activation='relu')(x)
+        x = self.nn.bn()(x)
+        x = self.nn.relu()(x)
+        x = self.nn.gconv(self.group, kernel_size=self.kernel_size,
+            strides=strides, padding='same', activation='relu')(x)
       else:
         x = self.nn.conv(filters // 4, 1, activation='relu')(x)
         x = self.nn.bn()(x)
@@ -186,13 +199,157 @@ def resnet152(**kwargs):
   )
 
 
+def resnetse50(**kwargs):
+  """ResNet-SE-50
+
+    Description: 
+      times: [3, 4, 6, 3]
+      use_se: True
+
+    Args:
+      Consistent with hat.Network
+
+    Return:
+      hat.Network
+
+    Raises:
+      None
+  """
+  return resnet(
+    times=[3, 4, 6, 3],
+    use_se=True,
+    name='resnetse50',
+    **kwargs
+  )
+
+
+def resnetse101(**kwargs):
+  """ResNet-SE-101
+
+    Description: 
+      times: [3, 4, 23, 3]
+      use_se: True
+
+    Args:
+      Consistent with hat.Network
+
+    Return:
+      hat.Network
+
+    Raises:
+      None
+  """
+  return resnet(
+    times=[3, 4, 23, 3],
+    use_se=True,
+    name='resnetse101',
+    **kwargs
+  )
+
+
+def resnetse152(**kwargs):
+  """ResNet-SE-152
+
+    Description: 
+      times: [3, 8, 36, 3]
+      use_se: True
+
+    Args:
+      Consistent with hat.Network
+
+    Return:
+      hat.Network
+
+    Raises:
+      None
+  """
+  return resnet(
+    times=[3, 8, 36, 3],
+    use_se=True,
+    name='resnetse152',
+    **kwargs
+  )
+
+
+def resnext50(**kwargs):
+  """ResNeXt-50
+
+    Description: 
+      times: [3, 4, 6, 3]
+      use_group: True
+
+    Args:
+      Consistent with hat.Network
+
+    Return:
+      hat.Network
+
+    Raises:
+      None
+  """
+  return resnet(
+    times=[3, 4, 6, 3],
+    use_group=True,
+    name='resnext50',
+    **kwargs
+  )
+
+
+def resnext101(**kwargs):
+  """ResNeXt-101
+
+    Description: 
+      times: [3, 4, 23, 3]
+      use_group: True
+
+    Args:
+      Consistent with hat.Network
+
+    Return:
+      hat.Network
+
+    Raises:
+      None
+  """
+  return resnet(
+    times=[3, 4, 23, 3],
+    use_group=True,
+    name='resnext101',
+    **kwargs
+  )
+
+
+def resnext152(**kwargs):
+  """ResNeXt-152
+
+    Description: 
+      times: [3, 8, 36, 3]
+      use_group: True
+
+    Args:
+      Consistent with hat.Network
+
+    Return:
+      hat.Network
+
+    Raises:
+      None
+  """
+  return resnet(
+    times=[3, 8, 36, 3],
+    use_group=True,
+    name='resnext152',
+    **kwargs
+  )
+
+
 
 # test part
 if __name__ == "__main__":
-  t = hat._TC()
+  t = hat.utils._TC()
   t.input_shape = (224, 224, 3)
   t.output_shape = (1000,)
-  mod = resnet50(config=t)
+  mod = resnext50(config=t)
   mod.summary()
 
 

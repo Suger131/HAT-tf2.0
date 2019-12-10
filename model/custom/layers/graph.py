@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Resolution
+"""Graph
 
   File: 
-    /hat/model/custom/layer/resolution
+    /hat/model/custom/layer/graph
 
   Description: 
-    Resolution transformation Layers
+    Graph transformation Layers
 """
 
 
 import tensorflow as tf
-# from tensorflow.python.framework import tensor_shape
-# from tensorflow.keras import backend as Ks
 
 from hat.model.custom.util import normalize_tuple
 
@@ -76,15 +74,7 @@ class ResolutionScaling2D(tf.keras.layers.Layer):
       x = tf.keras.layers.ZeroPadding2D([[0, 0], lw])(x)
 
     return x
-
-  # def compute_output_shape(self, input_shape):
-  #   channel = input_shape[self.axis]
-  #   if self.axis == -1:
-  #     new_shape = [input_shape[0], self.size, channel]
-  #   else:
-  #     new_shape = [input_shape[0], channel, self.size]
-  #   return tf.python.framework.tensor_shape.TensorShape(new_shape)
-
+    
   def get_config(self):
     config = {
       'size': self.size,

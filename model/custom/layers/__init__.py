@@ -9,7 +9,9 @@
 """
 
 
-from hat.model.custom.layers.resolution import *
-from hat.model.custom.layers.swish import *
+from hat.model.custom.layers.activation import *
+from hat.model.custom.layers.basic import *
+from hat.model.custom.layers.graph import *
+from hat.model.custom.layers.group import *
 from hat.model.custom.layers.squeeze import *
 

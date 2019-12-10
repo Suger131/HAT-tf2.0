@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Swish
+"""Activation
 
   File: 
-    /hat/model/custom/layer/swish
+    /hat/model/custom/layer/activation
 
   Description: 
-    Swish series Activation Layers
+    Activation Layers
 """
 
 
