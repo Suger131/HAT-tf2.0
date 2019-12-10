@@ -62,8 +62,8 @@ class SqueezeExcitation(tf.keras.layers.Layer):
     filters = self.filters is not None and int(self.filters) or \
               max(self.min_filters, int(channel * self.ratio))
     self.reshape_layer = tf.keras.layers.Reshape((1, 1, channel))
-    self.weight_layer_1 = tf.keras.layers.Conv2D(filters, 1, 1, 'same', use_bias=True)
-    self.weight_layer_2 = tf.keras.layers.Conv2D(channel, 1, 1, 'same', use_bias=True)
+    self.kernel_layer_1 = tf.keras.layers.Conv2D(filters, 1, 1, 'same', use_bias=True)
+    self.kernel_layer_2 = tf.keras.layers.Conv2D(channel, 1, 1, 'same', use_bias=True)
     self.built = True
 
   def call(self, inputs, **kwargs):
@@ -75,10 +75,10 @@ class SqueezeExcitation(tf.keras.layers.Layer):
     # x = tf.keras.layers.Reshape((1, 1, channel))(x)
     x = self.reshape_layer(x)
     # x = tf.keras.layers.Conv2D(filters, 1, 1, 'same', use_bias=True)(x)
-    x = self.weight_layer_1(x)
+    x = self.kernel_layer_1(x)
     x = tf.keras.layers.ReLU(max_value=6)(x)
     # x = tf.keras.layers.Conv2D(channel, 1, 1, 'same', use_bias=True)(x)
-    x = self.weight_layer_2(x)
+    x = self.kernel_layer_2(x)
     # x = tf.keras.layers.Activation('sigmoid')(x)
     x = swish.HSigmoid()(x)
     return tf.keras.layers.Multiply()([inputs, x])
