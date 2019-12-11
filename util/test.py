@@ -11,8 +11,7 @@
 
 # import setting
 __all__ = [
-  'TestConfig',
-]
+    'TestConfig',]
 
 
 class TestConfig(object):
@@ -36,4 +35,9 @@ class TestConfig(object):
 # test part
 if __name__ == "__main__":
   tc = TestConfig(name='test')
-  print(tc.name)
+  from hat.util import log
+  log.init('./unpush/test')
+  log.log(tc.name)
+  from hat.util import util
+  util.del_tail_digit('vgg16')
+  # print(tc.name)

@@ -15,6 +15,7 @@
     graphviz
     pydot_ng
     Pillow
+    gast 0.2.2 (if tf 1.14+)
 
   License:
     Copyright 2019 The HAT Authors. All Rights Reserved.
@@ -53,9 +54,11 @@ del _os, _sys, _absolute_import, _division, _print_function
 from hat.__config__ import version as __version__
 
 from hat import utils
+# from hat import util
 from hat import dataset
 from hat import model
 
 from hat.utils import *
+# from hat.util import *
 from hat.dataset import *
 from hat.model import *

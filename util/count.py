@@ -11,8 +11,7 @@
 
 # import setting
 __all__ = [
-  'Counter',
-]
+    'Counter',]
 
 
 class Counter(object):

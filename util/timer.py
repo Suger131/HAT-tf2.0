@@ -11,8 +11,7 @@
 
 # import setting
 __all__ = [
-  'Timer',
-]
+    'Timer',]
 
 
 import time

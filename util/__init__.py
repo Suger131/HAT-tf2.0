@@ -11,12 +11,14 @@
 
 from hat.util import count
 from hat.util import importer
+from hat.util import log
 from hat.util import test
 from hat.util import timer
 from hat.util import util
 
 from hat.util.count import *
 from hat.util.importer import *
+# from hat.util.log import *
 from hat.util.test import *
 from hat.util.timer import *
 from hat.util.util import *
