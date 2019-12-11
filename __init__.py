@@ -34,24 +34,15 @@
 """
 
 
-from __future__ import absolute_import as _absolute_import
-from __future__ import division as _division
-from __future__ import print_function as _print_function
-
-import os as _os
-import sys as _sys
-
-_hat_dir = _os.path.dirname(_os.path.abspath(__file__))
-if _hat_dir not in _sys.path:
-  _sys.path.append(_hat_dir)
-
-del _os, _sys, _absolute_import, _division, _print_function
-
 # ============
-# Import Part
+# Import 
 # ============
 
-from hat.__config__ import version as __version__
+
+from hat import __config__ as C
+__version__ = C.__version__
+__root__ = C.__root__
+
 
 from hat import utils
 # from hat import util
@@ -60,5 +51,5 @@ from hat import model
 
 from hat.utils import *
 # from hat.util import *
-from hat.dataset import *
+# from hat.dataset import *
 from hat.model import *

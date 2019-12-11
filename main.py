@@ -13,15 +13,16 @@
 
 if __name__ == "__main__":
   
-  import hat
+  # import hat
   
-  C = hat.Config()
-  F = hat.Factory(C)
-  F.train()
-  F.val()
-  F.save()
+  # C = hat.Config()
+  # F = hat.Factory(C)
+  # F.train()
+  # F.val()
+  # F.save()
 
-  # import numpy
+  import hat.util as util
+  C = util.config.Config()
+  F = util.factory.Factory(C)
+  F.run()
 
-  # print(C.input_shape)
-  # C.model.summary()

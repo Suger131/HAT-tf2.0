@@ -57,7 +57,7 @@ def hat_nn(func):
       return layer # Inherited from tf.keras.layers.Layer
     ```
   """
-  def layer(*args, **kwargs):
+  def inner_layer(*args, **kwargs):
     # get output layer from function
     layer = func(*args, **kwargs)
     # check block and apply
@@ -67,7 +67,7 @@ def hat_nn(func):
       if block is not None:
         layer = block(layer)
     return layer
-  return layer
+  return inner_layer
 
 
 def get_hat_name(name, tag=None, block:Block=None):

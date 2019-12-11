@@ -21,7 +21,7 @@ class Dataset(object):
 
     数据集基类。需要重写self.args()方法。
   """
-  def __init__(self, config, *args, **kwargs):
+  def __init__(self, config=None, **kwargs):
     
     self.config = config
     self.parameter_dict = {

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Timer
+"""Time
 
   File: 
-    /hat/util/timer
+    /hat/util/time
 
   Description: 
     Time tools
@@ -16,6 +16,8 @@ __all__ = [
 
 import time
 
+from hat.util import log
+
 
 class Timer(object):
   """Timer
@@ -26,8 +28,8 @@ class Timer(object):
     Attributes:
       logger: hat.Logger.
   """
-  def __init__(self, logger):
-    self.logger = logger
+  def __init__(self):
+    pass
 
   @property
   def time(self):
@@ -38,12 +40,16 @@ class Timer(object):
 
   def timer(self, text, func, *args, **kwargs):
     start_time = self.time
-    self.logger(start_time, t=f'{text} Start:')
+    log.info(f'{text} Start: {start_time}', name=__name__)
+    # self.logger(start_time, t=f'{text} Start:')
     result = func(*args, **kwargs)
     stop_time = self.time
-    self.logger(stop_time, t=f'{text} Stop:')
+    log.info(f'{text} Stop: {stop_time}', name=__name__)
+    # self.logger(stop_time, t=f'{text} Stop:')
     cost_time = self.mktime(stop_time) - self.mktime(start_time)
-    self.logger(cost_time, t=f'{text} cost time (second):')
+    log.info(f'{text} cost time (second): {cost_time}',
+        name=__name__)
+    # self.logger(cost_time, t=f'{text} cost time (second):')
     time_dict = {f'{text}_start_time'.upper(): start_time,
                  f'{text}_stop_time'.upper(): stop_time,
                  f'{text}_cost_time'.upper(): cost_time}

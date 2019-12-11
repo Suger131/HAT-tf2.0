@@ -22,8 +22,10 @@ import os
 import pickle
 
 import numpy as np
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.utils import Sequence
+from tensorflow.compat.v1.keras.preprocessing.image import ImageDataGenerator # pylint: disable=import-error
+from tensorflow.compat.v1.keras.utils import Sequence
+
+from hat.util import log
 
 
 class DataGenerator(Sequence):
@@ -45,6 +47,7 @@ class DataGenerator(Sequence):
     self.inx = 0
     # self.x = []
     # self.y = []
+    log.info(f"Data Generator is Ready", name=__name__)
 
   def __len__(self):
     return math.ceil(self.length / self.batch_size)

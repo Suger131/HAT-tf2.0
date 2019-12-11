@@ -6,143 +6,175 @@
 
   Description: 
     import tools
+    Import工具，可加载自定义的dataset和model
+    加载的方式是猜想和枚举，优先根据名字猜想文件，找不到才会
+    通过枚举的方式搜索
+    dataset路径: `hat.dataset.lib`
+    model路径: `hat.model.{lib name}`
+  
+  Maps:
+    dataset:
+      D/d: dataset
+    model:
+      S/s: standard
+      A/a: alpha
+      B/b: beta
+      T/t: test
 """
 
 
 # import setting
 __all__ = [
-    'Importer',]
+    'get_fullname',
+    'get_lib_dir',
+    'get_imp_like',
+    'get_class',
+    'load',]
 
 
 import os
 import importlib
 
+from hat import __config__ as C
 from hat.util import util
+from hat.util import log
 
 
-class Importer(object):
-  """Importer
+LIB_MAP = {
+    'D': 'dataset',
+    'd': 'dataset',
+    'S': 'standard',
+    's': 'standard',
+    'A': 'alpha',
+    'a': 'alpha',
+    'B': 'beta',
+    'b': 'beta',
+    'T': 'test',
+    't': 'test',}
+HAT_DIR = C.__root__
+IGNORE = [
+    '__init__.py',
+    '__config__.py',
+    '__pycache__']
+DATASET_TUPLE = (
+    'hat',
+    'dataset',
+    'lib')
+MODEL_TUPLE = (
+    'hat',
+    'model')
+
+
+def get_fullname(lib):
+  """get_fullname"""
+  return lib in LIB_MAP and LIB_MAP[lib] or lib
+
+
+def get_lib_dir(lib):
+  """get_lib_dir"""
+  if lib == 'dataset':
+    lib = os.path.join(
+        HAT_DIR,
+        *DATASET_TUPLE[1:])
+  else:
+    lib = os.path.join(
+        HAT_DIR,
+        MODEL_TUPLE[-1],
+        lib)
+  return lib
+
+
+def get_imp_like(lib, name):
+  """get_imp_like"""
+  return '.'.join(lib == 'dataset' and DATASET_TUPLE + (name,)\
+    or MODEL_TUPLE + (lib, name))
+
+
+def get_class(lib, name):
+  """get_class"""
+  name = str(name)
+  target = None
+  try_bool = False
+  for_name = ''
+  
+  # 猜想
+  try_name = util.del_tail_digit(name)
+  imp_name = get_imp_like(lib, try_name)
+  spec = importlib.util.find_spec(imp_name)
+  if spec:
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if name in dir(module):
+      target = getattr(module, name)
+    else:
+      try_bool = True
+  if not target:  # 遍历
+    filelist = os.listdir(get_lib_dir(lib))
+    for key in IGNORE:
+      if key in filelist:
+        filelist.remove(key)
+    for item in filelist:
+      item_name = get_imp_like(lib, item.strip('.py'))
+      spec = importlib.util.find_spec(item_name)
+      if spec:
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if name in dir(module):
+          target = getattr(module, name)
+          for_name = item.strip('.py')
+          break
+ 
+  if target is None:
+    if lib == 'dataset':
+      log.error(f"[ImportError] '{name}' not in dataset",
+          exit=True, name=__name__)
+    else:
+      log.error(f"[ImportError] '{name}' not in model.{lib}",
+          exit=True, name=__name__)
+  elif try_bool:
+    log.warn(f"{name} in '{for_name}' but not '{try_name}'. " \
+        f"Please comply with the naming standard.", name=__name__)
+  return target
+
+
+def load(lib='', name=''):
+  """Import target class from lib. 
 
     Description: 
-      Import工具，可加载自定义的dataset和model
-      加载的方式是猜想和枚举，优先根据名字猜想文件，找不到才会
-      通过枚举的方式搜索
-      dataset路径: `hat.dataset.lib`
-      model路径: `hat.model.{lib name}`
-      
-    Attributes:
-      config: hat.Config. 
+      lib可以使用全名或缩写
 
-    Maps:
-      dataset:
-        D/d: dataset
-      model:
-        S/s: standard
-        A/a: alpha
-        B/b: beta
-        T/t: test
+    Args:
+      lib: Str. 库名
+      name: Str. 需要加载的dataset/model的名字
+
+    Return:
+      hat.Dataset or hat.Network or None
+
+    Raises:
+      ImportError
   """
-  def __init__(self, config, *args, **kwargs):
-    self.config = config
-    self.lib_maps = {
-      'D': 'dataset',
-      'd': 'dataset',
-      'S': 'standard',
-      's': 'standard',
-      'A': 'alpha',
-      'a': 'alpha',
-      'B': 'beta',
-      'b': 'beta',
-      'T': 'test',
-      't': 'test',}
-    # NOTE: this file dir is 'hat\util\importer.py'
-    self.hat_dir = os.path.dirname(os.path.dirname(\
-        os.path.abspath(__file__)))
-    self.ignore = ['__init__.py', '__pycache__']
-
-  def load(self, lib='', name=''):
-    """Import target class from lib. 
-
-      Description: 
-        lib可以使用全名或缩写
-
-      Args:
-        lib: Str. 库名
-        name: Str. 需要加载的dataset/model的名字
-
-      Return:
-        hat.Dataset or hat.Network or None
-
-      Raises:
-        ImportError
-    """
-    lib = self.get_fullname(lib)
-    return self.get_class(lib, name)
-
-  def get_fullname(self, lib):
-    if lib in self.lib_maps:
-      lib = self.lib_maps[lib]
-    return lib
-
-  def get_lib_dir(self, lib):
-    if lib == 'dataset':
-      lib = f'{self.hat_dir}/dataset/lib'
-    else:
-      lib = f'{self.hat_dir}/model/{lib}'
-    return lib
-
-  def get_imp_like(self, lib, name):
-    if lib == 'dataset':
-      output = f'hat.dataset.lib.{name}'
-    else:
-      output = f'hat.model.{lib}.{name}'
-    return output
-
-  def get_class(self, lib, name):
-    name = str(name)
-    target = None
-    try_bool = False
-    for_name = ''
-    # 猜想
-    try:
-      try_name = util.del_tail_digit(name)
-      temp = importlib.import_module(self.get_imp_like(lib, try_name))
-      try:
-        target = getattr(temp, name)
-      except:
-        try_bool = True
-    except:
-      # 枚举
-      filelist = os.listdir(self.get_lib_dir(lib))
-      for key in self.ignore:
-        filelist.remove(key)
-      for item in filelist:
-        try:
-          temp = importlib.import_module(self.get_imp_like(lib, item.strip('.py')))
-          try:
-            target = getattr(temp, name)
-            for_name = item
-          except:
-            pass
-        except:
-          pass
-        if target is not None:
-          break
-    if target is None:
-      self.config.log.error(f'[ImportError] {name} not in {lib} lib')
-    if try_bool:
-      self.config.log(f'{name} was not in {try_name} but in {for_name}.', a='Warning')
-      self.config.log(f'Please check the naming specification.', a='Warning')
-    return target
+  lib = get_fullname(lib)
+  return get_class(lib, name)
 
 
 # test
 if __name__ == "__main__":
   from hat.util import test
+  log.init('./unpush/test')
   tc = test.TestConfig()
-  i = Importer(tc)
-  data = i.load('d', 'mnist')(tc)
+  print(get_imp_like('dataset', 'mnist'))
+  print(get_imp_like('standard', 'mlp'))
+  print(get_lib_dir('standard'))
+  target1 = load('d', 'mnist')
+  target1(tc)
   print(tc.train_x.shape)
-  model = i.load('s', 'mlp')(tc)
-  tc.model.summary()
+  target2 = load('s', 'lenet')
+  target2(config=tc)
+  # tc.model.summary()
+  target3 = load('s', 'untitled')
+  target4 = load('d', 'untitled')
+  # data = i.load('d', 'mnist')(tc)
+  # print(tc.train_x.shape)
+  # model = i.load('s', 'mlp')(tc)
+  # tc.model.summary()
 

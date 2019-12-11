@@ -37,8 +37,10 @@ class cnn(hat.Network):
       CNN模型的基类，包含简单卷积层和全连接层
 
     Attributes:
-      conv: List of Int. 一个元素对应一个卷积层，元素的值为卷积层的Channels
-      local: List of Int. 一个元素对应一个全连接层，元素的值为全连接层的节点数
+      conv: List of Int. 一个元素对应一个卷积层，元素的值为卷积层的
+          Channels
+      local: List of Int. 一个元素对应一个全连接层，元素的值为全连接
+          层的节点数
       drop: float in [0, 1). 随机失活率
       name: Str, optional. 模型名字
 

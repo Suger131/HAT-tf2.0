@@ -22,10 +22,12 @@ __all__ = [
     'log_list',]
 
 
+import os
 import logging
 from logging import handlers
 
 
+_BUILT = False
 _DETAIL = False
 _LOGGING_FUNCTION = [
     logging.debug,
@@ -42,7 +44,16 @@ _LEVEL_LIST = [
     'fatal',]
 
 
-def init(log_dir, suffix='.log', filemode='a', detail=False):
+def _check_built(func):
+  def log_function(*args, **kwargs):
+    if _BUILT:
+      return func(*args, **kwargs)
+    raise Exception('[InitError] hat.util.log has not yet '\
+        f'been initialized')
+  return log_function
+
+
+def init(log_dir, suffix='.log', filemode='a+', detail=False):
   """log.init
 
     Description: 
@@ -64,17 +75,17 @@ def init(log_dir, suffix='.log', filemode='a', detail=False):
     Raises:
       None
   """
+  global _BUILT, _DETAIL
   formatter = logging.Formatter(
       fmt='%(asctime)s.%(msecs)03d [%(levelname)s] >%(name)s: %(message)s',
       datefmt='%Y-%m-%d %H:%M:%S')
   handler = handlers.RotatingFileHandler(
       log_dir + suffix,
       mode=filemode,
-      maxBytes=2 ** 20,
+      maxBytes=2 ** 25,
       backupCount=1000)
   if detail:
     handler.setLevel(logging.DEBUG)
-    global _DETAIL
     _DETAIL = detail
   else:
     handler.setLevel(logging.INFO)
@@ -86,8 +97,9 @@ def init(log_dir, suffix='.log', filemode='a', detail=False):
   logger.setLevel(logging.INFO)
   logger.addHandler(handler)
   logger.addHandler(console)
+  _BUILT = True
 
-
+@_check_built
 def debug(msg, name=None, **kwargs):
   """log.debug
 
@@ -108,7 +120,7 @@ def debug(msg, name=None, **kwargs):
   if _DETAIL:
     logging.getLogger(name).debug(msg, **kwargs)
 
-
+@_check_built
 def info(msg, name=None, **kwargs):
   """log.info
 
@@ -131,7 +143,7 @@ def info(msg, name=None, **kwargs):
   """
   logging.getLogger(name).info(msg, **kwargs)
 
-
+@_check_built
 def warn(msg, name=None, **kwargs):
   """log.warn
 
@@ -151,8 +163,8 @@ def warn(msg, name=None, **kwargs):
   """
   logging.getLogger(name).warning(msg, **kwargs)
 
-
-def error(msg, name=None, **kwargs):
+@_check_built
+def error(msg, name=None, exit=False, **kwargs):
   """log.error
 
     Description: 
@@ -161,6 +173,7 @@ def error(msg, name=None, **kwargs):
     Args:
       msg: Str. 日志内容
       name: Str, default None. 默认为root，可用于定位日志的发送位置
+      exit: Bool, default False. 是否在记录日志后退出程序，默认不退出
       **kwargs: 参见logging.error
 
     Return:
@@ -170,9 +183,11 @@ def error(msg, name=None, **kwargs):
       None
   """
   logging.getLogger(name).error(msg, **kwargs)
+  if exit:
+    os._exit(0)
 
-
-def fatal(msg, name=None, **kwargs):
+@_check_built
+def fatal(msg, name=None, exit=False, **kwargs):
   """log.fatal
 
     Description: 
@@ -181,6 +196,7 @@ def fatal(msg, name=None, **kwargs):
     Args:
       msg: Str. 日志内容
       name: Str, default None. 默认为root，可用于定位日志的发送位置
+      exit: Bool, default False. 是否在记录日志后退出程序，默认不退出
       **kwargs: 参见logging.fatal
 
     Return:
@@ -190,9 +206,11 @@ def fatal(msg, name=None, **kwargs):
       None
   """
   logging.getLogger(name).fatal(msg, **kwargs)
+  if exit:
+    os._exit(0)
 
-
-def exception(msg='Exception Logged', name=None, **kwargs):
+@_check_built
+def exception(msg='Exception Logged', name=None, exit=False, **kwargs):
   """log.exception
 
     Description: 
@@ -201,6 +219,7 @@ def exception(msg='Exception Logged', name=None, **kwargs):
     Args:
       msg: Str, default 'Exception Logged'. 提示捕抓异常日志的语句
       name: Str, default None. 默认为root，可用于定位日志的发送位置
+      exit: Bool, default False. 是否在记录日志后退出程序，默认不退出
       **kwargs: 参见logging.fatal
 
     Return:
@@ -210,8 +229,10 @@ def exception(msg='Exception Logged', name=None, **kwargs):
       None
   """
   logging.getLogger(name).exception(msg, **kwargs)
+  if exit:
+    os._exit(0)
 
-
+@_check_built
 def log_list(inputs, level='info', name=None, prefix='', suffix='', **kwargs):
   """log.log_lsit
 
