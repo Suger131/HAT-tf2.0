@@ -65,12 +65,12 @@ MODEL_TUPLE = (
     'model')
 
 
-def get_fullname(lib):
+def get_fullname(lib) -> str:
   """get_fullname"""
   return lib in LIB_MAP and LIB_MAP[lib] or lib
 
 
-def get_lib_dir(lib):
+def get_lib_dir(lib) -> str:
   """get_lib_dir"""
   if lib == 'dataset':
     lib = os.path.join(
@@ -84,7 +84,7 @@ def get_lib_dir(lib):
   return lib
 
 
-def get_imp_like(lib, name):
+def get_imp_like(lib, name) -> str:
   """get_imp_like"""
   return '.'.join(lib == 'dataset' and DATASET_TUPLE + (name,)\
     or MODEL_TUPLE + (lib, name))

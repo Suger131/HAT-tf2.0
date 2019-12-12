@@ -13,10 +13,14 @@
 __all__ = [
     'del_tail_digit',
     'get_iuwhx',
-    'get_ex',]
+    'get_ex',
+    'get_cost_time',]
 
 
-def del_tail_digit(inputs):
+import time
+
+
+def del_tail_digit(inputs) -> str:
   """Delete Tail Digit
 
     Description: 
@@ -41,7 +45,7 @@ def del_tail_digit(inputs):
   return inputs
 
 
-def get_iuwhx(x: int, rounder=2):
+def get_iuwhx(x: int, rounder=2) -> str:
   """Get Number With International Unit Word Head
 
     Description: 
@@ -63,8 +67,8 @@ def get_iuwhx(x: int, rounder=2):
   return f'{_num}{_X}'
 
 
-def get_ex(x: float):
-  """Get Scientific counting Number
+def get_ex(x: float) -> str:
+  """Get Scientific Counting Number
 
     Description: 
       获取某一数字的科学计数法的表示形式
@@ -79,4 +83,27 @@ def get_ex(x: float):
       None
   """
   return '%.1e' % x
+
+
+def get_cost_time(func, *args, **kwargs):
+  """Get Function Cost Time
+
+    Description: 
+      获取函数的运行时间，精确到毫秒
+
+    Args:
+      func: Function. 目标函数
+      *args, **kwargs: 函数需要的参数
+
+    Return:
+      Str of run time
+      Function.Returns
+
+    Raises:
+      None
+  """
+  t1 = time.perf_counter()
+  result = func(*args, **kwargs)
+  t2 = time.perf_counter()
+  return f"{t2 - t1:.3f}", result
 

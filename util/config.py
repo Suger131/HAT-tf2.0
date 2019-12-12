@@ -33,7 +33,6 @@ class Config(object):
         model
         train param
         dirs
-        run mode
         gpu info
 
     Attributes:
@@ -61,6 +60,7 @@ class Config(object):
     self.batch_size = 0
     self.epochs = 0
     self.step = 0
+    self.step_per_log = 0
     self.opt = ''
     self.loss = ''
     self.metrics = []
@@ -75,7 +75,7 @@ class Config(object):
     self._warning_list = []
     self._input_late_parameters = {}
     self._logc = []
-    # run mode
+    # train param
     self.is_train = True
     self.is_val = True
     self.is_test = False
@@ -97,7 +97,6 @@ class Config(object):
     self.dataset = None
     self.data = None
     self.model = None
-    self.timer = time.Timer()
     # dirs
     self.log_root = C.get('log_root')
     self.log_dir = ''
@@ -206,7 +205,7 @@ class Config(object):
   def set_dataset(self):
     log.info(f"Loading Dataset: {self.dataset_name}", name=__name__)
     dataset_caller = importer.load('d', self.dataset_name)
-    self.dataset = dataset_caller(config=self)
+    self.dataset = dataset_caller(dtype=self.dtype)
     log.info(f"Loaded Dataset: {self.dataset_name}", name=__name__)
     self.data = self.dataset
 
