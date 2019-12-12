@@ -78,5 +78,5 @@ def get_ex(x: float):
     Raises:
       None
   """
-  return '%.1e' % x
+  return f"{x:.1e}"
 

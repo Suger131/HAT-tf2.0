@@ -100,8 +100,8 @@ class Factory(object):
           with codecs.open(filename, 'a+', 'utf-8') as f:
             writer = csv.writer(f, dialect='excel')
             writer.writerow([z.tolist() for z in mid_weight])
-      log.info(f'Step: {step}/{max_step}, ' + 'loss: %04f, ' \
-          'accuracy: %04f' % (result[0], result[1]), name=__name__)
+      log.info(f'Step: {step}/{max_step}, loss: {result[0]:.4f}, ' +\
+          f'accuracy: {result[1]:.4f}', name=__name__)
     
     if self.config.step:
       for i in range(self.config.step):
