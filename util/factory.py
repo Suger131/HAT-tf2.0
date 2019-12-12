@@ -19,13 +19,35 @@ import csv
 import codecs
 
 import tensorflow as tf
-from tensorflow.keras.callbacks import TensorBoard
+# from tensorflow.keras.callbacks import TensorBoard
 
 from hat.util import config
 from hat.util import log
 from hat.util import util
 from hat.dataset.util import generator
 from hat.model.utils import nn
+
+
+class _Store(object):
+  """Store Variable"""
+  def __init__(self):
+    self.init()
+
+  def init(self):
+    self.train_loss = 0
+    self.train_accuracy = 0
+    self.count = 0
+
+  def get_train_result(self):
+    outputs = [self.train_loss / self.count,
+               self.train_accuracy / self.count]
+    self.init()
+    return outputs
+
+  def update_train(self, result):
+    self.train_loss += result[0]
+    self.train_accuracy += result[1]
+    self.count += 1
 
 
 class Factory(object):
@@ -55,6 +77,7 @@ class Factory(object):
   def __init__(self, config: config.Config, *args, **kwargs):
     self.config = config
     self.model = config.model.model
+    self._store = _Store()
 
   # Built-in method
 
@@ -90,7 +113,6 @@ class Factory(object):
           self.config.batch_size)
       mid_output_layers = nn.get_layer_output_name(self.model)
       mid_weight_layers = nn.get_layer_weight_name(self.model)
-
       def train_core(step, max_step):
         train_x, train_y = dg.__getitem__(0)
         result = self.model.train_on_batch(train_x, train_y)
@@ -107,9 +129,11 @@ class Factory(object):
             with codecs.open(filename, 'a+', 'utf-8') as f:
               writer = csv.writer(f, dialect='excel')
               writer.writerow([z.tolist() for z in mid_weight])
-        if step % self.config.step_per_log == 0:
-          log.info(f'Step: {step}/{max_step}, ' + 'loss: %04f, ' \
-              'accuracy: %04f' % (result[0], result[1]), name=__name__)
+        self._store.update_train(result)
+        if step % self.config.step_per_log == 0 or step == max_step:
+          results = self._store.get_train_result()
+          log.info(f'Step: {step}/{max_step}, loss: {results[0]:.4f}, ' \
+              f'accuracy: {results[1]:.4f}', name=__name__)
       
       if self.config.step:
         for i in range(self.config.step):
@@ -129,7 +153,8 @@ class Factory(object):
               batch_size=self.config.batch_size,
               verbose=0)
           log.info(f"Epoch: {ep+1}/{self.config.epochs}, " \
-              f"accuracy: {val_result[1]}, loss: {val_result[0]}",
+              f"accuracy: {val_result[1]:.4f}, " \
+              f"loss: {val_result[0]:.4f}",
               name=__name__)
       log.info(f"Train Stop", name=__name__)
     cost_time = util.get_cost_time(inner_train)[0]
@@ -145,8 +170,8 @@ class Factory(object):
           self.config.data.val_y,
           batch_size=self.config.batch_size,
           verbose=0)
-      log.info(f"Total Loss: {result[0]}", name=__name__)
-      log.info(f"Accuracy: {result[1]}", name=__name__)
+      log.info(f"Total Loss: {result[0]:.4f}", name=__name__)
+      log.info(f"Accuracy: {result[1]:.4f}", name=__name__)
       log.info(f"Val Stop", name=__name__)
     cost_time = util.get_cost_time(inner_val)[0]
     log.info(f"Val cost time: {cost_time}", name=__name__)

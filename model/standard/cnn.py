@@ -53,6 +53,7 @@ class cnn(hat.Network):
       conv,
       local,
       kernel_size=5,
+      padding='same',
       drop=0.5,
       resulution=None,
       name='',
@@ -60,6 +61,7 @@ class cnn(hat.Network):
     self.conv = conv
     self.local = local
     self.kernel_size = kernel_size
+    self.padding = padding
     self.drop = drop
     self.resolution = resulution
     self.name = name
@@ -71,18 +73,19 @@ class cnn(hat.Network):
     # self.opt = tf.keras.optimizers.SGD(lr=0.1, momentum=.9)
 
   def build(self):
-    inputs = self.nn.input(self.config.input_shape)
+    inputs = self.nn.input(self.config.data.input_shape)
     x = inputs
     if self.resolution is not None:
       x = self.nn.resolutionscal2d(self.resolution)(x)
     for i in self.conv:
-      x = self.nn.conv(i, self.kernel_size, activation='relu')(x)
+      x = self.nn.conv(i, self.kernel_size,
+          padding=self.padding, activation='relu')(x)
       x = self.nn.maxpool()(x)
     x = self.nn.flatten()(x)
     for i in self.local:
       x = self.nn.dense(i, activation='relu')(x)
       x = self.nn.dropout(self.drop)(x)
-    x = self.nn.dense(self.config.output_shape[-1], activation='softmax')(x)
+    x = self.nn.dense(self.config.data.output_shape[-1], activation='softmax')(x)
     return self.nn.model(inputs, x)
 
 
@@ -201,7 +204,8 @@ def lenet(**kwargs):
   """
   return cnn(
     conv=[6, 16],
-    local = [84],
+    local=[84],
+    padding='valid',
     resulution=32,
     name='LeNet-5',
     **kwargs
@@ -229,6 +233,7 @@ def lenetc(**kwargs):
   return cnn(
     conv=[20, 50],
     local=[500],
+    padding='valid',
     name='LeNet-c',
     **kwargs
   )

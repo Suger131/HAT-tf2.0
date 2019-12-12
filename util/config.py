@@ -163,10 +163,14 @@ class Config(object):
     self.set_dirs()
     # log
     self.set_logger()
-    # dataset
-    self.set_dataset()
-    # model
-    self.set_model()
+    try:
+      # dataset
+      self.set_dataset()
+      # model
+      self.set_model()
+    except Exception:
+      # In case of unknown errors
+      log.exception(name=__name__, exit=True)
     # log other param
     self.log_param()
 
