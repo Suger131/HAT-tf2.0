@@ -11,7 +11,8 @@
 
 # import setting
 __all__ = [
-    'TestConfig',]
+    'TestConfig',
+    'Tc',]
 
 
 class TestConfig(object):
@@ -30,6 +31,10 @@ class TestConfig(object):
     self.batch_size = 128
     self.epochs = 5
     self.opt = None
+
+
+# Alias
+Tc = TestConfig
 
 
 # test part

@@ -100,6 +100,7 @@ DEFAULT_SETTING = {
     'batch_size': 128,
     'epochs': 5,
     'step': 0,
+    'step_per_log': 10,
     'opt': 'adam',
     'loss': 'sparse_categorical_crossentropy',
     'metrics': ['accuracy'],

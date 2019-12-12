@@ -13,10 +13,9 @@
 
 # import setting
 __all__ = [
-  'mnist',
-  'fashion_mnist',
-  'f_mnist',
-]
+    'mnist',
+    'fashion_mnist',
+    'f_mnist',]
 
 
 import tensorflow as tf
