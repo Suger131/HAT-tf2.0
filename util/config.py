@@ -61,11 +61,25 @@ class Config(object):
     self.epochs = 0
     self.step = 0
     self.step_per_log = 0
+    self.step_per_val = 0
     self.opt = ''
     self.loss = ''
     self.metrics = []
     self.dtype = ''
     self.aug = None
+    self.is_train = False
+    self.is_val = False
+    self.is_test = False
+    self.is_save = False
+    self.is_save_best = False
+    self.is_gimage = False
+    self.is_flops = False
+    self.is_enhance = False
+    self.is_write_middle_data = False
+    self.is_write_loss = False
+    self.run_mode = ''
+    self.addition = ''
+    self.lr_alt = False
     self.__dict__ = {**self.__dict__, **C.get('default')}
     self._name_map = C.get('name_map')
 
@@ -75,21 +89,9 @@ class Config(object):
     self._warning_list = []
     self._input_late_parameters = {}
     self._logc = []
-    # train param
-    self.is_train = True
-    self.is_val = True
-    self.is_test = False
-    self.is_save = True
-    self.is_gimage = True
-    self.is_flops = True
-    self.is_enhance = False
-    self.is_write_middle_data = False
-    self.run_mode = ''
-    self.addition = ''
-    self.lr_alt = False
     # gpu info
     self.gpus = tf.config.experimental.list_physical_devices('GPU')
-    self.gpu_growth = True
+    self.gpu_growth = C.get('gpu_growth')
     self.xgpu = False
     self.xgpu_num = 0
     self.xgpu_max = len(self.gpus)
@@ -158,7 +160,7 @@ class Config(object):
     # lib
     self.lib_name = importer.get_fullname(self.lib_name)
     # xgpu
-    # TODO: XGPU
+    self.set_xgpu()
     # dir
     self.set_dirs()
     # log
@@ -179,11 +181,28 @@ class Config(object):
       for gpu in self.gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
 
+  def set_xgpu(self):
+    if self.xgpu:
+      if isinstance(self.xgpu, int):
+        if self.xgpu == -1:
+          self.xgpu_num = self.xgpu_max
+        elif self.xgpu > self.xgpu_max:
+          self.xgpu_num = self.xgpu_max
+          # warning
+        else:
+          self.xgpu_num = self.xgpu
+        self.xgpu = True
+        # TODO: XGPU
+      else:
+        pass  # warning
+
   def set_dirs(self):
     self.save_dir = os.path.join(
         self.log_root,
         self.lib_name,
         f"{self.model_name}_{self.dataset_name}")
+    if self.addition:
+      self.save_dir += '_' + self.addition
     self.log_dir = os.path.join(
         self.save_dir,
         C.get('log_name'))
@@ -252,7 +271,7 @@ class Config(object):
     if self.is_enhance:
       log.info('Enhance data.', name=__name__)
     if self.xgpu:
-      log.info('Muti-GPUs.', name=__name__)
+      log.info(f'XGPU On. GPU: {self.xgpu_num}', name=__name__)
     if self.lr_alt:
       log.info('Learning Rate Alterable.', name=__name__)
 

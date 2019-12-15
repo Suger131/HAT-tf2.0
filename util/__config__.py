@@ -39,6 +39,9 @@ NAME_MAP = {
     # steps
     's': {'n': 'step', 'l': True},
     'step': {'n': 'step', 'l': True},
+    # step pre log
+    'spl': {'n': 'step_per_log', 'l': True},
+    'stepperlog': {'n': 'step_per_log', 'l': True},
     # opt
     'o': {'n': 'opt', 'l': True},
     'opt': {'n': 'opt', 'l': True},
@@ -50,6 +53,11 @@ NAME_MAP = {
     'a': {'n': 'addition', 'force_str': True},
     'add': {'n': 'addition', 'force_str': True},
     'addition': {'n': 'addition', 'force_str': True},
+    # dtype
+    't': {'n': 'dtype'},
+    'type': {'n': 'dtype'},
+    # xgpu
+    'x': {'n': 'xgpu'},
 
     # ================
     # tag
@@ -72,13 +80,21 @@ NAME_MAP = {
     'd-e': {'n': 'is_enhance', 'd': True},
     'data-enhance': {'n': 'is_enhance', 'd': True},
     # xgpu
-
+    '-x': {'n': 'xgpu', 'd': -1},
+    'xgpu': {'n': 'xgpu', 'd': -1},
     # learning rate alterable
     '-l': {'n': 'lr_alt', 'd': True},
     'lr-alt': {'n': 'lr_alt', 'd': True},
     # no-flops
     '-nf': {'n': 'is_flops', 'd': False},
     'no-flops': {'n': 'is_flops', 'd': False},
+    # write middle data
+    '-w': {'n': 'is_write_middle_data', 'd': True},
+    '-wmd': {'n': 'is_write_middle_data', 'd': True},
+    'write-middle-data': {'n': 'is_write_middle_data', 'd': True},
+    # no-write-loss
+    '-nwl': {'n': 'is_write_loss', 'd': False},
+    'no-write-loss': {'n': 'is_write_loss', 'd': False},
     # gpu memory growth
     '-ngg': {'n': 'gpu_growth', 'd': False},
     'no-gpu-growth': {'n': 'gpu_growth', 'd': False},}
@@ -101,11 +117,25 @@ DEFAULT_SETTING = {
     'epochs': 5,
     'step': 0,
     'step_per_log': 10,
+    'step_per_val': 500,
     'opt': 'adam',
     'loss': 'sparse_categorical_crossentropy',
     'metrics': ['accuracy'],
     'dtype': 'float32',
-    'aug': AUG,}
+    'aug': AUG,
+    'is_train': True,
+    'is_val': True,
+    'is_test': False,
+    'is_save': True,
+    'is_save_best': False,
+    'is_gimage': True,
+    'is_flops': False,
+    'is_enhance': False,
+    'is_write_middle_data': False,
+    'is_write_loss': True,
+    'run_mode': '',
+    'addition': '',
+    'lr_alt': False}
 
 
 INIT_SETTING = {
@@ -115,7 +145,8 @@ INIT_SETTING = {
     'log_root': 'logs',
     'log_name': '',
     'h5_name': 'save',
-    'tb_dir': 'tensorboard',}
+    'tb_dir': 'tensorboard',
+    'gpu_growth': True}
 
 
 def get(name):

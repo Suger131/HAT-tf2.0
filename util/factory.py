@@ -129,6 +129,11 @@ class Factory(object):
             with codecs.open(filename, 'a+', 'utf-8') as f:
               writer = csv.writer(f, dialect='excel')
               writer.writerow([z.tolist() for z in mid_weight])
+        if self.config.is_write_loss:
+          filename = f"{self.config.save_dir}/loss.csv"
+          with codecs.open(filename, 'a+', 'utf-8') as f:
+            writer = csv.writer(f, dialect='excel')
+            writer.writerow(result)
         self._store.update_train(result)
         if step % self.config.step_per_log == 0 or step == max_step:
           results = self._store.get_train_result()
