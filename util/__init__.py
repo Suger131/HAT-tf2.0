@@ -9,6 +9,7 @@
 """
 
 
+from hat.util import abc
 from hat.util import count
 from hat.util import log
 from hat.util import test

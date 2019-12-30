@@ -14,6 +14,9 @@ __all__ = [
     'TestConfig',]
 
 
+from hat.util import abc
+
+
 class TestConfig(object):
   """TestConfig
   
@@ -25,6 +28,7 @@ class TestConfig(object):
   """
   def __init__(self, **kwargs):
     self.__dict__ = {**self.__dict__, **kwargs}
+    self.data = abc.Empty()
     self.dtype = 'float32'
     self.xgpu = False
     self.batch_size = 128

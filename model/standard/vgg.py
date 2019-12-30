@@ -67,7 +67,7 @@ class vgg(hat.Network):
     self.conv = [64 * (2 ** i) for i in range(5)]
 
   def build(self):
-    inputs = self.nn.input(self.config.input_shape)
+    inputs = self.nn.input(self.input_shape)
     x = inputs
     if self.resolution is not None:
       x = self.nn.resolutionscal2d(self.resolution)(x)
@@ -78,7 +78,7 @@ class vgg(hat.Network):
     for i in self.local:
       x = self.nn.local(i)(x)
       x = self.nn.dropout(self.drop)(x)
-    x = self.nn.dense(self.config.output_shape[-1], activation='softmax')(x)
+    x = self.nn.dense(self.output_class, activation='softmax')(x)
     return self.nn.model(inputs, x)
 
 
@@ -172,8 +172,9 @@ def vgg19(**kwargs):
 
 # test part
 if __name__ == "__main__":
-  t = hat._TC()
-  t.input_shape = (32, 32, 3)
-  t.output_shape = (10,)
+  t = hat.util.Tc()
+  t.data.input_shape = (32, 32, 3)
+  t.data.output_shape = (10,)
   mod = vgg16(config=t)
   mod.summary()
+

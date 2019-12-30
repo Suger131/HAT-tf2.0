@@ -50,7 +50,7 @@ from hat import util
 
 from hat.core import Config
 from hat.core import Factory
-from hat.dataset.util import Dataset
+from hat.dataset import Dataset
 from hat.model import Network
 from hat.model import nn
 

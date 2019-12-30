@@ -73,7 +73,7 @@ class cnn(hat.Network):
     # self.opt = tf.keras.optimizers.SGD(lr=0.1, momentum=.9)
 
   def build(self):
-    inputs = self.nn.input(self.config.data.input_shape)
+    inputs = self.nn.input(self.input_shape)
     x = inputs
     if self.resolution is not None:
       x = self.nn.resolutionscal2d(self.resolution)(x)
@@ -85,7 +85,7 @@ class cnn(hat.Network):
     for i in self.local:
       x = self.nn.dense(i, activation='relu')(x)
       x = self.nn.dropout(self.drop)(x)
-    x = self.nn.dense(self.config.data.output_shape[-1], activation='softmax')(x)
+    x = self.nn.dense(self.output_class, activation='softmax')(x)
     return self.nn.model(inputs, x)
 
 
@@ -241,8 +241,9 @@ def lenetc(**kwargs):
 
 # test part
 if __name__ == '__main__':
-  t = hat._TC()
-  t.input_shape = (28, 28, 1)
-  t.output_shape = (10,)
+  t = hat.util.Tc()
+  t.data.input_shape = (28, 28, 1)
+  t.data.output_shape = (10,)
   mod = lenetc(config=t)
-  t.model.summary()
+  mod.summary()
+

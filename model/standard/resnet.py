@@ -78,7 +78,7 @@ class resnet(hat.Network):
     self.group = 32
 
   def build(self):
-    inputs = self.nn.input(self.config.input_shape)
+    inputs = self.nn.input(self.input_shape)
     x = inputs
     if self.resolution is not None:
       x = self.nn.resolutionscal2d(self.resolution)(x)
@@ -92,7 +92,7 @@ class resnet(hat.Network):
     x = self.nn.gapool()(x)
     if self.drop:
       x = self.nn.dropout(self.drop)(x)
-    x = self.nn.dense(self.config.output_shape[-1], activation='softmax')(x)
+    x = self.nn.dense(self.output_class, activation='softmax')(x)
     return self.nn.model(inputs, x)
 
   def block(self, times, filters, strides=1):
@@ -343,13 +343,11 @@ def resnext152(**kwargs):
   )
 
 
-
 # test part
 if __name__ == "__main__":
-  t = hat.utils._TC()
-  t.input_shape = (224, 224, 3)
-  t.output_shape = (1000,)
+  t = hat.util.Tc()
+  t.data.input_shape = (224, 224, 3)
+  t.data.output_shape = (1000,)
   mod = resnext50(config=t)
   mod.summary()
-
 

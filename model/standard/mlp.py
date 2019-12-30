@@ -19,20 +19,20 @@ class mlp(hat.Network):
     self.block = self.nn.Block('MLP')
 
   def build(self):
-    inputs = self.nn.input(self.config.data.input_shape)
+    inputs = self.nn.input(self.input_shape)
     x = self.nn.flatten(block=self.block)(inputs)
     x = self.nn.dense(self.node, block=self.block)(x)
     x = self.nn.dropout(self.drop)(x)
-    x = self.nn.dense(self.config.data.output_shape[-1], activation='softmax')(x)
+    x = self.nn.dense(self.output_class, activation='softmax')(x)
     return self.nn.model(inputs, x)
 
 
 # test
 if __name__ == "__main__":
-  t = hat._TC()
-  t.input_shape = (28, 28, 1)
-  t.output_shape = (10,)
+  t = hat.util.Tc()
+  t.data.input_shape = (28, 28, 1)
+  t.data.output_shape = (10,)
   mod = mlp(config=t)
-  t.model.summary()
-  print(mod.nn.get_block_layer(mod.model, mod.block))
+  mod.summary()
+  print(mod.nn.get_layer_with_block(mod.model, mod.block))
 

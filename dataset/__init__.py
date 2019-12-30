@@ -11,3 +11,5 @@
 
 from hat.dataset import util
 
+from hat.dataset.util import Dataset
+
