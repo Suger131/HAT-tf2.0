@@ -71,6 +71,8 @@ f_mnist = fashion_mnist
 
 # test
 if __name__ == "__main__":
-  data = mnist()
-  print(data.train_x.shape)
+  from hat.utils._TC import _TC
+  t = _TC()
+  d = mnist(t)
+  print(t.train_x.shape)
 

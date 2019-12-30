@@ -43,14 +43,12 @@ class Config(object):
     Usage:
     ```python
       import hat
-      C = hat.Config()
+      c = hat.Config()
+      c = hat.util.Config()  # or
+      c = hat.util.config.Config()  # or
       # or
-      C = hat.core.Config()
-      # or
-      C = hat.core.config.Config()
-      # or
-      from hat.core import Config
-      C = Config()
+      from hat.util import config
+      c = config.Config()
     ```
   """
   def __init__(self):
@@ -217,8 +215,7 @@ class Config(object):
     self.save_time = len([item for item in os.listdir(self.save_dir)
         if C.get('h5_name') in item])  # 获取save dir下有多少h5文件
     self.save_name = f'{self.h5_name}_{self.save_time + 1}.h5'
-    if self.save_time:
-      self.load_name = f'{self.h5_name}_{self.save_time}.h5'
+    self.load_name = f'{self.h5_name}_{self.save_time}.h5'
     self.tb_dir = os.path.join(
         self.save_dir,
         C.get('tb_dir'))

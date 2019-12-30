@@ -17,10 +17,7 @@ __all__ = [
     'Network_v2',]
 
 
-import tensorflow as tf
-
 from hat.model.util import nn
-from hat.util import log
 
 
 class Network_v2(object):
@@ -111,18 +108,12 @@ class Network_v2(object):
 
   # Built-in method
 
-  def load(self):
-    if self.config.load_name:
-      log.info(f'Load {self.config.load_name}',
-          name=__name__)
-      model = tf.keras.models.load_model(self.config.load_name)
-    else:
-      model = self.build()
-    return model
+  def _load(self):
+    self.model = self.build()
 
   def setup(self):
     """Setup model"""
-    self.model = self.load()
+    self._load()
     self.parallel_model = self.model
 
   def compile(

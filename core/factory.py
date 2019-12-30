@@ -71,11 +71,9 @@ class Factory(object):
     Usage:
     ```python
       import hat
-      F = hat.Factory(C)
-      # or
-      F = hat.core.Factory(C)
-      # or
-      F = hat.core.factory.Factory(C)
+      # F = hat.Factory(C)
+      F = hat.core.Factory(C)  # or
+      F = hat.core.factory.Factory(C)  # or
       # or
       from hat.core import Factory
       F = Factory(C)
