@@ -11,10 +11,7 @@
 
 # import setting
 __all__ = [
-  '_shuffle',
-  'DatasetBuilder',
-  'DSB'
-]
+    'DatasetBuilder',]
 
 
 import gzip
@@ -26,14 +23,16 @@ from PIL import Image
 
 
 def _shuffle(inputs, islist=True):
-  """
-    Shuffle the datas/labels
+  """_shuffle
 
-    Argu:
+    Description:
+      Shuffle the datas/labels
+      Private method
+
+    Args:
       inputs: np.array/list, or list/tuple of np.array/list. 
       In the latter case, the corresponding elements for each 
       item in the list are shuffled together as a whole.
-
       islist: Boolean. The latter case is enabled when the 
       value is True. Default is True.
 
@@ -58,7 +57,7 @@ class DatasetBuilder(object):
   """
     Data Set Builder
 
-    Argu:
+    Args:
       dsdir: Str. Path of Dataset.
   """
   def __init__(self,
@@ -387,7 +386,4 @@ class DatasetBuilder(object):
       )
     return [train_x, train_y], [val_x, val_y], test_x
 
-
-# Alias
-DSB = DatasetBuilder
 

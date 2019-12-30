@@ -11,9 +11,7 @@
 
 # import setting
 __all__ = [
-  'DataGenerator',
-  'DG'
-]
+    'Generator',]
 
 
 import gzip
@@ -23,9 +21,84 @@ import pickle
 
 import numpy as np
 from tensorflow.compat.v1.keras.preprocessing.image import ImageDataGenerator # pylint: disable=import-error
-from tensorflow.compat.v1.keras.utils import Sequence
+from tensorflow.keras.utils import Sequence
 
 from hat.util import log
+
+
+class Generator(object):
+  """Generator
+
+    Description: 
+      数据集的生成器工具
+
+    Args:
+      x: np.array. 推荐使用`hat.Dataset.train_x`.
+      y: np.array. 推荐使用`hat.Dataset.train_y`.
+      batch_size: Int. 批量大小.
+      aug: keras.ImageDataGenerator, default None. 数据增强器
+      **kwargs: Any. 任意参数，自动忽略
+
+    Usage:
+    ```python
+      from hat.dataset.lib.mnist import mnist
+      data = mnist()
+      g = Generator(data.train_x, data.train_y, 11000)
+      for batch in g:  # epoch mode
+        pass  # todo
+      for inx in range(step):  # step mode
+        batch = next(g)
+        pass  # todo
+    ```
+  """
+  def __init__(
+      self,
+      x: np.array,
+      y: np.array,
+      batch_size: int,
+      shuffle=True,
+      aug=None,
+      **kwargs):
+    self.x = x
+    self.y = y
+    self.batch_size = batch_size
+    self.shuffle = shuffle
+    self.aug = aug
+    self.len = math.ceil(len(x) / self.batch_size)
+    self.iterator = self.__iterator__()
+  
+  def __next__(self):
+    return next(self.iterator)
+
+  def __iter__(self):
+    for i in range(self.len):
+      yield next(self)
+
+  def __del__(self):
+    try:
+      del self.iterator
+    except Exception:
+      pass
+
+  def __iterator__(self):
+    while True:
+      epoch = self._shuffle([self.x, self.y])
+      for inx in range(self.len):
+        if inx + 1 == self.len:
+          x = epoch[0][inx * self.batch_size:]
+          y = epoch[1][inx * self.batch_size:]
+        else:
+          x = epoch[0][inx * self.batch_size:(inx + 1) * self.batch_size]
+          y = epoch[1][inx * self.batch_size:(inx + 1) * self.batch_size]
+        if self.aug is not None:
+          x = next(self.aug.flow(x, batch_size=self.batch_size))
+        yield x, y
+
+  def _shuffle(self, inputs):
+    if not self.shuffle:
+      return inputs
+    r = np.random.permutation(len(inputs[-1]))
+    return inputs[0][r], inputs[1][r]
 
 
 class DataGenerator(Sequence):
@@ -41,7 +114,7 @@ class DataGenerator(Sequence):
     self.store_x = np.array(x)
     self.store_y = np.array(y)
     self.batch_size = batch_size
-    self.length = len(x)
+    self.len = len(x)
     self.aug = aug
 
     self.inx = 0
@@ -50,7 +123,7 @@ class DataGenerator(Sequence):
     log.info(f"Data Generator is Ready", name=__name__)
 
   def __len__(self):
-    return math.ceil(self.length / self.batch_size)
+    return math.ceil(self.len / self.batch_size)
 
   def __getitem__(self, idx):
 

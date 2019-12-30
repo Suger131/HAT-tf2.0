@@ -1,16 +1,43 @@
-"""
-  hat.model.test.lenet
+# -*- coding: utf-8 -*-
+"""LeNet
 
-  Network v2
+  File: 
+    /hat/model/test/lenet
+
+  Description: 
+    LeNet-5模型
+    卷积层深度分别为20和50，卷积核大小为5
+    全连接层1节点数为500，随机失活率为0.5
+    *基于Network_v2
 """
 
 
 import hat
 
 
+# import setting
+__all__ = [
+  'lenet',
+]
+
+
 class lenet(hat.Network):
-  """
-    LeNet-5
+  """LeNet
+
+    Description: 
+      LeNet-5. Based on <Gradient-Based Learning Applied to 
+      Document Recognition>. This version is referenced for 
+      the Cifar-10 dataset.
+      SEE: http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf
+
+      *为实验Network_v2的Block功能，临时性添加了Block
+
+    Attributes:
+      Consistent with Network.
+
+    Overrided:
+      args: 存放参数
+      build: 定义了`keras.Model`并返回
   """
   def args(self):
     self.node = 500
@@ -41,5 +68,3 @@ if __name__ == "__main__":
   mod = lenet(config=t)
   t.model.summary()
   print(mod.nn.get_block_layer(mod.model, mod.block1))
-
-

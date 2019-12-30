@@ -16,9 +16,7 @@ from hat.model.custom.util import normalize_tuple
 
 # import setting
 __all__ = [
-  'ResolutionScaling2D',
-  'ResolutionScal2D',
-]
+    'ResolutionScaling2D',]
 
 
 class ResolutionScaling2D(tf.keras.layers.Layer):
@@ -27,7 +25,7 @@ class ResolutionScaling2D(tf.keras.layers.Layer):
     Description:
       None
     
-    Attributes:
+    Args:
       size: Int or list of 2 Int.
       data_format: Str, default None. `channels_last`(None) or `channels_first`.
 
@@ -77,14 +75,9 @@ class ResolutionScaling2D(tf.keras.layers.Layer):
     
   def get_config(self):
     config = {
-      'size': self.size,
-      'data_format': self.data_format,
-    }
+        'size': self.size,
+        'data_format': self.data_format,}
     return dict(list(super().get_config().items()) + list(config.items()))
-
-
-# Alias
-ResolutionScal2D = ResolutionScaling2D
 
 
 # test part

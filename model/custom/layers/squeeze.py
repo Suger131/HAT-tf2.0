@@ -16,8 +16,7 @@ from hat.model.custom.layers import activation
 
 # import setting
 __all__ = [
-  'SqueezeExcitation',
-]
+    'SqueezeExcitation',]
 
 
 class SqueezeExcitation(tf.keras.layers.Layer):
@@ -26,7 +25,7 @@ class SqueezeExcitation(tf.keras.layers.Layer):
     Description:
       None
     
-    Attributes:
+    Args:
       ratio: float in (0, n), default 0.25. 压缩比，超过1为拓展比
       filters: Int, optional. 如果使用filters，ratio会被忽略
       min_filters: Int, default 1. 限制最小的filters
@@ -85,10 +84,9 @@ class SqueezeExcitation(tf.keras.layers.Layer):
 
   def get_config(self):
     config = {
-      'ratio': self.ratio,
-      'min_filters': self.min_filters,
-      'data_format': self.data_format,
-    }
+        'ratio': self.ratio,
+        'min_filters': self.min_filters,
+        'data_format': self.data_format,}
     return dict(list(super().get_config().items()) + list(config.items()))
 
 

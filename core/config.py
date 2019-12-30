@@ -2,10 +2,10 @@
 """Config
 
   File: 
-    /hat/util/config
+    /hat/core/config
 
   Description: 
-    config tools
+    参数容器
 """
 
 
@@ -18,10 +18,9 @@ import os
 
 import tensorflow as tf
 
-from hat.util import __config__ as C
-from hat.util import importer
+from hat import __config__ as C
+from hat.core import importer
 from hat.util import log
-from hat.util import time
 
 
 class Config(object):
@@ -35,8 +34,11 @@ class Config(object):
         dirs
         gpu info
 
-    Attributes:
+    Args:
       None
+
+    Attributes:
+      See `__init__`
 
     Usage:
     ```python
@@ -160,7 +162,7 @@ class Config(object):
     # lib
     self.lib_name = importer.get_fullname(self.lib_name)
     # xgpu
-    self.set_xgpu()
+    self.set_gpu()
     # dir
     self.set_dirs()
     # log
@@ -176,12 +178,10 @@ class Config(object):
     # log other param
     self.log_param()
 
-  def set_gpu_memory_growth(self):
+  def set_gpu(self):
     if self.gpu_growth:
       for gpu in self.gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
-
-  def set_xgpu(self):
     if self.xgpu:
       if isinstance(self.xgpu, int):
         if self.xgpu == -1:

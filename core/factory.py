@@ -2,10 +2,11 @@
 """Facroty
 
   File:
-    /hat/util/facroty
+    /hat/core/facroty
 
   Description:
-    facroty tools
+    模型核心代码
+    包括模型图生成、训练、验证、预测、保存等
 """
 
 
@@ -21,11 +22,10 @@ import codecs
 import tensorflow as tf
 # from tensorflow.keras.callbacks import TensorBoard
 
-from hat.util import config
+from hat.dataset.util import generator
 from hat.util import log
 from hat.util import util
-from hat.dataset.util import generator
-from hat.model.utils import nn
+from hat.model.util import nn
 
 
 class _Store(object):
@@ -49,6 +49,9 @@ class _Store(object):
     self.train_accuracy += result[1]
     self.count += 1
 
+  def norm(self, result):
+    return f'{result[0]:.4f}', f'{result[1]:.4f}'
+
 
 class Factory(object):
   """Factory
@@ -56,25 +59,27 @@ class Factory(object):
     Description: 
       训练工具
 
-    Attributes:
+    Args:
       config: hat.Config.
 
     Method:
+      run
       train
       val
+      save
 
     Usage:
     ```python
       import hat
-      c = hat.Factory()
-      c = hat.util.Factory()  # or
-      c = hat.util.factory.Factory()  # or
+      # F = hat.Factory(C)
+      F = hat.core.Factory(C)  # or
+      F = hat.core.factory.Factory(C)  # or
       # or
-      from hat.util import factory
-      c = factory.Factory()
+      from hat.core import Factory
+      F = Factory(C)
     ```
   """
-  def __init__(self, config: config.Config, *args, **kwargs):
+  def __init__(self, config, *args, **kwargs):
     self.config = config
     self.model = config.model.model
     self._store = _Store()
@@ -107,15 +112,20 @@ class Factory(object):
       return
     def inner_train():
       log.info(f"Train Start", name=__name__)
-      dg = generator.DG(
+      dg = generator.Generator(
           self.config.data.train_x,
           self.config.data.train_y,
           self.config.batch_size)
       mid_output_layers = nn.get_layer_output_name(self.model)
       mid_weight_layers = nn.get_layer_weight_name(self.model)
       def train_core(step, max_step):
-        train_x, train_y = dg.__getitem__(0)
+        # train_x, train_y = dg.__getitem__(0)
+        train_x, train_y = next(dg)
         result = self.model.train_on_batch(train_x, train_y)
+        # _time, result = util.get_cost_time(
+        #     self.model.train_on_batch,
+        #     train_x,
+        #     train_y)
         if self.config.is_write_middle_data:
           for j in mid_output_layers:
             mid_output = nn.get_layer_output(self.model, train_x, j)
@@ -133,23 +143,34 @@ class Factory(object):
           filename = f"{self.config.save_dir}/loss.csv"
           with codecs.open(filename, 'a+', 'utf-8') as f:
             writer = csv.writer(f, dialect='excel')
-            writer.writerow(result)
+            # writer.writerow(result)
+            writer.writerow(self._store.norm(result))
         self._store.update_train(result)
         if step % self.config.step_per_log == 0 or step == max_step:
           results = self._store.get_train_result()
-          log.info(f'Step: {step}/{max_step}, loss: {results[0]:.4f}, ' \
-              f'accuracy: {results[1]:.4f}', name=__name__)
+          log.info(
+              f'Step: {step}/{max_step}, ' \
+              f'loss: {results[0]:.4f}, ' \
+              f'accuracy: {results[1]:.4f}',
+              name=__name__)
       
       if self.config.step:
+        tf.keras.backend.set_learning_phase(True)
         for i in range(self.config.step):
           train_core(i + 1, self.config.step)
         log.info(f"Step Over.", name=__name__)
+        tf.keras.backend.set_learning_phase(False)
       else:
         for ep in range(self.config.epochs):
           log.info(f"Epoch: {ep+1}/{self.config.epochs} Train",
               name=__name__)
-          for i in range(dg.__len__()):
-            train_core(i+1, dg.__len__())
+          for i in range(dg.len):
+            train_core(i+1, dg.len)
+          # self.config.model.fit(
+          #     self.config.data.train_x,
+          #     self.config.data.train_y,
+          #     self.config.batch_size,
+          #     epochs=1)
           log.info(f"Epoch: {ep+1}/{self.config.epochs} Val",
               name=__name__)
           val_result = self.config.model.evaluate(

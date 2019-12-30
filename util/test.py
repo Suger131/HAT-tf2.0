@@ -11,8 +11,7 @@
 
 # import setting
 __all__ = [
-    'TestConfig',
-    'Tc',]
+    'TestConfig',]
 
 
 class TestConfig(object):
@@ -21,7 +20,7 @@ class TestConfig(object):
     Description: 
       用于测试的Config类，能存放参数
 
-    Attributes:
+    Args:
       **kwargs: Any. 任意参数，自动加入到属性中
   """
   def __init__(self, **kwargs):
@@ -33,16 +32,12 @@ class TestConfig(object):
     self.opt = None
 
 
-# Alias
-Tc = TestConfig
-
-
 # test part
 if __name__ == "__main__":
-  tc = TestConfig(name='test')
   from hat.util import log
+  from hat.util import util
+  tc = TestConfig(name='test')
   log.init('./unpush/test')
   log.log(tc.name)
-  from hat.util import util
   util.del_tail_digit('vgg16')
   # print(tc.name)

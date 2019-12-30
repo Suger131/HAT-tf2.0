@@ -20,7 +20,7 @@ class Counter(object):
     Description: 
       全局计数器，根据名字自动计数
 
-    Attributes:
+    Args:
       name: Str. 计数器名字
 
     Return:

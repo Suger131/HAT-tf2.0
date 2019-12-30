@@ -1,20 +1,18 @@
+# -*- coding: utf-8 -*-
+"""__init__
+
+  File: 
+    /hat/model
+
+  Description: 
+    import settings
 """
-  hat.model
-"""
 
 
-__all__ = [
-  'Network',
-  'Network_v1',
-  'Network_v2',
-  'nn',
-]
+from hat.model import custom
+from hat.model import util
 
-
-from hat.model.utils import Network
-from hat.model.utils import Network_v1
-from hat.model.utils import Network_v2
-from hat.model.utils import nn
-
-# from hat.model.custom import *
+from hat.model.custom import layers
+from hat.model.util import Network
+from hat.model.util import nn
 

@@ -13,7 +13,11 @@ from hat.dataset.util import builder
 from hat.dataset.util import dataset
 from hat.dataset.util import generator
 
-from hat.dataset.util.builder import *
-from hat.dataset.util.dataset import *
-from hat.dataset.util.generator import *
+from hat.dataset.util.builder import DatasetBuilder
+from hat.dataset.util.dataset import Dataset
+from hat.dataset.util.generator import Generator
+
+
+# Alias
+DSB = DatasetBuilder
 

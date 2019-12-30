@@ -14,8 +14,7 @@ import tensorflow as tf
 
 # import setting
 __all__ = [
-  'AddBias',
-]
+    'AddBias',]
 
 
 class AddBias(tf.keras.layers.Layer):
@@ -24,7 +23,7 @@ class AddBias(tf.keras.layers.Layer):
     Description:
       None
     
-    Attributes:
+    Args:
       rank: Int. 偏置的维数，比如"2"是2D的偏置。
       data_format: Str, default None. `channels_last`(None)
           或`channels_first`.
@@ -62,13 +61,13 @@ class AddBias(tf.keras.layers.Layer):
     channel_axis = self.data_format == 'channel_first' and 1 or -1
     self.channel = input_shape[channel_axis]
     self.bias = self.add_weight(
-      name='bias',
-      shape=(self.channel,),
-      initializer=self.bias_initializer,
-      regularizer=self.bias_regularizer,
-      constraint=self.bias_constraint,
-      trainable=True,
-      dtype=self.dtype)
+        name='bias',
+        shape=(self.channel,),
+        initializer=self.bias_initializer,
+        regularizer=self.bias_regularizer,
+        constraint=self.bias_constraint,
+        trainable=True,
+        dtype=self.dtype)
     self.built = True
 
   def call(self, inputs, **kwargs):
@@ -84,12 +83,11 @@ class AddBias(tf.keras.layers.Layer):
 
   def get_config(self):
     config = {
-      'rank': self.rank,
-      'data_format': self.data_format,
-      'bias_initializer': tf.keras.initializers.serialize(self.bias_initializer),
-      'bias_regularizer': tf.keras.regularizers.serialize(self.bias_regularizer),
-      'bias_constraint': tf.keras.constraints.serialize(self.bias_constraint),
-    }
+        'rank': self.rank,
+        'data_format': self.data_format,
+        'bias_initializer': tf.keras.initializers.serialize(self.bias_initializer),
+        'bias_regularizer': tf.keras.regularizers.serialize(self.bias_regularizer),
+        'bias_constraint': tf.keras.constraints.serialize(self.bias_constraint),}
     return dict(list(super().get_config().items()) + list(config.items()))
 
 

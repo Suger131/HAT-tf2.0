@@ -12,17 +12,8 @@
 
 
 if __name__ == "__main__":
-  
-  # import hat
-  
-  # C = hat.Config()
-  # F = hat.Factory(C)
-  # F.train()
-  # F.val()
-  # F.save()
-
-  import hat.util as util
-  C = util.config.Config()
-  F = util.factory.Factory(C)
+  from hat import core
+  C = core.Config()
+  F = core.Factory(C)
   F.run()
 

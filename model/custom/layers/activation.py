@@ -14,10 +14,9 @@ import tensorflow as tf
 
 # import setting
 __all__ = [
-  'Swish',
-  'HSigmoid',
-  'HSwish',
-]
+    'Swish',
+    'HSigmoid',
+    'HSwish',]
 
 
 class Swish(tf.keras.layers.Layer):
@@ -26,7 +25,7 @@ class Swish(tf.keras.layers.Layer):
     Description:
       Swish = x * Sigmoid(x)
     
-    Attributes:
+    Args:
       None
 
     Returns:
@@ -53,7 +52,7 @@ class HSigmoid(tf.keras.layers.Layer):
     Description:
       HSigmoid = x * Relu6(x + 3) / 6
     
-    Attributes:
+    Args:
       None
 
     Returns:
@@ -80,7 +79,7 @@ class HSwish(tf.keras.layers.Layer):
     Description:
       HSwish = x * Relu6(x + 3) / 6
     
-    Attributes:
+    Args:
       None
 
     Returns:
@@ -105,3 +104,4 @@ class HSwish(tf.keras.layers.Layer):
 if __name__ == "__main__":
   x_ = tf.keras.backend.placeholder((None, 8, 8, 16))
   print(HSigmoid()(x_))
+

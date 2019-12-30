@@ -18,8 +18,7 @@ from hat.model.custom.layers import basic
 
 # import setting
 __all__ = [
-  'GroupConv2D',
-]
+    'GroupConv2D',]
 
 
 class GroupConv2D(tf.keras.layers.Layer):
@@ -28,7 +27,7 @@ class GroupConv2D(tf.keras.layers.Layer):
     Description:
       None
     
-    Attributes:
+    Args:
       group: Int. 分组数
       filters: Int, default None. 分组卷积时的卷积核个数，
           默认保持
@@ -96,11 +95,10 @@ class GroupConv2D(tf.keras.layers.Layer):
       outputs = []
       for inx, dim in enumerate(inputs):
         outputs.append(conv_output_length(
-          dim,
-          self.kernel_size[inx],
-          self.padding,
-          self.strides[inx]
-        ))
+            dim,
+            self.kernel_size[inx],
+            self.padding,
+            self.strides[inx]))
       return outputs
     
     input_shape = input_shape.as_list()
@@ -125,25 +123,25 @@ class GroupConv2D(tf.keras.layers.Layer):
     self.reshape_layer_1 = tf.keras.layers.Reshape(middle_shape)
     self.reshape_layer_2 = tf.keras.layers.Reshape(output_shape)
     self.kernel_layer = tf.keras.layers.Conv3D(
-      filters=self.output_channel_i,
-      kernel_size=self.kernel_size + (1,),
-      strides=self.strides + (1,),
-      padding=self.padding,
-      data_format=self.data_format,
-      use_bias=self.use_group_bias,
-      kernel_initializer=self.kernel_initializer,
-      kernel_regularizer=self.kernel_regularizer,
-      kernel_constraint=self.kernel_constraint,
-      bias_initializer=self.bias_initializer,
-      bias_regularizer=self.bias_regularizer,
-      bias_constraint=self.bias_constraint,)
-    if self.use_bias:
-      self.bias = basic.AddBias(
-        2,
+        filters=self.output_channel_i,
+        kernel_size=self.kernel_size + (1,),
+        strides=self.strides + (1,),
+        padding=self.padding,
         data_format=self.data_format,
+        use_bias=self.use_group_bias,
+        kernel_initializer=self.kernel_initializer,
+        kernel_regularizer=self.kernel_regularizer,
+        kernel_constraint=self.kernel_constraint,
         bias_initializer=self.bias_initializer,
         bias_regularizer=self.bias_regularizer,
         bias_constraint=self.bias_constraint,)
+    if self.use_bias:
+      self.bias = basic.AddBias(
+          2,
+          data_format=self.data_format,
+          bias_initializer=self.bias_initializer,
+          bias_regularizer=self.bias_regularizer,
+          bias_constraint=self.bias_constraint,)
     self.built = True
   
   def call(self, inputs, **kwargs):
@@ -159,22 +157,21 @@ class GroupConv2D(tf.keras.layers.Layer):
 
   def get_config(self):
     config = {
-      'group': self.group,
-      'filters': self.filters,
-      'kernel_size': self.kernel_size,
-      'strides': self.strides,
-      'padding': self.padding,
-      'data_format': self.data_format,
-      'activation': self.activation,
-      'use_bias': self.use_bias,
-      'use_group_bias': self.use_group_bias,
-      'kernel_initializer': tf.keras.initializers.serialize(self.kernel_initializer),
-      'kernel_regularizer': tf.keras.regularizers.serialize(self.kernel_regularizer),
-      'kernel_constraint': tf.keras.constraints.serialize(self.kernel_constraint),
-      'bias_initializer': tf.keras.initializers.serialize(self.bias_initializer),
-      'bias_regularizer': tf.keras.regularizers.serialize(self.bias_regularizer),
-      'bias_constraint': tf.keras.constraints.serialize(self.bias_constraint),
-    }
+        'group': self.group,
+        'filters': self.filters,
+        'kernel_size': self.kernel_size,
+        'strides': self.strides,
+        'padding': self.padding,
+        'data_format': self.data_format,
+        'activation': self.activation,
+        'use_bias': self.use_bias,
+        'use_group_bias': self.use_group_bias,
+        'kernel_initializer': tf.keras.initializers.serialize(self.kernel_initializer),
+        'kernel_regularizer': tf.keras.regularizers.serialize(self.kernel_regularizer),
+        'kernel_constraint': tf.keras.constraints.serialize(self.kernel_constraint),
+        'bias_initializer': tf.keras.initializers.serialize(self.bias_initializer),
+        'bias_regularizer': tf.keras.regularizers.serialize(self.bias_regularizer),
+        'bias_constraint': tf.keras.constraints.serialize(self.bias_constraint),}
     return dict(list(super().get_config().items()) + list(config.items()))
 
 

@@ -39,17 +39,18 @@
 # ============
 
 
-from hat import __config__ as C
-__version__ = C.__version__
-__root__ = C.__root__
+from hat import __config__
+__version__ = __config__.__version__
+__root__ = __config__.__root__
 
-
-from hat import utils
-# from hat import util
+from hat import core
 from hat import dataset
 from hat import model
+from hat import util
 
-from hat.utils import *
-# from hat.util import *
-# from hat.dataset import *
-from hat.model import *
+from hat.core import Config
+from hat.core import Factory
+from hat.dataset.util import Dataset
+from hat.model import Network
+from hat.model import nn
+

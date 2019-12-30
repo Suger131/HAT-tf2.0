@@ -1,24 +1,18 @@
+# -*- coding: utf-8 -*-
+"""NN
+
+  File: 
+    /hat/model/util/nn
+
+  Description: 
+    Neural Network Redefine Layers
 """
-  hat.model.utils.nn
-
-  Neural Network Redefine Layers
-"""
-
-# pylint: disable=unused-argument
-# pylint: disable=unused-variable
-# pylint: disable=redefined-outer-name
-# pylint: disable=redefined-builtin
-
-
-# __all__ = [
-  
-# ]
 
 
 import tensorflow as tf
 
-from hat.utils.Counter import Counter
-from hat.model import custom
+from hat.util.count import Counter
+from hat.model.custom import layers
 
 
 class Block(object):
@@ -678,7 +672,7 @@ def resolutionscal2d(
   """ResolutionScaling2D"""
   if name is None:
     name = get_hat_name('resolutionscaling2d', block=block)
-  return custom.ResolutionScal2D(
+  return layers.ResolutionScal2D(
       size=size,
       data_format=data_format,
       name=name,
@@ -696,7 +690,7 @@ def sqeuuezeexcitation(
   """SqueezeExcitation"""
   if name is None:
     name = get_hat_name('se', block=block)
-  return custom.SqueezeExcitation(
+  return layers.SqueezeExcitation(
       ratio=ratio,
       filters=filters,
       min_filters=min_filters,
@@ -727,7 +721,7 @@ def groupconv2d(
   """GroupConv2D"""
   if name is None:
     name = get_hat_name('groupconv2d', block=block)
-  return custom.GroupConv2D(
+  return layers.GroupConv2D(
       group=group,
       filters=filters,
       kernel_size=kernel_size,
@@ -759,7 +753,7 @@ def addbias(
   """AddBias"""
   if name is None:
     name = get_hat_name('addbias', block=block)
-  return custom.AddBias(
+  return layers.AddBias(
       rank=rank,
       data_format=data_format,
       bias_initializer=bias_initializer,

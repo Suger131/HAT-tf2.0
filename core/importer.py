@@ -2,11 +2,10 @@
 """Importer
 
   File: 
-    /hat/util/importer
+    /hat/core/importer
 
   Description: 
-    import tools
-    Import工具，可加载自定义的dataset和model
+    加载器，可加载自定义的dataset和model
     加载的方式是猜想和枚举，优先根据名字猜想文件，找不到才会
     通过枚举的方式搜索
     dataset路径: `hat.dataset.lib`
@@ -165,11 +164,10 @@ if __name__ == "__main__":
   print(get_imp_like('dataset', 'mnist'))
   print(get_imp_like('standard', 'mlp'))
   print(get_lib_dir('standard'))
-  target1 = load('d', 'mnist')
-  target1(tc)
-  print(tc.train_x.shape)
-  target2 = load('s', 'lenet')
-  target2(config=tc)
+  data = load('d', 'mnist')()
+  tc.data = data
+  print(data.train_x.shape)
+  model = load('s', 'lenet')(config=tc)
   # tc.model.summary()
   target3 = load('s', 'untitled')
   target4 = load('d', 'untitled')
