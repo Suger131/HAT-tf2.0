@@ -20,21 +20,20 @@ import hat
 
 # import setting
 __all__ = [
-  'vgg',
-  'vgg11',
-  'vgg13',
-  'vgg16',
-  'vgg19',
-]
+    'base_vgg',
+    'vgg11',
+    'vgg13',
+    'vgg16',
+    'vgg19',]
 
 
-class vgg(hat.Network):
+class base_vgg(hat.Network):
   """VGG基类
 
     Description:
       VGG模型的基类，包含VGG卷积层和全连接层
 
-    Attributes:
+    Args:
       times: 每个VGG层的重复次数
       name: Str, optional. 模型名字
 
@@ -97,11 +96,10 @@ def vgg11(**kwargs):
     Raises:
       None
   """
-  return vgg(
-    times=[1, 1, 2, 2, 2],
-    name='vgg11',
-    **kwargs
-  )
+  return base_vgg(
+      times=[1, 1, 2, 2, 2],
+      name='vgg11',
+      **kwargs)
 
 
 def vgg13(**kwargs):
@@ -119,11 +117,10 @@ def vgg13(**kwargs):
     Raises:
       None
   """
-  return vgg(
-    times=[2, 2, 2, 2, 2],
-    name='vgg13',
-    **kwargs
-  )
+  return base_vgg(
+      times=[2, 2, 2, 2, 2],
+      name='vgg13',
+      **kwargs)
 
 
 def vgg16(**kwargs):
@@ -141,11 +138,10 @@ def vgg16(**kwargs):
     Raises:
       None
   """
-  return vgg(
-    times=[2, 2, 3, 3, 3],
-    name='vgg16',
-    **kwargs
-  )
+  return base_vgg(
+      times=[2, 2, 3, 3, 3],
+      name='vgg16',
+      **kwargs)
 
 
 def vgg19(**kwargs):
@@ -163,11 +159,10 @@ def vgg19(**kwargs):
     Raises:
       None
   """
-  return vgg(
-    times=[2, 2, 4, 4, 4],
-    name='vgg19',
-    **kwargs
-  )
+  return base_vgg(
+      times=[2, 2, 4, 4, 4],
+      name='vgg19',
+      **kwargs)
 
 
 # test part

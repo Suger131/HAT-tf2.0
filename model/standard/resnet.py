@@ -7,6 +7,15 @@
   Description: 
     ResNet模型，包含:
     1. resnet基类
+    2. resnet50
+    3. resnet101
+    4. resnet152
+    5. resnetse50
+    6. resnetse101
+    7. resnetse152
+    8. resnext50
+    9. resnext101
+    10. resnext152
     *基于Network_v2
 """
 
@@ -16,27 +25,29 @@ import hat
 
 # import setting
 __all__ = [
-  'resnet',
-  'resnet50',
-  'resnet101',
-  'resnet152',
-  'resnetse50',
-  'resnetse101',
-  'resnetse152',
-  'resnext50',
-  'resnext101',
-  'resnext152',
-]
+    'base_resnet',
+    'resnet50',
+    'resnet101',
+    'resnet152',
+    'resnetse50',
+    'resnetse101',
+    'resnetse152',
+    'resnext50',
+    'resnext101',
+    'resnext152',]
 
 
-class resnet(hat.Network):
+class base_resnet(hat.Network):
   """ResNet基类
 
     Description:
-      1
+      ResNet的基类，使用残差块搭建网络。
+      内置可选的SE层和组卷积层，分别对应SE-ResNet和ResNeXt。
 
-    Attributes:
-      1
+    Args:
+      times: 每个Res_Block的bottle重复次数
+      drop: float in [0, 1). 随机失活率
+      name: Str, optional. 模型名字
 
     Overrided:
       args: 存放参数
@@ -148,11 +159,10 @@ def resnet50(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 4, 6, 3],
-    name='resnet50',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 4, 6, 3],
+      name='resnet50',
+      **kwargs)
 
 
 def resnet101(**kwargs):
@@ -170,11 +180,10 @@ def resnet101(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 4, 23, 3],
-    name='resnet101',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 4, 23, 3],
+      name='resnet101',
+      **kwargs)
 
 
 def resnet152(**kwargs):
@@ -192,11 +201,10 @@ def resnet152(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 8, 36, 3],
-    name='resnet152',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 8, 36, 3],
+      name='resnet152',
+      **kwargs)
 
 
 def resnetse50(**kwargs):
@@ -215,12 +223,11 @@ def resnetse50(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 4, 6, 3],
-    use_se=True,
-    name='resnetse50',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 4, 6, 3],
+      use_se=True,
+      name='resnetse50',
+      **kwargs)
 
 
 def resnetse101(**kwargs):
@@ -239,12 +246,11 @@ def resnetse101(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 4, 23, 3],
-    use_se=True,
-    name='resnetse101',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 4, 23, 3],
+      use_se=True,
+      name='resnetse101',
+      **kwargs)
 
 
 def resnetse152(**kwargs):
@@ -263,12 +269,11 @@ def resnetse152(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 8, 36, 3],
-    use_se=True,
-    name='resnetse152',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 8, 36, 3],
+      use_se=True,
+      name='resnetse152',
+      **kwargs)
 
 
 def resnext50(**kwargs):
@@ -287,12 +292,11 @@ def resnext50(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 4, 6, 3],
-    use_group=True,
-    name='resnext50',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 4, 6, 3],
+      use_group=True,
+      name='resnext50',
+      **kwargs)
 
 
 def resnext101(**kwargs):
@@ -311,12 +315,11 @@ def resnext101(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 4, 23, 3],
-    use_group=True,
-    name='resnext101',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 4, 23, 3],
+      use_group=True,
+      name='resnext101',
+      **kwargs)
 
 
 def resnext152(**kwargs):
@@ -335,12 +338,11 @@ def resnext152(**kwargs):
     Raises:
       None
   """
-  return resnet(
-    times=[3, 8, 36, 3],
-    use_group=True,
-    name='resnext152',
-    **kwargs
-  )
+  return base_resnet(
+      times=[3, 8, 36, 3],
+      use_group=True,
+      name='resnext152',
+      **kwargs)
 
 
 # test part

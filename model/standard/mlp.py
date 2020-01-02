@@ -1,27 +1,46 @@
-"""
-  hat.model.test.mlp
-  默认模型
-  简单三层神经网络[添加了Dropout层]
-  Network v2
+# -*- coding: utf-8 -*-
+"""MLP
+
+  File: 
+    /hat/model/standard/mlp
+
+  Description: 
+    MLP模型
+    简单三层神经网络[添加了Dropout层]
+    *基于Network_v2
 """
 
 
 import hat
 
 
+# import setting
+__all__ = [
+    'mlp',]
+
+
 class mlp(hat.Network):
-  """
-    MLP
+  """MLP
+
+    Description:
+      MLP模型，简单三层神经网络
+      添加了Dropout
+
+    Args:
+      None
+
+    Overrided:
+      args: 存放参数
+      build: 定义了`keras.Model`并返回
   """
   def args(self):
     self.node = 128
     self.drop = 0.5
-    self.block = self.nn.Block('MLP')
 
   def build(self):
     inputs = self.nn.input(self.input_shape)
-    x = self.nn.flatten(block=self.block)(inputs)
-    x = self.nn.dense(self.node, block=self.block)(x)
+    x = self.nn.flatten()(inputs)
+    x = self.nn.dense(self.node)(x)
     x = self.nn.dropout(self.drop)(x)
     x = self.nn.dense(self.output_class, activation='softmax')(x)
     return self.nn.model(inputs, x)
@@ -34,5 +53,4 @@ if __name__ == "__main__":
   t.data.output_shape = (10,)
   mod = mlp(config=t)
   mod.summary()
-  print(mod.nn.get_layer_with_block(mod.model, mod.block))
 

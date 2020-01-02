@@ -34,6 +34,7 @@ class TestConfig(object):
     self.batch_size = 128
     self.epochs = 5
     self.opt = None
+    self.load_name = ''
 
 
 # test part

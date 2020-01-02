@@ -10,6 +10,7 @@
 
 
 import tensorflow as tf
+from tensorflow.keras import optimizers
 
 from hat.util.count import Counter
 from hat.model.custom import layers
@@ -193,6 +194,14 @@ def get_layer_weight(model, name):
       None
   """
   return model.get_layer(name=name).get_weights()
+
+
+def get_channels(Tensor):
+  if tf.keras.backend.image_data_format() == 'channels_first':
+    axis = 1
+  else:
+    axis = -1
+  return tf.keras.backend.int_shape(Tensor)[axis]
 
 
 def input(
