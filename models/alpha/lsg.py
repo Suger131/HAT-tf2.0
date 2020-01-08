@@ -1,10 +1,15 @@
 '''
   LeNet-Swish-Group
   For cifar10
+  Groups: 16
   本模型默认总参数量[参考基准：cifar10]：
-    Total params:           1,800,222
-    Trainable params:       1,800,222
-    Non-trainable params:   0
+    Total params:           1,840,970
+    Trainable params:       1,836,362
+    Non-trainable params:   4,608
+  NOTE: 对比普通卷积:
+    Total params:           4,925,450
+    Trainable params:       4,920,842
+    Non-trainable params:   4,608
 '''
 
 
@@ -16,7 +21,7 @@ class lsg(AdvNet):
     LSG
   """
   def args(self):
-    pass
+    self.G = 16
 
   def build_model(self):
     x_in = self.input(self.INPUT_SHAPE)
@@ -35,7 +40,7 @@ class lsg(AdvNet):
     x = self.conv(x, 128, 3)
     x = self.bn(x)
     x = self.swish(x)
-    x = self.groupconv(x, 32, 4, 3)
+    x = self.Gconv(x, self.G, 0, 3)
     x = self.bn(x)
     x = self.swish(x)
 
@@ -46,7 +51,7 @@ class lsg(AdvNet):
     x = self.conv(x, 256, 3)
     x = self.bn(x)
     x = self.swish(x)
-    x = self.groupconv(x, 32, 8, 3)
+    x = self.Gconv(x, self.G, 0, 3)
     x = self.bn(x)
     x = self.swish(x)
 
@@ -57,7 +62,7 @@ class lsg(AdvNet):
     x = self.conv(x, 512, 3)
     x = self.bn(x)
     x = self.swish(x)
-    x = self.groupconv(x, 32, 16, 3)
+    x = self.Gconv(x, self.G, 0, 3)
     x = self.bn(x)
     x = self.swish(x)
 
@@ -71,11 +76,10 @@ class lsg(AdvNet):
     x = self.dropout(x, 0.5)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='lsg')
+    return self.Model(inputs=x_in, outputs=x, name='lsg')
 
 
 # test part
 if __name__ == "__main__":
-  mod = lsg(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = lsg(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

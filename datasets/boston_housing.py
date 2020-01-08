@@ -4,7 +4,7 @@ from tensorflow.python.keras import datasets as ds
 
 class boston_housing(Dataset):
   """
-  boston_housing 数据集
+    boston_housing 数据集
   """
 
   def args(self):

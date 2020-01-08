@@ -9,12 +9,14 @@ from hat.models.advance.groupconv import GroupConv
 from hat.models.advance.shuffle import Shuffle
 from hat.models.advance.squeezeexcitation import SqueezeExcitation
 from hat.models.advance.swish import Swish
+from hat.models.advance.groupconv2d import GroupConv2D
 
 
 # import setting
 __all__ = [
   'ExtendRGB',
   'GroupConv',
+  'GroupConv2D',
   'SqueezeExcitation',
   'SE',
   'Shuffle',
@@ -37,6 +39,7 @@ ENDI = EfficientNetDenseInitializer
 _CUSTOM_OBJECTS = {
   'ExtendRGB': ExtendRGB,
   'GroupConv': GroupConv,
+  'GroupConv2D': GroupConv2D,
   'SqueezeExcitation': SqueezeExcitation,
   'SE': SE,
   'Shuffle': Shuffle,

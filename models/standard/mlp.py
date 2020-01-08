@@ -29,11 +29,10 @@ class mlp(AdvNet):
     x = self.dropout(x, self.DROP_RATE)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='mlp')
+    return self.Model(inputs=x_in, outputs=x, name='mlp')
 
 
 # test part
 if __name__ == "__main__":
-  mod = mlp(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = mlp(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

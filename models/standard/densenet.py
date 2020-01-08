@@ -75,7 +75,7 @@ class densenet(AdvNet):
     x = self.GAPool(x)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name=self.NAME)
+    return self.Model(inputs=x_in, outputs=x, name=self.NAME)
 
   def _dense(self, x_in, k):
 
@@ -346,6 +346,5 @@ def densenet264_32(**kwargs):
 
 # test part
 if __name__ == "__main__":
-  mod = densenet121_32(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = densenet121_32(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

@@ -55,7 +55,7 @@ class wrn28_10(AdvNet):
     x = self.GAPool(x)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name='wrn28_10')
+    return self.Model(inputs=x_in, outputs=x, name='wrn28_10')
 
   def expand(self, x_in, F, strides=2):
     """
@@ -106,5 +106,5 @@ class wrn28_10(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = wrn28_10(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.model.summary())
+  mod = wrn28_10(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10}, built=True)
+  mod.summary()

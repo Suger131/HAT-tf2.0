@@ -23,21 +23,19 @@ class enb0_ci(AdvNet):
   def args(self):
     self.STEM_CONV = 32
     self.STEM_STEP = 2
-    self.HEAD_CONV = 320
+    self.HEAD_CONV = 1280
     self.DROP_CONNECT = 0
     self.D = 0.2
     self.SE_RATE = 4
-    self.MB_INDX = [0 , 1 , 2 , 3 , 4  , 5  , 6  ]
     self.MB_CONV = [16, 24, 40, 80, 112, 192, 320]
     self.MB_SIZE = [3 , 3 , 5 , 3 , 5  , 5  , 3  ]
-    self.MB_STEP = [1 , 2 , 1 , 2 , 1  , 2  , 1  ]
+    self.MB_STEP = [1 , 2 , 2 , 2 , 1  , 2  , 1  ]
     self.MB_TIME = [1 , 2 , 2 , 3 , 3  , 4  , 1  ]
     self.MB_EXPD = [1 , 6 , 6 , 6 , 6  , 6  , 6  ]
     
-    self.EPOCHS = 384
-    self.BATCH_SIZE = 128
-    self.OPT = Adam(lr=1e-3, decay=1e-6)
-    self.OPT_EXIST = True
+    # self.EPOCHS = 384
+    # self.BATCH_SIZE = 128
+    # self.OPT = Adam(lr=1e-3, decay=1e-6)
 
   def build_model(self):
 
@@ -69,7 +67,6 @@ class enb0_ci(AdvNet):
 
     # blocks part
     blocks_list = list(zip(
-      self.MB_INDX,
       self.MB_CONV,
       self.MB_SIZE,
       self.MB_STEP,
@@ -77,7 +74,7 @@ class enb0_ci(AdvNet):
       self.MB_EXPD))
     drop_connect_rate_per_block = self.DROP_CONNECT / float(sum(self.MB_TIME))
     
-    for block_idx, filters, kernel_size, strides, n, expand_ratio in blocks_list:
+    for block_idx, (filters, kernel_size, strides, n, expand_ratio) in enumerate(blocks_list):
       x = self.MBConv(
         n, x, filters,
         kernel_size, strides,
@@ -104,7 +101,7 @@ class enb0_ci(AdvNet):
     x = self.swish(x)
 
     # output part
-    x = self.flatten(x)
+    x = self.GAPool(x)
     if self.D:
       x = self.dropout(x, self.D)
     x = self.local(
@@ -114,7 +111,7 @@ class enb0_ci(AdvNet):
       activation='softmax'
     )
 
-    self.Model(inputs=x_in, outputs=x, name='enb0_ci')
+    return self.Model(inputs=x_in, outputs=x, name='enb0_ci')
 
   def MBConv(self,
         n, x_in, filters, kernel_size, strides, expand_ratio, se_rate,
@@ -208,9 +205,8 @@ class enb0_ci(AdvNet):
 
 # test part
 if __name__ == "__main__":
-  mod = enb0_ci(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = enb0_ci(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 1000}, built=True)
+  mod.summary()
 
   # from tensorflow.python.keras.utils import plot_model
 

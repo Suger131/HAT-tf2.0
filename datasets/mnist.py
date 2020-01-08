@@ -4,7 +4,7 @@ from tensorflow.python.keras import datasets as ds
 
 class mnist(Dataset):
   """
-  mnist 数据集
+    mnist 数据集
   """
 
   def args(self):

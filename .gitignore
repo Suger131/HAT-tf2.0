@@ -2,9 +2,10 @@
 *.pyc
 *.csv
 *.record
+*.jpg
 logs/
-back_models/
-back_logs/
-test*.py
 datasets/car*/
-sample/
+datasets/dog*/
+datasets/flower*/
+datasets/fruits*/
+unpush/

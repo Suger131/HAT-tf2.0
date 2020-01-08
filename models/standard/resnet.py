@@ -51,6 +51,7 @@
 
 
 from hat.models.advance import AdvNet
+from tensorflow.python.keras.optimizers import SGD
 
 
 # import setting
@@ -65,6 +66,9 @@ __all__ = [
   'resnext50',
   'resnext101',
   'resnext152',
+  'sext50',
+  'sext101',
+  'sext152',
 ]
 
 
@@ -96,12 +100,9 @@ class resnet(AdvNet):
     self.RES_FB = [256, 512, 1024, 2048]
     self.RES_STRIDES = [1, 2, 2, 2 if self.INPUT_SHAPE[0] // 32 >= 4 else 1]
 
-    self.LOCAL = 1000
-    self.DROP = 0.5
+    self.DROP = 0.2
 
-    # self.BATCH_SIZE = 128
-    # self.EPOCHS = 384
-    # self.OPT = 'sgd'
+    self.OPT = SGD(lr=2e-4, momentum=.9)
 
   def build_model(self):
     x_in = self.input(self.INPUT_SHAPE)
@@ -122,16 +123,15 @@ class resnet(AdvNet):
     x = self.bn(x)
     x = self.relu(x)
     x = self.GAPool(x)
-    x = self.local(x, self.LOCAL)
-    x = self.dropout(x, self.DROP)
+    if self.DROP:
+      x = self.dropout(x, self.DROP)
     x = self.local(x, self.NUM_CLASSES, activation='softmax')
 
-    self.Model(inputs=x_in, outputs=x, name=self.NAME)
+    return self.Model(inputs=x_in, outputs=x, name=self.NAME)
 
   def _block(self, x_in, times, filters1, filters2, strides=2):
     x = self._bottle(x_in, filters1, filters2, strides=strides, _t=True)
-    times -= 1
-    x = self.repeat(self._bottle, times, filters1, filters2)(x)
+    x = self.repeat(self._bottle, times - 1, filters1, filters2)(x)
     return x
 
   def _bottle(self, x_in, filters1, filters2, strides=1, _t=False):
@@ -150,7 +150,7 @@ class resnet(AdvNet):
       x = self.conv(x, filters1 * 2, 1)
       x = self.bn(x)
       x = self.relu(x)
-      x = self.groupconv(x, 32, filters1 // 16, 3, strides=strides)
+      x = self.Gconv(x, 32, kernel_size=3, strides=strides)
     else:
       x = self.conv(x, filters1, 1)
       x = self.bn(x)
@@ -292,8 +292,52 @@ def resnext152(**kwargs):
   )
 
 
+def sext50(**kwargs):
+  """
+    ResNeXt-50 with SE
+    
+    Times: [3, 4, 6, 3]
+  """
+  return resnet(
+    times=[3, 4, 6, 3],
+    use_se=True,
+    use_group=True,
+    name='sext50',
+    **kwargs
+  )
+
+
+def sext101(**kwargs):
+  """
+    ResNeXt-101 with SE
+    
+    Times: [3, 4, 23, 3]
+  """
+  return resnet(
+    times=[3, 4, 23, 3],
+    use_se=True,
+    use_group=True,
+    name='sext101',
+    **kwargs
+  )
+
+
+def sext152(**kwargs):
+  """
+    ResNeXt-152 with SE
+    
+    Times: [3, 8, 36, 3]
+  """
+  return resnet(
+    times=[3, 8, 36, 3],
+    use_se=True,
+    use_group=True,
+    name='sext152',
+    **kwargs
+  )
+
+
 # test part
 if __name__ == "__main__":
-  mod = resnext50(DATAINFO={'INPUT_SHAPE': (32, 32, 3), 'NUM_CLASSES': 10})
-  print(mod.INPUT_SHAPE)
-  print(mod.model.summary())
+  mod = resnext50(DATAINFO={'INPUT_SHAPE': (224, 224, 3), 'NUM_CLASSES': 1000}, built=True)
+  mod.summary()

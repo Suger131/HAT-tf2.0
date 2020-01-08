@@ -14,6 +14,7 @@
 from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.layers import *
+from tensorflow.python.keras.initializers import *
 
 from hat.utils.counter import Counter
 from hat.models.network import NetWork
@@ -26,6 +27,10 @@ __all__ = [
 ]
 
 
+KERNEL_INIT = 'glorot_uniform'
+# KERNEL_INIT = GlorotUniformV2()
+
+
 class AdvNet(NetWork):
   """
     Advanced NetWork Builder
@@ -34,16 +39,19 @@ class AdvNet(NetWork):
 
     你需要重写的方法有:
       args 模型的各种参数，在此定义的所有量都会被写入config里面。另，可定义BATCH_SIZE, EPOCHS, OPT
-      build_model 构建网络模型，应该包含self.model的定义。可用self.Model完成。
+      build_model 构建网络模型，应该返回一个keras.Model对象。
       Sample: 
     
     ```python
-      self.Model(inputs=x_in, outputs=x, name='mlp') # or
-      self.model = Model(inputs=x_in, outputs=x, name='mlp')
+      return self.Model(inputs=x_in, outputs=x, name='mlp') 
+      # or
+      from tensorflow.python.keras.models import Model
+      return Model(inputs=x_in, outputs=x, name='mlp')
     ```
   """
 
   def __init__(self, *args, **kwargs):
+    self.KERNEL_INIT = KERNEL_INIT
     super().__init__(*args, **kwargs)
 
   def args(self):
@@ -56,7 +64,7 @@ class AdvNet(NetWork):
 
   def build_model(self):
     """
-      构建网络模型，应该包含self.model的定义
+      构建网络模型，应该返回一个keras.Model对象。
     """
     super().build_model()
 
@@ -64,7 +72,7 @@ class AdvNet(NetWork):
     """
       Model Builder
     """
-    self.model = Model(inputs=inputs, outputs=outputs, name=name, **kwargs)
+    return Model(inputs=inputs, outputs=outputs, name=name, **kwargs)
 
   def input(self, shape, batch_size=None, dtype=None, sparse=False, tensor=None,
             **kwargs):
@@ -134,7 +142,7 @@ class AdvNet(NetWork):
     )(x)
     return x
 
-  def local(self, x, units, activation='relu', use_bias=True, kernel_initializer='glorot_uniform',
+  def local(self, x, units, activation='relu', use_bias=True, kernel_initializer=KERNEL_INIT,
             bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None,
             activity_regularizer=None, kernel_constraint=None, bias_constraint=None, **kwargs):
     """
@@ -237,7 +245,7 @@ class AdvNet(NetWork):
 
   def conv(self, x, filters, kernel_size, strides=(1, 1), padding='same',
            data_format=None, dilation_rate=(1, 1), activation=None, use_bias=True,
-           kernel_initializer='glorot_uniform', bias_initializer='zeros',
+           kernel_initializer=KERNEL_INIT, bias_initializer='zeros',
            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
            kernel_constraint=None, bias_constraint=None, name='', **kwargs):
     """
@@ -277,7 +285,7 @@ class AdvNet(NetWork):
 
   def conv3d(self, x, filters, kernel_size, strides=(1, 1, 1), padding='same',
              data_format=None, dilation_rate=(1, 1, 1), activation=None, use_bias=True,
-             kernel_initializer='glorot_uniform', bias_initializer='zeros',
+             kernel_initializer=KERNEL_INIT, bias_initializer='zeros',
              kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
              kernel_constraint=None, bias_constraint=None, name='', **kwargs):
     """
@@ -317,7 +325,7 @@ class AdvNet(NetWork):
 
   def dwconv(self, x, kernel_size, strides=(1, 1), padding='same', depth_multiplier=1,
              data_format=None, activation=None, use_bias=True,
-             depthwise_initializer='glorot_uniform', bias_initializer='zeros',
+             depthwise_initializer=KERNEL_INIT, bias_initializer='zeros',
              depthwise_regularizer=None, bias_regularizer=None,
              activity_regularizer=None, depthwise_constraint=None,
              bias_constraint=None, name='', **kwargs):
@@ -350,13 +358,14 @@ class AdvNet(NetWork):
       depthwise_constraint=depthwise_constraint,
       bias_constraint=bias_constraint,
       name=name,
+      kernel_initializer=depthwise_initializer,
       **kwargs
     )(x)
     return x
 
   def groupconv(self, x, groups, filters, kernel_size, strides=(1, 1), padding='same',
            data_format=None, dilation_rate=(1, 1), activation=None, use_bias=True,
-           kernel_initializer='glorot_uniform', bias_initializer='zeros',
+           kernel_initializer=KERNEL_INIT, bias_initializer='zeros',
            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
            kernel_constraint=None, bias_constraint=None, split=True, rank=2, name='', **kwargs):
     """
@@ -392,6 +401,45 @@ class AdvNet(NetWork):
       bias_constraint=bias_constraint,
       split=split,
       rank=rank,
+      name=name,
+      **kwargs
+    )(x)
+    return x
+
+  def Gconv(self, x, groups:int, filters=0, kernel_size=1, strides=1, padding='same',
+            data_format=None, activation='relu', use_bias=True, use_group_bias=False,
+            kernel_initializer=KERNEL_INIT, bias_initializer='zeros',
+            kernel_regularizer=None, bias_regularizer=None, kernel_constraint=None,
+            bias_constraint=None, name='', **kwargs):
+    """
+      GroupConv2D Layer
+    """
+    if type(kernel_size) == int:
+      kernel_size = (kernel_size,) * 2
+    if type(strides) == int:
+      strides = (strides,) * 2
+    if not name:
+      name = ''.join([
+        f"GroupConv2D_{Counter('conv')}",
+        f"_K{'%sx%s' % kernel_size}",
+        f"_S{'%sx%s' % strides}"
+      ])
+    x = GroupConv2D(
+      groups=groups,
+      filters=filters,
+      kernel_size=kernel_size,
+      strides=strides,
+      padding=padding,
+      data_format=data_format,
+      activation=activation,
+      use_bias=use_bias,
+      use_group_bias=use_group_bias,
+      kernel_initializer=kernel_initializer,
+      bias_initializer=bias_initializer,
+      kernel_regularizer=kernel_regularizer,
+      bias_regularizer=bias_regularizer,
+      kernel_constraint=kernel_constraint,
+      bias_constraint=bias_constraint,
       name=name,
       **kwargs
     )(x)
@@ -456,7 +504,7 @@ class AdvNet(NetWork):
 
   def conv_bn(self, x, filters, kernel_size, strides=(1, 1), padding='same',
            data_format=None, dilation_rate=(1, 1), activation='relu', use_bias=True,
-           kernel_initializer='glorot_uniform', bias_initializer='zeros',
+           kernel_initializer=KERNEL_INIT, bias_initializer='zeros',
            kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
            kernel_constraint=None, bias_constraint=None, axis=-1, momentum=0.99, epsilon=1e-3,
            center=True, scale=True, beta_initializer='zeros', gamma_initializer='ones',
@@ -501,7 +549,7 @@ class AdvNet(NetWork):
     return x
 
   def SE(self, x, input_filters=None, rate=16, activation='sigmoid', data_format=None,
-        use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros',
+        use_bias=True, kernel_initializer=KERNEL_INIT, bias_initializer='zeros',
         kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None,
         kernel_constraint=None, bias_constraint=None, **kwargs):
     """
@@ -589,15 +637,28 @@ class AdvNet(NetWork):
     else:
       _size = K.int_shape(x)[2:4]
     
-    _n = [(size[i] - _size[i]) // 2 for i in range(2)]
-    
-    if _n[0] < 0 and _n[1] < 0:
-      _n = [-i for i in _n]
-      x = Cropping2D(_n)(x)
-    elif _n[0] > 0 and _n[1] > 0:
-      x = ZeroPadding2D(_n)(x)
+    dh = size[0] - _size[0]
+    dw = size[1] - _size[1]
+    nh = abs(dh) // 2
+    nw = abs(dw) // 2
+    lh = [nh, abs(dh) - nh]
+    lw = [nw, abs(dw) - nw]
+
+    # _n = [(size[i] - _size[i]) // 2 for i in range(2)]
+    if dh < 0:
+      x = Cropping2D([lh, lw])(x)
+    elif dh > 0:
+      x = ZeroPadding2D([lh, lw])(x)
     else:
-      pass
+      x = x
+
+    # if _n[0] < 0 and _n[1] < 0:
+    #   _n = [-i for i in _n]
+    #   x = Cropping2D(_n)(x)
+    # elif _n[0] > 0 and _n[1] > 0:
+    #   x = ZeroPadding2D(_n)(x)
+    # else:
+    #   pass
     
     return x
 

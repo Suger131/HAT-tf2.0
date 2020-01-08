@@ -1,16 +1,17 @@
+# pylint: disable=attribute-defined-outside-init
+
 import os
 import pickle
 import gzip
 from random import shuffle
 import numpy as np
 from PIL import Image
-from tensorflow.python.keras import datasets as ds
 from hat.datasets.Dataset import Dataset
 
 
 class car10(Dataset):
   """
-  car10 数据集
+    car10 数据集
   """
 
   def args(self):

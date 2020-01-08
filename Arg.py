@@ -24,7 +24,6 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 
-from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.callbacks import TensorBoard
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 
@@ -40,14 +39,19 @@ class Args(object):
     self._paramc = []
     self._logc = []
     self._specialc = []
-    self._warning_args = []
+    self._warning_list = []
+    self._log_list = []
     self._dir_list = []
     # envs args
     self.IS_TRAIN = True
     self.IS_VAL = True
     self.IS_SAVE = True
     self.IS_GIMAGE = True
+    self.IS_FLOPS = True
     self.IS_ENHANCE = False
+    self.XGPU_MODE = False
+    self.XGPU_NUM = 0
+    self.XGPU_NMAX = 4
     self.DATASETS_NAME = ''
     self.DATASET = None
     self.MODELS_NAME = ''
@@ -59,10 +63,13 @@ class Args(object):
     self.OPT = None
     self.LOSS_MODE = None
     self.METRICS = []
+    self.LIB = None
+    self.LIB_NAME = ''
+    self.ADDITION = ''
+    self.LR_ALT = False
     # build
     self.IN_ARGS = input('=>').split(' ')
-    self._Log = Log(log_dir='logs/logger')
-    self._timer = Timer(self._Log)
+    self._Log = None
     self._config = None
     self.user()
     self._input_processing()
@@ -127,16 +134,25 @@ class Args(object):
       elif '=' in i:
         temp = i.split('=')
         _check_list = [
-          [['dat', 'datasets'  ], 'DATASETS_NAME'],
-          [['mod', 'models'    ], 'MODELS_NAME'],
-          [['ep' , 'epochs'    ], 'EPOCHS'],
-          [['bat', 'batch_size'], 'BATCH_SIZE'],
-          [['mode'             ], 'RUN_MODE'],
-          [['-L' , 'lib'       ], 'MODEL_LIB'],
+          [['dat', 'datasets'     ], 'DATASETS_NAME'],
+          [['mod', 'models'       ], 'MODELS_NAME'],
+          [['ep' , 'epochs'       ], 'EPOCHS'],
+          [['bat', 'batch_size'   ], 'BATCH_SIZE'],
+          [['mode','runmode'      ], 'RUN_MODE'],
+          [['-L' , 'lib'          ], 'MODEL_LIB'],
+          [['-X',  'xgpu'         ], 'XGPU_NUM'],
+          [['-A', 'add','addition'], 'ADDITION', 'force_str'],
         ]
-        _check_box = [self._check_args(temp[0], *j, temp[1]) for j in _check_list]
+        _check_box = [
+          self._check_args(
+            temp[0],
+            j[0],
+            j[1],
+            temp[1],
+            force_str=True if 'force_str' in j else False)
+          for j in _check_list]
         if not any(_check_box):
-          self._warning_args.append(temp[0])
+          self._warning_list.append(f'Unsupported option: {temp[0]}')
           
       else:
         _check_list = [
@@ -145,28 +161,46 @@ class Args(object):
           [['-T' , 'train-only'  ], 'RUN_MODE'  , 'train'],
           [['-V' , 'val-only'    ], 'RUN_MODE'  , 'val'],
           [['-E' , 'data-enhance'], 'IS_ENHANCE', True],
+          [['-X' , 'xgpu'        ], 'XGPU_MODE' , True],
+          [['-L' , 'lr-alt'      ], 'LR_ALT'    , True],
+          [['-NF', 'no-flops'    ], 'IS_FLOPS'  , False],
         ]
         _check_box = [self._check_args(i, *j) for j in _check_list]
         if not any(_check_box):
-          self._warning_args.append(i)
-    
-    self._Log(self._warning_args, _A='Warning', text='Unsupported option:')
+          self._warning_list.append(f'Unsupported option: {i}')
 
   def _envs_processing(self):
 
-    # set models lib
+    # models lib setting
     if not self.MODEL_LIB:
       self.MODEL_LIB = 'S'
-    models = MLib(self.MODEL_LIB)
-    _lib_name = NLib(self.MODEL_LIB)
+    self.LIB = MLib(self.MODEL_LIB)
+    self.LIB_NAME = NLib(self.MODEL_LIB)
 
-    # load user datasets & models (don't cover)
+    # XGPU setting
+    if self.XGPU_NUM:
+      self.XGPU_MODE = True
+      if self.XGPU_NUM > self.XGPU_NMAX:
+        self._warning_list.append(f"Max NGPU {self.XGPU_NMAX}, but got {self.XGPU_NUM}. Use the Max NGPU.")
+        self.XGPU_NUM = self.XGPU_NMAX
+    else:
+      self.XGPU_NUM = self.XGPU_NMAX
+    self.XGPUINFO = {
+      'NGPU': self.XGPU_NUM,
+    }
+
+    # load user datasets & models (not cover)
     self._get_args(self.USER_DICT_N)
 
     # dir args
-    self.SAVE_DIR = f'logs/{_lib_name}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
-    self.H5_NAME = f'{self.SAVE_DIR}/{self.DATASETS_NAME}_{self.MODELS_NAME}'
-    
+    self.SAVE_DIR = f'logs/{self.LIB_NAME}/{self.MODELS_NAME}_{self.DATASETS_NAME}'
+    if self.XGPU_MODE:
+      self.SAVE_DIR += '_xgpu'
+    # name addition setting
+    if self.ADDITION:
+      self.SAVE_DIR += self.ADDITION
+    self.H5_NAME = f'{self.SAVE_DIR}/save'
+
     # make dir
     self._dir_list.extend([self.SAVE_DIR])
     for i in self._dir_list:
@@ -174,25 +208,24 @@ class Args(object):
         os.makedirs(i)
 
     # check save exist
-    self.SAVE_EXIST = True
-    self.SAVE_TIME = 0
-    if not os.path.exists(f'{self.H5_NAME}_{self.SAVE_TIME}.h5'):
-      self.SAVE_EXIST = False
-    else:
-      while os.path.exists(f'{self.H5_NAME}_{self.SAVE_TIME}.h5'):
+    self.SAVE_TIME = 1
+    while True:
+      if os.path.exists(f'{self.H5_NAME}_{self.SAVE_TIME}.h5'):
         self.SAVE_TIME += 1
-      self.LOAD_NAME = f'{self.H5_NAME}_{self.SAVE_TIME-1}.h5'
-    self.SAVE_NAME = f'{self.H5_NAME}_{self.SAVE_TIME}.h5'
-
-    # NOTE: Windows Bug
-    # a Windows-specific bug in TensorFlow.
-    # The fix is to use the platform-appropriate path separators in log_dir
-    # rather than hard-coding forward slashes:
-    self.LOG_DIR = os.path.join(
-      f'logs',
-      f'{_lib_name}',
-      f'{self.DATASETS_NAME}_{self.MODELS_NAME}',
-      f'{self.DATASETS_NAME}_{self.MODELS_NAME}_{self.SAVE_TIME}',)
+      else:
+        if self.SAVE_TIME == 1:
+          self.LOAD_NAME = ''
+        else:
+          self.LOAD_NAME = f'{self.H5_NAME}_{self.SAVE_TIME-1}.h5'
+        self.SAVE_NAME = f'{self.H5_NAME}_{self.SAVE_TIME}.h5'
+        break
+    
+    # Set Logger
+    self._Log = Log(log_dir=self.SAVE_DIR)
+    self._Log(self.SAVE_DIR, _T='Logs dir:')
+    self._Log(self._warning_list, _A='Warning')
+    self._Log(self._log_list)
+    self._timer = Timer(self._Log)
 
     # get dataset object
     call_dataset = globals().get(self.DATASETS_NAME)
@@ -208,37 +241,47 @@ class Args(object):
 
     # get model object
     try:
-      call_model = getattr(models, self.MODELS_NAME)
+      call_model = getattr(self.LIB, self.MODELS_NAME)
       self._Log(self.MODELS_NAME, _T='Loading Model:')
     except:
       self._error(self.MODELS_NAME, 'Not in Models:')
-    self.MODEL = call_model(DATAINFO=self.DATAINFO)
+    if self.XGPU_MODE:
+      self.MODEL = call_model(DATAINFO=self.DATAINFO, XGPUINFO=self.XGPUINFO)
+    else:
+      self.MODEL = call_model(DATAINFO=self.DATAINFO)
     _model = self.MODEL.ginfo()
     self._get_args(_model[0])
     self._paramc.extend(_model)
-    self._Log(self.MODELS_NAME, _T='Loaded Model:')
-    self._Log(_lib_name, _T='Model Lib:')
-
+    
     # load user args (don't cover)
     self._get_args(self.USER_DICT)
 
-    # check save
-    if self.SAVE_EXIST:
-      self._Log(self.LOAD_NAME ,_T='Loading h5:')
-      self.MODEL.model = load_model(self.LOAD_NAME)
-      self._Log(self.LOAD_NAME ,_T='Loaded h5:')
-    else:
-      # compile model
-      self.MODEL.model.compile(
-        optimizer=self.OPT,
-        loss=self.LOSS_MODE,
-        metrics=self.METRICS
-      )
+    self.MODEL.build(self.LOAD_NAME)
+    
+    # compile model
+    if self.LOAD_NAME:
+      # NOTE: normally, h5 include compile.
+      # but in XGPU mode, h5 doesn't include compile
+      self._Log(self.LOAD_NAME, _T='Load h5:')
+    self.MODEL.compile(
+      optimizer=self.OPT,
+      loss=self.LOSS_MODE,
+      metrics=self.METRICS
+    )
+    self._Log(self.MODELS_NAME, _T='Loaded Model:')
+    self._Log(self.LIB_NAME, _T='Model Lib:')
 
     # get configer
     self._config = Config(f"{self.SAVE_DIR}/config")
-    # processing special config
+    # processing config
     self._special_config()
+    self._paramc.append({
+      'BATCH_SIZE': self.BATCH_SIZE,
+      'EPOCHS': self.EPOCHS,
+      'OPT': self.OPT,
+      'LOSS_MODE': self.LOSS_MODE,
+      'METRICS': self.METRICS,
+    })
 
     # mode envs
     if self.RUN_MODE == 'no-gimage':
@@ -263,44 +306,74 @@ class Args(object):
       self._Log(self.BATCH_SIZE, _T='Batch size:')
       self._Log('', _L=['Model Optimizer exist.', f'Using Optimizer: {self.OPT}'], _B=self.OPT != None)
       if self.RUN_MODE == 'val':
-        self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.SAVE_EXIST)
+        self._Log('', _L=['h5 exist.', 'h5 not exist, valing a fresh model.'], _B=self.LOAD_NAME)
       else:
-        self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.SAVE_EXIST)
-      self._Log(self.LOG_DIR + '\\', _T='logs dir:')
+        self._Log('', _L=['h5 exist.', 'h5 not exist, create one.'], _B=self.LOAD_NAME)
+      
     if self.IS_ENHANCE:
       self._Log('Enhance data.')
+    if self.XGPU_MODE:
+      self._Log('Muti-GPUs.')
+    if self.LR_ALT:
+      self._Log('Learning Rate Alterable.')
 
   def _fit(self, *args, **kwargs):
+    
+    # NOTE: Windows Bug
+    # a Windows-specific bug in TensorFlow.
+    # The fix is to use the platform-appropriate path separators in log_dir
+    # rather than hard-coding forward slashes:
     # NOTE: if use the `histogram_freq`, then raise
     # AttributeError: 'NoneType' object has no attribute 'fetches'
     # unknown bug
+    self.LOG_DIR = os.path.join(
+      self.SAVE_DIR,
+      f'TB_{self.SAVE_TIME}',)
+    self._Log(self.LOG_DIR + '\\', _T='logs dir:')
     tensorboard_callback = TensorBoard(log_dir=self.LOG_DIR,
-                                      #  histogram_freq=1,
                                        update_freq='batch',
                                        write_graph=False,
                                        write_images=True)
-    _history = []
-    for i in range(self.EPOCHS):
-      self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
+    _history=[]
+    
+    # Data
+    if self.DATASET.trian_x == None:
       if self.IS_ENHANCE:
-        _train = self.MODEL.model.fit_generator(
-          self._datagen(),
-          # steps_per_epoch=self.DATASET.NUM_TRAIN / self.BATCH_SIZE,
-          epochs=1, #self.EPOCHS,
-          # initial_epoch=self._GLOBAL_EPOCH - self.EPOCHS + i,
+        self.DATASET.get_generator(self.BATCH_SIZE, self.AUG)
+        train = self.DATASET.trian_generator
+      else:
+        self.DATASET.get_generator(self.BATCH_SIZE)
+        train = self.DATASET.trian_generator
+    elif self.IS_ENHANCE:
+      train = self._datagen()
+    
+    for i in range(self.EPOCHS):
+      if self.LR_ALT:
+        lr_rt = self._lr_update(i)
+        if lr_rt:
+          self._Log(f"LR Update: {lr_rt}")
+
+      self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
+      if self.DATASET.train_x == None or self.IS_ENHANCE:
+        _train = self.MODEL.fit_generator(
+          train,
+          epochs=1,
           callbacks=[tensorboard_callback]
         )
       else:
-        _train = self.MODEL.model.fit(
+        _train = self.MODEL.fit(
           self.DATASET.train_x,
           self.DATASET.train_y,
-          epochs=1, #self.EPOCHS,
+          epochs=1,
           batch_size=self.BATCH_SIZE,
-          # initial_epoch=self._GLOBAL_EPOCH - self.EPOCHS + i,
           callbacks=[tensorboard_callback]
         )
       self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
-      _val = self.MODEL.model.evaluate(
+      if self.DATASET.val_x == None:
+        _val = self.MODEL.evaluate_generator(
+          self.DATASET.val_generator)
+      else:
+        _val = self.MODEL.evaluate(
           self.DATASET.val_x,
           self.DATASET.val_y,
           batch_size=self.BATCH_SIZE)
@@ -312,20 +385,36 @@ class Args(object):
     """
       Image Data Enhancement
     """
-    datagen = ImageDataGenerator(
-      rotation_range=10,
-      width_shift_range=0.05,
-      height_shift_range=0.05,
-      shear_range=0.05,
-      zoom_range=0.05,
-      horizontal_flip=True,
-    )
-    datagen.fit(self.DATASET.train_x)
-    return datagen.flow(
+    return self.AUG.flow(
       self.DATASET.train_x, 
       self.DATASET.train_y, 
       batch_size=self.BATCH_SIZE,
-      shuffle=True)
+      shuffle=True
+    )
+
+  def _lr_update(self, i):
+    st_list = [0, 100, 150, 200]
+    lr_list = [0.1, 0.03, 0.009, 0.0027]
+    if any([True for st in st_list if i==st]):
+      # stage
+      if i < st_list[1]:
+        stage = 0
+      elif i < st_list[2]:
+        stage = 1
+      elif i < st_list[3]:
+        stage = 2
+      else:
+        stage = 3
+      from tensorflow.python.keras.optimizers import SGD
+      opt = SGD(lr=lr_list[stage], momentum=.9, decay=5e-4)
+      self.MODEL.compile(
+        optimizer=opt,
+        loss=self.LOSS_MODE,
+        metrics=self.METRICS
+      )
+      return lr_list[stage]
+    else:
+      return None
 
   # public method
 
@@ -334,18 +423,88 @@ class Args(object):
     if not self.IS_TRAIN: return
 
     self._Log(f'{self._GLOBAL_EPOCH-self.EPOCHS}/{self._GLOBAL_EPOCH}', _T='Global Epochs:')
-    _, result = self._timer.timer('train', self._fit)
+
+    def _fit(*args, **kwargs):
+      # NOTE: Windows Bug
+      # a Windows-specific bug in TensorFlow.
+      # The fix is to use the platform-appropriate path separators in log_dir
+      # rather than hard-coding forward slashes:
+      # NOTE: if use the `histogram_freq`, then raise
+      # AttributeError: 'NoneType' object has no attribute 'fetches'
+      # unknown bug
+      self.LOG_DIR = os.path.join(
+        self.SAVE_DIR,
+        f'TB_{self.SAVE_TIME}',)
+      tensorboard_callback = TensorBoard(
+        log_dir=self.LOG_DIR,
+        update_freq='batch',
+        write_graph=False,
+        write_images=True
+      )
+      _history=[]
+      
+      # Data
+      if self.DATASET.train_x is None:
+        self.DATASET.get_generator(self.BATCH_SIZE, aug=self.AUG if self.IS_ENHANCE else None)
+        train = self.DATASET.trian_generator
+      elif self.IS_ENHANCE:
+        train = self._datagen()
+      
+      for i in range(self.EPOCHS):
+        if self.LR_ALT:
+          lr_rt = self._lr_update(i)
+          if lr_rt:
+            self._Log(f"LR Update: {lr_rt}")
+
+        self._Log(f"Epoch: {i+1}/{self.EPOCHS} train")
+        if self.DATASET.train_x is None or self.IS_ENHANCE:
+          _train = self.MODEL.fit_generator(
+            train,
+            epochs=1,
+            callbacks=[tensorboard_callback]
+          )
+        else:
+          _train = self.MODEL.fit(
+            self.DATASET.train_x,
+            self.DATASET.train_y,
+            epochs=1,
+            batch_size=self.BATCH_SIZE,
+            callbacks=[tensorboard_callback]
+          )
+        self._Log(f"Epoch: {i+1}/{self.EPOCHS} val")
+        if self.DATASET.val_x is None:
+          _val = self.MODEL.evaluate_generator(
+            self.DATASET.val_generator)
+        else:
+          _val = self.MODEL.evaluate(
+            self.DATASET.val_x,
+            self.DATASET.val_y,
+            batch_size=self.BATCH_SIZE)
+        _history.extend([{f"epoch{i+1}_train_{item}": _train.history[item][0] for item in _train.history},
+                        dict(zip([f'epoch{i+1}_val_loss', f'epoch{i+1}_val_accuracy'], _val))])
+      return _history
+
+    _, result = self._timer.timer('train', _fit)
 
     self._logc.extend([_, *result])
 
   def val(self):
 
     if not self.IS_VAL: return
-
-    _, result = self._timer.timer('val', self.MODEL.model.evaluate,
-                                  self.DATASET.val_x,
-                                  self.DATASET.val_y,
-                                  batch_size=self.BATCH_SIZE)
+    
+    def _val():
+      if self.DATASET.val_x is None:
+        self.DATASET.get_generator(self.BATCH_SIZE)
+        _val = self.MODEL.evaluate_generator(
+          self.DATASET.val_generator)
+      else:
+        _val = self.MODEL.evaluate(
+          self.DATASET.val_x,
+          self.DATASET.val_y,
+          batch_size=self.BATCH_SIZE)
+      return _val
+    
+    _, result = self._timer.timer('val', _val)
     self._Log(result[0], _T='total loss:')
     self._Log(result[1], _T='accuracy:')
     self._logc.append(_)
@@ -358,33 +517,54 @@ class Args(object):
 
     if not self.IS_SAVE: return
 
-    self.MODEL.model.save(self.SAVE_NAME)
+    self.MODEL.save(self.SAVE_NAME)
 
     self._Log(self.SAVE_NAME, _T='Successfully save model:')
 
   def gimage(self):
 
-    if not self.IS_GIMAGE: return
+    img_name = f'{self.H5_NAME}_model.png'
+    ops_name = f'{self.SAVE_DIR}/flops.txt'
 
-    if os.path.exists(f'{self.H5_NAME}_model.png'): return
+    if self.IS_GIMAGE and not os.path.exists(img_name): 
 
-    from tensorflow.python.keras.utils import plot_model
+      from tensorflow.python.keras.utils import plot_model
 
-    plot_model(self.MODEL.model,
-               to_file=f'{self.H5_NAME}_model.png',
-               show_shapes=True)
+      plot_model(self.MODEL.model,
+                to_file=img_name,
+                show_shapes=True)
 
-    self._Log(f'{self.H5_NAME}_model.png', _T='Successfully save model image:')
+      self._Log(img_name, _T='Successfully save model image:')
+
+    if self.IS_FLOPS and not os.path.exists(ops_name):
+
+      self._paramc.append({
+        'FLOPs': self.MODEL.flops(filename=ops_name)
+      })
+
+      self._Log(ops_name, _T='Successfully write FLOPs infomation:')
   
   def user(self):
     '''user train args'''
-    self.USER_DICT_N = {'DATASETS_NAME': 'mnist',
-                        'MODELS_NAME': 'mlp'}
-    self.USER_DICT = {'BATCH_SIZE': 128,
-                      'EPOCHS': 5,
-                      'OPT': 'adam',
-                      'LOSS_MODE': 'sparse_categorical_crossentropy',
-                      'METRICS' : ['accuracy']}
+    self.AUG = ImageDataGenerator(
+      rotation_range=10,
+      width_shift_range=0.05,
+      height_shift_range=0.05,
+      shear_range=0.05,
+      zoom_range=0.05,
+      horizontal_flip=True,
+    )
+    self.USER_DICT_N = {
+      'DATASETS_NAME': 'mnist',
+      'MODELS_NAME': 'mlp'
+    }
+    self.USER_DICT = {
+      'BATCH_SIZE': 128,
+      'EPOCHS': 5,
+      'OPT': 'adam',
+      'LOSS_MODE': 'sparse_categorical_crossentropy',
+      'METRICS': ['accuracy']
+    }
 
   def run(self):
 

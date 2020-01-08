@@ -1,4 +1,10 @@
 # pylint: disable=unnecessary-pass
+# pylint: disable=no-name-in-module
+
+import tensorflow as tf
+from tensorflow.python.keras import backend as K
+from tensorflow.python.keras.utils import multi_gpu_model
+from tensorflow.python.keras.models import load_model
 
 __all__ = [
   'NetWork'
@@ -16,8 +22,17 @@ class NetWork(object):
 
   def __init__(self, **kwargs):
     
+    # DATAINFO
     self.INPUT_SHAPE = ()
     self.NUM_CLASSES = 0
+    # XGPUINFO
+    self.XGPU = False
+    self.NGPU = 0
+    
+    self._pre_built = False
+    self.LOAD = False
+    self.model = None
+    self.parallel_model = None
 
     self._kwargs = kwargs
     self._default_list = ['BATCH_SIZE', 'EPOCHS', 'OPT', 'LOSS_MODE', 'METRICS']
@@ -25,6 +40,7 @@ class NetWork(object):
     self._dict = {}
     self._check_kwargs()
 
+    # catch argument
     self._built = True
     self.BATCH_SIZE = 0
     self.EPOCHS = 0
@@ -34,7 +50,9 @@ class NetWork(object):
     self.args()
     self._built = False
 
-    self.build_model()
+    # pre build
+    if self._pre_built:
+      self.build()
 
   # built-in method
 
@@ -53,9 +71,26 @@ class NetWork(object):
   # private method
 
   def _check_kwargs(self):
+    if 'built' in self._kwargs:
+      self._pre_built = self._kwargs.pop('built')
     if 'DATAINFO' in self._kwargs:
       self.__dict__ = {**self.__dict__, **self._kwargs.pop('DATAINFO')}
+    if 'XGPUINFO' in self._kwargs:
+      self.__dict__ = {**self.__dict__, **self._kwargs.pop('XGPUINFO')}
+      if self.NGPU <= 1:
+        print(f'\n[WARNING] XGPU Failed. The Number of GPU(NGPU) must more than 1, got {self.NGPU} \n')
+      else:
+        self.XGPU = True
     self.__dict__ = {**self.__dict__, **self._kwargs}
+
+  def _load_model(self, filepath=''):
+    if filepath:
+      self.LOAD = True
+      self.model = load_model(filepath)
+    else:
+      self.model = self.build_model()
+
+  # rewrite method
 
   def args(self):
     """
@@ -75,3 +110,248 @@ class NetWork(object):
 
   def ginfo(self):
     return self._default_dict, self._dict
+
+  def build(self, filepath=''):
+    """
+      Build model
+
+      Argument:
+        filepath: Str. If something, use this file path to load model.
+    """
+    self._load_model(filepath)
+    if self.XGPU:
+      try:
+        self.parallel_model = multi_gpu_model(
+          self.model,
+          gpus=self.NGPU,
+        )
+      except ValueError:
+        print(f'\n[WARNING] XGPU Failed. Check out the Numbers of GPU(NGPU), got {self.NGPU} \n')
+        self.XGPU = False
+        self.parallel_model = self.model
+    else:
+      self.parallel_model = self.model
+
+  def compile(self,
+              optimizer,
+              loss=None,
+              metrics=None,
+              loss_weights=None,
+              sample_weight_mode=None,
+              weighted_metrics=None,
+              target_tensors=None,
+              distribute=None,
+              **kwargs):
+    """
+      Get compile function
+    """
+    if not self.XGPU:
+      self.model.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics,
+        loss_weights=loss_weights,
+        sample_weight_mode=sample_weight_mode,
+        weighted_metrics=weighted_metrics,
+        target_tensors=target_tensors,
+        distribute=distribute,
+        **kwargs
+      )
+    if self.XGPU:
+      self.parallel_model.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics,
+        loss_weights=loss_weights,
+        sample_weight_mode=sample_weight_mode,
+        weighted_metrics=weighted_metrics,
+        target_tensors=target_tensors,
+        distribute=distribute,
+        **kwargs
+      )
+
+  def fit(self,
+          x=None,
+          y=None,
+          batch_size=None,
+          epochs=1,
+          verbose=1,
+          callbacks=None,
+          validation_split=0.,
+          validation_data=None,
+          shuffle=True,
+          class_weight=None,
+          sample_weight=None,
+          initial_epoch=0,
+          steps_per_epoch=None,
+          validation_steps=None,
+          max_queue_size=10,
+          workers=1,
+          use_multiprocessing=False,
+          **kwargs):
+    """
+      Get fit function
+    """
+    return self.parallel_model.fit(
+      x=x,
+      y=y,
+      batch_size=batch_size,
+      epochs=epochs,
+      verbose=verbose,
+      callbacks=callbacks,
+      validation_split=validation_split,
+      validation_data=validation_data,
+      shuffle=shuffle,
+      class_weight=class_weight,
+      sample_weight=sample_weight,
+      initial_epoch=initial_epoch,
+      steps_per_epoch=steps_per_epoch,
+      validation_steps=validation_steps,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing,
+      **kwargs
+    )
+
+  def evaluate(self,
+               x=None,
+               y=None,
+               batch_size=None,
+               verbose=1,
+               sample_weight=None,
+               steps=None,
+               max_queue_size=10,
+               workers=1,
+               use_multiprocessing=False):
+    """
+      Get evaluate function
+    """
+    return self.parallel_model.evaluate(
+      x=x,
+      y=y,
+      batch_size=batch_size,
+      verbose=verbose,
+      sample_weight=sample_weight,
+      steps=steps,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing
+    )
+
+  def predict(self,
+              x,
+              batch_size=None,
+              verbose=1,
+              steps=None,
+              max_queue_size=10,
+              workers=1,
+              use_multiprocessing=False):
+    """
+      Get predict function
+    """
+    return self.parallel_model.predict(
+      x,
+      batch_size=batch_size,
+      verbose=verbose,
+      steps=steps,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing
+    )
+
+  def fit_generator(self,
+                    generator,
+                    steps_per_epoch=None,
+                    epochs=1,
+                    verbose=1,
+                    callbacks=None,
+                    validation_data=None,
+                    validation_steps=None,
+                    class_weight=None,
+                    max_queue_size=10,
+                    workers=1,
+                    use_multiprocessing=False,
+                    shuffle=True,
+                    initial_epoch=0):
+    """
+      Get fit_generator function
+    """
+    return self.parallel_model.fit_generator(
+      generator,
+      steps_per_epoch=steps_per_epoch,
+      epochs=epochs,
+      verbose=verbose,
+      callbacks=callbacks,
+      validation_data=validation_data,
+      validation_steps=validation_steps,
+      class_weight=class_weight,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing,
+      shuffle=shuffle,
+      initial_epoch=initial_epoch
+    )
+
+  def evaluate_generator(self,
+                         generator,
+                         steps=None,
+                         max_queue_size=10,
+                         workers=1,
+                         use_multiprocessing=False,
+                         verbose=1):
+    """
+      Get evaluate_generator function
+    """
+    return self.parallel_model.evaluate_generator(
+      generator,
+      steps=steps,
+      max_queue_size=max_queue_size,
+      workers=workers,
+      use_multiprocessing=use_multiprocessing,
+      verbose=verbose,
+    )
+
+  def save(self,
+           filepath,
+           overwrite=True,
+           include_optimizer=True):
+    """
+      Get save function
+    """
+    self.model.save(
+      filepath,
+      overwrite=overwrite,
+      include_optimizer=include_optimizer
+    )
+
+  def summary(self,
+              line_length=100,
+              positions=None,
+              print_fn=None):
+    """
+      Get summary function
+    """
+    self.model.summary(
+      line_length=line_length,
+      positions=positions,
+      print_fn=print_fn
+    )
+
+  def flops(self, filename='', hide_re=''):
+    run_meta = tf.RunMetadata()
+    opts = tf.profiler.ProfileOptionBuilder.float_operation()
+    if filename:
+      opts['output'] = f'file:outfile={filename}'
+    ignore = ['training.*', 'loss.*', 'replica.*']
+    if hide_re:
+      ignore.append(hide_re)
+    opts['hide_name_regexes'] = ignore
+    flops = tf.profiler.profile(
+      graph=K.get_session().graph,
+      run_meta=run_meta,
+      cmd='graph',
+      options=opts
+    )
+    outputs = flops.total_float_ops
+    print(f'FLOPs: {outputs}')
+    return outputs
