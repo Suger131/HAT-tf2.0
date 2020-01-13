@@ -20,15 +20,17 @@ hat_dir = _os.path.dirname(_os.path.abspath(__file__))
 if hat_dir not in _sys.path:
   _sys.path.append(hat_dir)
 
-del _os, _sys, _absolute_import, _division, _print_function
+# del _os, _sys, _absolute_import, _division, _print_function
 
 
+project = 'hat'
 author = ["York Su"]
 github = "https://github.com/YorkSu/hat"
 release = False
 short_version = '3.0'
-full_version = '3.0 - alpha'
+full_version = '3.0 - beta'
 version = release and short_version or full_version
+full_name = ' '.join((project, version))
 
 
 __version__ = version
@@ -126,6 +128,19 @@ NAME_MAP = {
     'no-gpu-growth': {'n': 'gpu_growth', 'd': False},}
 
 
+LIB_MAP = {
+    'D': 'dataset',
+    'd': 'dataset',
+    'S': 'standard',
+    's': 'standard',
+    'A': 'alpha',
+    'a': 'alpha',
+    'B': 'beta',
+    'b': 'beta',
+    'T': 'test',
+    't': 'test',}
+
+
 AUG = ImageDataGenerator(
     rotation_range=10,
     width_shift_range=0.05,
@@ -174,6 +189,7 @@ SUFFIX_SETTING = {
 
 INIT_SETTING = {
     'name_map': NAME_MAP,
+    'lib_map': LIB_MAP,
     'aug': AUG,
     'default': DEFAULT_SETTING,
     'log_root': 'logs',
@@ -182,7 +198,8 @@ INIT_SETTING = {
     'tb_dir': 'tensorboard',
     'gpu_growth': True,
     'maxbyte': 2** 31,
-    'suffix': SUFFIX_SETTING,}
+    'suffix': SUFFIX_SETTING,
+    'import_tuple': (project, 'app')}
 
 
 def get(name):

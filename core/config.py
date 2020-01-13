@@ -9,18 +9,13 @@
 """
 
 
-# import setting
-__all__ = [
-    'Config',]
-
-
 import os
 
 import tensorflow as tf
 
 from hat import __config__ as C
 from hat.core import importer
-from hat.util import log
+from hat.core import log
 
 
 class Config(object):
@@ -239,7 +234,7 @@ class Config(object):
     log.info(f"Model Lib: {self.lib_name}", name=__name__)
     log.info(f"Loading Model: {self.model_name}", name=__name__)
     model_caller = importer.load(self.lib_name, self.model_name)
-    model_caller(config=self)
+    self.model = model_caller(config=self)
     for item in self._input_late_parameters:
       if item == 'opt': continue
       self.__dict__[item] = self._input_late_parameters[item]

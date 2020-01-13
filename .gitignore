@@ -1,8 +1,4 @@
 .vscode/
-__pycache__/
 *.pyc
-*.csv
-*.record
-*.jpg
 logs/
 unpush/

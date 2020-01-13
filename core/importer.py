@@ -22,46 +22,18 @@
 """
 
 
-# import setting
-__all__ = [
-    'get_fullname',
-    'get_lib_dir',
-    'get_imp_like',
-    'get_class',
-    'load',]
-
-
 import os
 import importlib
 
 from hat import __config__ as C
-from hat.util import util
-from hat.util import log
+from hat import util
+from hat.core import log
 
 
-LIB_MAP = {
-    'D': 'dataset',
-    'd': 'dataset',
-    'S': 'standard',
-    's': 'standard',
-    'A': 'alpha',
-    'a': 'alpha',
-    'B': 'beta',
-    'b': 'beta',
-    'T': 'test',
-    't': 'test',}
+LIB_MAP = C.get('lib_map')
 HAT_DIR = C.__root__
-IGNORE = [
-    '__init__.py',
-    '__config__.py',
-    '__pycache__']
-DATASET_TUPLE = (
-    'hat',
-    'dataset',
-    'lib')
-MODEL_TUPLE = (
-    'hat',
-    'model')
+IGNORE = ['__pycache__']
+IMP_TUPLE = C.get('import_tuple')
 
 
 def get_fullname(lib) -> str:
@@ -71,22 +43,12 @@ def get_fullname(lib) -> str:
 
 def get_lib_dir(lib) -> str:
   """get_lib_dir"""
-  if lib == 'dataset':
-    lib = os.path.join(
-        HAT_DIR,
-        *DATASET_TUPLE[1:])
-  else:
-    lib = os.path.join(
-        HAT_DIR,
-        MODEL_TUPLE[-1],
-        lib)
-  return lib
+  return os.path.join(HAT_DIR, IMP_TUPLE[-1], lib)
 
 
 def get_imp_like(lib, name) -> str:
   """get_imp_like"""
-  return '.'.join(lib == 'dataset' and DATASET_TUPLE + (name,)\
-    or MODEL_TUPLE + (lib, name))
+  return '.'.join(IMP_TUPLE + (lib, name))
 
 
 def get_class(lib, name):
@@ -158,9 +120,9 @@ def load(lib='', name=''):
 
 # test
 if __name__ == "__main__":
-  from hat.util import test
+  from hat.util import Tc
   log.init('./unpush/test')
-  tc = test.TestConfig()
+  tc = Tc()
   print(get_imp_like('dataset', 'mnist'))
   print(get_imp_like('standard', 'mlp'))
   print(get_lib_dir('standard'))

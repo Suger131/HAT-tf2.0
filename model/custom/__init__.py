@@ -9,8 +9,7 @@
 """
 
 
-from hat.model.custom import initializers
-from hat.model.custom import layers
-from hat.model.custom import optimizers
-from hat.model.custom import util
+from hat.model.custom import initializer
+from hat.model.custom import layer
+from hat.model.custom import optimizer
 

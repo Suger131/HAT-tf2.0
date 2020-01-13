@@ -1,4 +1,0 @@
-"""
-  hat.model.test
-"""
-

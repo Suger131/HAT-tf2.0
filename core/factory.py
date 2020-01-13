@@ -10,11 +10,6 @@
 """
 
 
-# import setting
-__all__ = [
-    'Factory',]
-
-
 import gzip
 import os
 import pickle
@@ -25,10 +20,10 @@ import tensorflow as tf
 # from tensorflow.keras.callbacks import TensorBoard
 
 from hat import __config__ as C
-from hat.dataset.util import generator
-from hat.util import log
-from hat.util import util
-from hat.model.util import nn
+from hat import util
+from hat.core import log
+from hat.dataset import generator
+from hat.model import nn
 
 
 class _Store(object):

@@ -10,9 +10,9 @@
 
 
 from hat.model import custom
+from hat.model import network
+from hat.model import nn
 from hat.model import util
 
-from hat.model.custom import layers
-from hat.model.util import Network
-from hat.model.util import nn
+from hat.model.network import Network
 

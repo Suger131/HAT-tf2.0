@@ -1,3 +1,16 @@
+# HAT 3.0 beta
+
+## 新版本改动
+
+- 重新安排业务逻辑
+  + core重新安排，app分离
+  
+## 参与者
+
+- York Su
+- Mingbaitu
+
+
 # HAT 3.0 alpha
 
 ## 新版本变动
