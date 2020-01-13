@@ -21,6 +21,8 @@ import pickle
 import numpy as np
 from PIL import Image
 
+from hat import __config__ as C
+
 
 def _shuffle(inputs, islist=True):
   """_shuffle
@@ -86,7 +88,7 @@ class DatasetBuilder(object):
 
       Max Byte is 2GiB(2^31).
     """
-    maxbyte = 2 ** 31
+    maxbyte = C.get('maxbyte')
     if len(size) == 2:
       photo = size[0] * size[1] * 3
     else:
@@ -264,14 +266,12 @@ class DatasetBuilder(object):
     for i in range((num_train + self.pklen - 1) // self.pklen):
       if (i + 1) * self.pklen <= num_train:
         dtrain = {
-          'train_x': train[0][i*self.pklen:(i + 1)*self.pklen],
-          'train_y': train[1][i*self.pklen:(i + 1)*self.pklen],
-        }
+            'train_x': train[0][i*self.pklen:(i + 1)*self.pklen],
+            'train_y': train[1][i*self.pklen:(i + 1)*self.pklen],}
       else:
         dtrain = {
-          'train_x': train[0][i*self.pklen:],
-          'train_y': train[1][i*self.pklen:],
-        }
+            'train_x': train[0][i*self.pklen:],
+            'train_y': train[1][i*self.pklen:],}
       with gzip.open(f"{self.dsdir}/train{i}{suffix}", 'wb') as f:
         pickle.dump(dtrain, f)
       file_list.append(f'train{i}{suffix}\n')
@@ -299,12 +299,10 @@ class DatasetBuilder(object):
       for i in range((num_test + self.pklen - 1) // self.pklen):
         if (i + 1) * self.pklen <= num_test:
           dtest = {
-            'test_x': test[i*self.pklen:(i + 1)*self.pklen],
-          }
+              'test_x': test[i*self.pklen:(i + 1)*self.pklen],}
         else:
           dtest = {
-            'test_x': test[i*self.pklen:],
-          }
+              'test_x': test[i*self.pklen:],}
         with gzip.open(f"{self.dsdir}/test{i}{suffix}", 'wb') as f:
           pickle.dump(dtest, f)
         file_list.append(f'test{i}{suffix}\n')
@@ -379,11 +377,10 @@ class DatasetBuilder(object):
       train_x, train_y = self._get_data('train', mode)
       val_x, val_y = self._get_data('val', mode)
       test_x = self._get_data('test', mode)
-      self._save(
-       [[train_x, train_y],
-        [val_x, val_y],
-        test_x]
-      )
+      self._save([
+          [train_x, train_y],
+          [val_x, val_y],
+          test_x])
     return [train_x, train_y], [val_x, val_y], test_x
 
 

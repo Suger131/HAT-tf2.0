@@ -20,6 +20,17 @@ __all__ = [
 import time
 
 
+def quadrature_list(iterable):
+  if not iterable:
+    return 0
+  if isinstance(iterable, tuple):
+    iterable = list(iterable)
+  if len(iterable) == 1:
+    return iterable.pop()
+  else:
+    return iterable.pop() * quadrature_list(iterable)
+
+
 def del_tail_digit(inputs) -> str:
   """Delete Tail Digit
 

@@ -9,7 +9,7 @@
     Huster's Artificial neural network Trainer
 
   Requirements:
-    Tensorflow 2.0+ (or 1.14+)(gpu recommended)
+    Tensorflow 2.0 (or 1.14+)(gpu recommended)
     CUDA 10.0.130 (if gpu)
     cuDNN 7.6.5 (if gpu)
     graphviz

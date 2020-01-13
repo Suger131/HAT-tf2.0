@@ -84,8 +84,8 @@ class base_resnet(hat.Network):
     self.first_strides = 2
     self.res_filters = [256 * (2 ** i) for i in range(4)]
     self.res_strides = [1, 2, 2, 2]
-    if self.config.input_shape[0] // 32 < 4:
-      self.res_strides[3] = 1
+    # if self.config.input_shape[0] // 32 < 4:
+    #   self.res_strides[3] = 1
     self.group = 32
 
   def build(self):

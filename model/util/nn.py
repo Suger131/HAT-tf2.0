@@ -131,6 +131,24 @@ def get_layer_output_name(model):
   return new_layers
 
 
+def get_layer_output_name_full(model):
+  """获取所有中间输出的层的名字
+
+    Description:
+      None
+
+    Args:
+      model: Keras.Model. 模型
+
+    Returns:
+      List
+
+    Raises:
+      None
+  """
+  return [i.name for i in model.layers]
+
+
 def get_layer_weight_name(model):
   """获取需要中间权重的层的名字
 

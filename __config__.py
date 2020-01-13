@@ -164,6 +164,14 @@ DEFAULT_SETTING = {
     'lr_alt': False}
 
 
+SUFFIX_SETTING = {
+    'log': '.log',
+    'pic': '.png',
+    'mod': '.h5',
+    'history': '.gz',
+    'meta': '.meta'}
+
+
 INIT_SETTING = {
     'name_map': NAME_MAP,
     'aug': AUG,
@@ -172,7 +180,9 @@ INIT_SETTING = {
     'log_name': '',
     'h5_name': 'save',
     'tb_dir': 'tensorboard',
-    'gpu_growth': True}
+    'gpu_growth': True,
+    'maxbyte': 2** 31,
+    'suffix': SUFFIX_SETTING,}
 
 
 def get(name):
