@@ -120,21 +120,17 @@ def load(lib='', name=''):
 
 # test
 if __name__ == "__main__":
-  from hat.util import Tc
+  from hat.core import config
+  config.test()
   log.init('./unpush/test')
-  tc = Tc()
   print(get_imp_like('dataset', 'mnist'))
   print(get_imp_like('standard', 'mlp'))
   print(get_lib_dir('standard'))
   data = load('d', 'mnist')()
-  tc.data = data
+  config.set('data', data)
   print(data.train_x.shape)
-  model = load('s', 'lenet')(config=tc)
-  # tc.model.summary()
+  model = load('s', 'lenet')()
+  model.summary()
   target3 = load('s', 'untitled')
   target4 = load('d', 'untitled')
-  # data = i.load('d', 'mnist')(tc)
-  # print(tc.train_x.shape)
-  # model = i.load('s', 'mlp')(tc)
-  # tc.model.summary()
 

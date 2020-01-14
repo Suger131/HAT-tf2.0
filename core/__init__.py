@@ -15,6 +15,3 @@ from hat.core import factory
 from hat.core import importer
 from hat.core import log
 
-from hat.core.config import Config
-from hat.core.factory import Factory
-

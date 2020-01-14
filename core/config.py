@@ -14,11 +14,12 @@ import os
 import tensorflow as tf
 
 from hat import __config__ as C
+from hat.core import abc
 from hat.core import importer
 from hat.core import log
 
 
-class Config(object):
+class Config(abc.ClassA):
   """Config
   
     Description: 
@@ -34,22 +35,8 @@ class Config(object):
 
     Attributes:
       See `__init__`
-
-    Usage:
-    ```python
-      import hat
-      C = hat.Config()
-      # or
-      C = hat.core.Config()
-      # or
-      C = hat.core.config.Config()
-      # or
-      from hat.core import Config
-      C = Config()
-    ```
   """
   def __init__(self):
-    self.raw_input = input('=>')
     # ========================
     # Default Parameters
     # ========================
@@ -85,6 +72,7 @@ class Config(object):
     # ========================
     # Empty Parameters
     # ========================
+    self.raw_input = ''
     self._warning_list = []
     self._input_late_parameters = {}
     self._logc = []
@@ -121,6 +109,11 @@ class Config(object):
     self.test_x = None
     self.test_y = None
 
+  def init(self, argv):
+    if argv:
+      self.raw_input = argv
+    else:
+      self.raw_input = input('=>')
     # ========================
     # Processing Parameters
     # ========================
@@ -274,9 +267,34 @@ class Config(object):
       log.info('Learning Rate Alterable.', name=__name__)
 
 
+config = Config()
+
+
+def init(argv):
+  config.init(argv)
+
+
+def get(name):
+  return config.get(name)
+
+
+def set(name, value):
+  config.set(name, value)
+
+
+def test(i=(), o=(), **kwargs):
+  data = abc.ClassA()
+  data.input_shape = i
+  data.output_shape = o
+  config.data = data
+  config.__dict__ = {**config.__dict__, **kwargs}
+
+
 # test part
 if __name__ == "__main__":
-  c = Config()
-  c.model.summary()
+  # c = Config()
+  # c.model.summary()
   # print({item: c.__dict__[item] for item in c.__dict__ if item != '_name_map'})
+  init('')
+  print(get('epochs'))
 

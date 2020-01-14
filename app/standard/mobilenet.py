@@ -86,10 +86,8 @@ class mobilenetv2(hat.Network):
 
 # test
 if __name__ == "__main__":
-  t = hat.util.Tc()
-  t.data.input_shape = (224, 224, 3)
-  t.data.output_shape = (1000,)
-  mod = mobilenetv2(config=t)
+  hat.config.test((224, 224, 3), (1000,))
+  mod = mobilenetv2()
   mod.summary()
   import tensorflow as tf
   try:

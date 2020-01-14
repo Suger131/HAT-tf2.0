@@ -206,9 +206,9 @@ DG = DataGenerator
 
 # test part
 if __name__ == "__main__":
-  from hat.util import Tc
+  from hat.core import config
+  config.test((32, 32, 3), (10,))
   # from hat.dataset.lib.mnist import mnist
-  t = Tc()
   # data = mnist(t)
   # # d = DG()
   # # print(data.train_x.shape)

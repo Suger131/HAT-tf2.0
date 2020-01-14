@@ -199,7 +199,8 @@ INIT_SETTING = {
     'gpu_growth': True,
     'maxbyte': 2** 31,
     'suffix': SUFFIX_SETTING,
-    'import_tuple': (project, 'app')}
+    'import_tuple': (project, 'app'),
+    'history_dir': 'history'}
 
 
 def get(name):

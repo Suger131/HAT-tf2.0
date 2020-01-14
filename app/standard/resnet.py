@@ -333,9 +333,7 @@ def resnext152(**kwargs):
 
 # test part
 if __name__ == "__main__":
-  t = hat.util.Tc()
-  t.data.input_shape = (224, 224, 3)
-  t.data.output_shape = (1000,)
-  mod = resnext50(config=t)
+  hat.config.test((224, 224, 3), (1000,))
+  mod = resnext50()
   mod.summary()
 

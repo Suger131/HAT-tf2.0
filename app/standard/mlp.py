@@ -43,9 +43,7 @@ class mlp(hat.Network):
 
 # test
 if __name__ == "__main__":
-  t = hat.util.Tc()
-  t.data.input_shape = (28, 28, 1)
-  t.data.output_shape = (10,)
-  mod = mlp(config=t)
+  hat.config.test((28, 28, 1), (10,))
+  mod = mlp()
   mod.summary()
 

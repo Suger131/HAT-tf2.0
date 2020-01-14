@@ -189,27 +189,3 @@ class Counter(object):
       raise Exception(f"Value must be a int, but got {type(value).__name__}")
     Counter.count[name] = value
 
-
-class TestConfig(object):
-  """TestConfig
-  
-    Description: 
-      用于测试的Config类，能存放参数
-
-    Args:
-      **kwargs: Any. 任意参数，自动加入到属性中
-  """
-  def __init__(self, **kwargs):
-    self.data = abc.Empty()
-    self.dtype = 'float32'
-    self.xgpu = False
-    self.batch_size = 128
-    self.epochs = 5
-    self.opt = None
-    self.load_name = ''
-    self.__dict__ = {**self.__dict__, **kwargs}
-
-
-# Alias
-Tc = TestConfig
-

@@ -150,11 +150,9 @@ def zfnet(**kwargs):
 
 # test part
 if __name__ == '__main__':
-  t = hat.util.Tc()
-  t.data.input_shape = (224, 224, 3)
-  t.data.output_shape = (1000,)
-  mod = alexnet(config=t)
+  hat.config.test((224, 224, 3), (1000,))
+  mod = alexnet()
   mod.summary()
-  mod = zfnet(config=t)
+  mod = zfnet()
   mod.summary()
 

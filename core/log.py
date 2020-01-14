@@ -81,7 +81,10 @@ def init(log_dir, suffix='.log', filemode='a+', detail=False):
   console.setLevel(logging.INFO)
   console.setFormatter(formatter)
   logger = logging.getLogger()
-  logger.setLevel(logging.INFO)
+  if detail:
+    logger.setLevel(logging.DEBUG)
+  else:
+    logger.setLevel(logging.INFO)
   logger.addHandler(handler)
   logger.addHandler(console)
   _BUILT = True

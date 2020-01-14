@@ -48,8 +48,8 @@ from hat import dataset
 from hat import model
 from hat import util
 
-from hat.core import Config
-from hat.core import Factory
+from hat.core import config
+from hat.core import factory
 from hat.dataset import Dataset
 from hat.model import Network
 from hat.model import nn

@@ -225,9 +225,7 @@ def lenetc(**kwargs):
 
 # test part
 if __name__ == '__main__':
-  t = hat.util.Tc()
-  t.data.input_shape = (28, 28, 1)
-  t.data.output_shape = (10,)
-  mod = lenetc(config=t)
+  hat.config.test((32, 32, 3), (10,))
+  mod = lenetc()
   mod.summary()
 

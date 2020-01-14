@@ -158,9 +158,7 @@ def vgg19(**kwargs):
 
 # test part
 if __name__ == "__main__":
-  t = hat.util.Tc()
-  t.data.input_shape = (32, 32, 3)
-  t.data.output_shape = (10,)
-  mod = vgg16(config=t)
+  hat.config.test((32, 32, 3), (10,))
+  mod = vgg16()
   mod.summary()
 

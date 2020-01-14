@@ -15,6 +15,7 @@ import tensorflow as tf
 # from tensorflow.keras.models import load_model
 
 from hat.core import abc
+from hat.core import config
 from hat.core import log
 from hat.model import nn
 
@@ -40,14 +41,12 @@ class Network_v1(abc.Keras_Network):
   """
   def __init__(
       self,
-      config,
       built=True,
       **kwargs):
-    self.config = config
     self._pre_built = built
     self.model = None
     self.parallel_model = None
-    self.xgpu = self.config.xgpu
+    self.xgpu = config.get('xgpu')
     self.parameter_dict = {
         'batch_size': 0,
         'epochs': 0,
@@ -58,8 +57,8 @@ class Network_v1(abc.Keras_Network):
     # dataset parameters
     self.args()
     # feedback to config
-    for item in self.parameter_dict:
-      self.config.__dict__[item] = self.__dict__[item] or self.config.__dict__[item]
+    # for item in self.parameter_dict:
+    #   self.config.__dict__[item] = self.__dict__[item] or self.config.__dict__[item]
     # pre build
     if self._pre_built:
       self.setup()
@@ -126,19 +125,15 @@ class Network_v2(abc.Keras_Network):
     ```
   """
   def __init__(self, 
-      config=None,
       built=True,
       **kwargs):
-    if not config:
-      raise Exception('No Config Object')
     self.nn = nn
-    self.config = config
     self._pre_built = built
     self.model = None
     self.parallel_model = None
-    self.xgpu = config.xgpu
-    self.input_shape = config.data.input_shape
-    self.output_shape = config.data.output_shape
+    self.xgpu = config.get('xgpu')
+    self.input_shape = config.get('data').input_shape
+    self.output_shape = config.get('data').output_shape
     if len(self.output_shape) == 1:
       self.output_class = self.output_shape[0]
     else:
@@ -153,8 +148,8 @@ class Network_v2(abc.Keras_Network):
     # dataset parameters
     self.args()
     # feedback to config
-    for item in self.parameter_dict:
-      self.config.__dict__[item] = self.__dict__[item] or self.config.__dict__[item]
+    # for item in self.parameter_dict:
+    #   self.config.__dict__[item] = self.__dict__[item] or self.config.__dict__[item]
     # pre build
     if self._pre_built:
       self.setup()
@@ -171,10 +166,11 @@ class Network_v2(abc.Keras_Network):
   # Built-in method
 
   def load(self):
-    if self.config.load_name:
-      log.info(f'Load {self.config.load_name}',
+    load_name = config.get('load_name')
+    if load_name:
+      log.info(f'Load {load_name}',
           name=__name__)
-      model = tf.keras.models.load_model(self.config.load_name)
+      model = tf.keras.models.load_model(load_name)
     else:
       model = self.build()
       if not isinstance(model, tf.keras.models.Model):
@@ -194,10 +190,8 @@ Network = Network_v2 # Default Network
 
 # test
 if __name__ == "__main__":
-  from hat.util import Tc
-  t = Tc()
-  t.data.input_shape = (28, 28, 1)
-  t.data.output_shape = (10,)
-  n = Network_v2(t)
+  from hat.core import config
+  config.test((32, 32, 3), (10,))
+  n = Network_v2()
   print(n.model)
 

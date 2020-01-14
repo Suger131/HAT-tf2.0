@@ -9,11 +9,12 @@
 """
 
 
-class Empty(object):
-  """Empty
+class ClassA(object):
+  """ClassA
 
     Description:
-      Abstract Classes - Empty class
+      Abstract Classes - ClassA class
+      Including `get` and `set` method
 
     Args:
       None
@@ -21,6 +22,46 @@ class Empty(object):
     Attributes:
       None
   """
+  def get(self, name):
+    if name not in self.__dict__:
+      return None
+    else:
+      return self.__dict__[name]
+
+  def set(self, name, value):
+    self.__dict__[name] = value
+
+
+class Callback(object):
+  """Callback
+  
+    Description:
+      Abstract Classes - Callback class
+      A keras.Callback like Class
+
+    Method:
+  
+  """
+  def on_train_begin(self):
+    pass
+
+  def on_train_end(self):
+    pass
+
+  def on_epoch_begin(self):
+    pass
+
+  def on_epoch_end(self):
+    pass
+
+  def on_batch_begin(self):
+    pass
+
+  def on_batch_end(self):
+    pass
+
+  on_step_begin = on_batch_begin
+  on_step_end = on_batch_end
 
 
 class Keras_Network(object):
@@ -40,11 +81,11 @@ class Keras_Network(object):
     Attributes:
       None
   """
-  def __init__(self):
-    self.model = None
-    self.parallel_model = None
-    self.xgpu = None
-    raise NotImplementedError
+  # def __init__(self):
+  #   self.model = None
+  #   self.parallel_model = None
+  #   self.xgpu = None
+  #   raise NotImplementedError
 
   def compile(
       self,
@@ -241,4 +282,9 @@ class Keras_Network(object):
   def flops(self):
     """Get flops counting function"""
     # TODO: Write a function to count the model flops
+
+
+# test
+if __name__ == "__main__":
+  k = Keras_Network()
 
