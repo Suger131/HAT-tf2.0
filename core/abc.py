@@ -42,22 +42,22 @@ class Callback(object):
     Method:
   
   """
-  def on_train_begin(self):
+  def on_train_begin(self, *args, **kwargs):
     pass
 
-  def on_train_end(self):
+  def on_train_end(self, *args, **kwargs):
     pass
 
-  def on_epoch_begin(self):
+  def on_epoch_begin(self, *args, **kwargs):
     pass
 
-  def on_epoch_end(self):
+  def on_epoch_end(self, *args, **kwargs):
     pass
 
-  def on_batch_begin(self):
+  def on_batch_begin(self, *args, **kwargs):
     pass
 
-  def on_batch_end(self):
+  def on_batch_end(self, *args, **kwargs):
     pass
 
   on_step_begin = on_batch_begin

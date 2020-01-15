@@ -222,6 +222,10 @@ def get_channels(Tensor):
   return tf.keras.backend.int_shape(Tensor)[axis]
 
 
+def set_learning_phase(value):
+  tf.keras.backend.set_learning_phase(value)
+
+
 def input(
     shape,
     batch_size=None,

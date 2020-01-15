@@ -183,7 +183,7 @@ SUFFIX_SETTING = {
     'log': '.log',
     'pic': '.png',
     'mod': '.h5',
-    'history': '.gz',
+    'history': '.h5',
     'meta': '.meta'}
 
 
@@ -197,10 +197,11 @@ INIT_SETTING = {
     'h5_name': 'save',
     'tb_dir': 'tensorboard',
     'gpu_growth': True,
-    'maxbyte': 2** 31,
+    'maxbyte': 2 ** 31,
     'suffix': SUFFIX_SETTING,
     'import_tuple': (project, 'app'),
-    'history_dir': 'history'}
+    'history_dir': 'history',
+    'history_dtype': 'float16'}
 
 
 def get(name):

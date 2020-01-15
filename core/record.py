@@ -11,9 +11,12 @@
 
 import gzip
 import os
+import sys
 import pickle
 
+import numpy as np
 import tensorflow as tf
+import h5py
 
 from hat import __config__ as C
 from hat import util
@@ -55,12 +58,14 @@ class Record(abc.Callback):
 
     self.meta = {}
     self.len = 0
+    self.batch_index = 0
     self.package = []
     self.package_index = 0
     self.train_loss = []
     self.train_accuracy = []
-    self.init_meta()
     del kwargs
+
+  # public method
 
   def update(self, step, x, result, **kwargs):
     outputs = {}
@@ -70,61 +75,91 @@ class Record(abc.Callback):
     mid_output_layers = nn.get_layer_output_name_full(self.model)
     for name in mid_output_layers:
       outputs[name + '_output'] = nn.get_layer_output(
-          self.model, x, name)
+          self.model, x, name).astype(C.get('history_dtype'))
     # middle weights
     mid_weight_layers = nn.get_layer_weight_name(self.model)
     for name in mid_weight_layers:
       outputs[name + '_weight'] = nn.get_layer_weight(
           self.model, name)
     # metrics
-    outputs['loss'] = result[0]
-    outputs['accuracy'] = result[1]
-    self.train_loss.append(result[0])
-    self.train_accuracy.append(result[1])
+    outputs['loss'] = float(result[0])
+    outputs['accuracy'] = float(result[1])
+    self.train_loss.append(float(result[0]))
+    self.train_accuracy.append(float(result[1]))
     # extra info
     outputs = {**outputs, **kwargs}
 
-    self.package.append(outputs)
+    self.write_h5(outputs)
+
+    # self.package.append(outputs)
     # check package.len
-    if len(self.package) == self.len:
-      self.gen_package()
+    # if len(self.package) == self.len:
+      # self.gen_package()
     # return outputs
 
-  def get_summary(self):
+  def summary(self):
     outputs = [
         sum(self.train_loss) / len(self.train_loss),
         sum(self.train_accuracy) / len(self.train_accuracy)]
     self.train_loss, self.train_accuracy = [], []
     return outputs
 
+  def on_train_begin(self, learning_phase=None):
+    """Called at the begin of training.
+    
+      Args:
+        learning_phase: Int. Value must be `1` or `0`.
+    """
+    if learning_phase is not None:
+      nn.set_learning_phase(learning_phase)
+    # init_meta
+    self.init_meta()
+
+  def on_train_end(self, learning_phase=None):
+    """Called at the end of training.
+    
+      Args:
+        learning_phase: Int. Value must be `1` or `0`.
+    """
+    if learning_phase is not None:
+      nn.set_learning_phase(learning_phase)
+    # check if package not empty
+    # if self.package:
+    #   self.gen_package()
+    # end_meta
+
+  # built-in method
+
   def init_meta(self):
-    # get middle size
-    took_byte = 0
     K = tf.keras.backend
     input_shape = (1,) + K.int_shape(self.model.input)[1:]
     x = K.zeros(input_shape)
-    layers_name = nn.get_layer_output_name_full(self.model)
-    weight_name = nn.get_layer_weight_name(self.model)
-    # middle output
-    outputs = []
-    for name in layers_name:
-      outputs.append(nn.get_layer_output(self.model, x, name))
-    took_byte += sum([util.quadrature_list(i.shape) for i in outputs]) * \
-        self.batch_size
-    # weight
-    outputs = []
-    for name in weight_name:
-      outputs.append(nn.get_layer_weight(self.model, name))
-    took_byte += sum([util.quadrature_list(j.shape) for i in outputs for j in i])
-    # metrics, included loss and accuracy
-    took_byte += 2
+
+    took_byte = 0
+    # step
+    took_byte += sys.getsizeof(0)
+    # middle outputs
+    mid_output_layers = nn.get_layer_output_name_full(self.model)
+    for name in mid_output_layers:
+      took_byte += sys.getsizeof(nn.get_layer_output(self.model, x,
+          name).astype(C.get('history_dtype'))) * self.batch_size
+    # middle weights
+    mid_weight_layers = nn.get_layer_weight_name(self.model)
+    for name in mid_weight_layers:
+      for w in nn.get_layer_weight(self.model, name):
+        took_byte += sys.getsizeof(w)
+    # metrics
+    took_byte += sys.getsizeof(float(0)) * 2
     # extra info
     took_byte += self.extra_byte
-    self.len = self.maxbyte // took_byte
+    # fix gzip
+    self.len = self.maxbyte // (took_byte / 4 * 3)
+
     log.info(f'package max steps: {self.len}', name=__name__)
+    log.info(f'package bytes: {took_byte}', name=__name__)
     # init weights
     init_weights = {}
-    for name in weight_name:
+    for name in mid_weight_layers:
       init_weights[name + '_weight'] = nn.get_layer_weight(
           self.model, name)
     self.meta['init_weights'] = init_weights
@@ -136,18 +171,33 @@ class Record(abc.Callback):
       os.makedirs(self.dir)
 
   def gen_package(self):
-    if not self.package:
-      return
-    log.info(f'Saving package: {self.package_index}{self.suffix}', 
-        name=__name__)
-    with gzip.open(os.path.join(
-        self.dir,
-        str(self.package_index) + self.suffix), 'wb') as f:
+    p_name = str(self.package_index) + self.suffix
+    log.info(f'Saving package: {p_name}', name=__name__)
+    with gzip.open(os.path.join(self.dir, p_name), 'wb') as f:
       pickle.dump(self.package, f)
     self.package = []
     self.package_index += 1
 
-  
+  def write_h5(self, batch:dict):
+    package_index = self.batch_index // self.len
+    h5_name = str(package_index) + self.suffix
+    with h5py.File(os.path.join(self.dir, h5_name), 'a') as hf:
+      subgroup = hf.create_group(str(self.batch_index))
+      for item in batch:
+        if isinstance(batch[item], np.ndarray):
+          subgroup.create_dataset(item, data=batch[item],
+              compression='gzip', compression_opts=5)
+        elif isinstance(batch[item], list):
+          ssub = subgroup.create_group(item)
+          for inx, data in enumerate(batch[item]):
+            ssub.create_dataset(str(inx), data=data,
+                compression='gzip', compression_opts=5)
+        else:
+          subgroup.create_dataset(item, data=np.atleast_1d(batch[item]))
+      # hf.create_dataset(str(self.batch_index), data=batch)
+    self.batch_index += 1
+
+
 # test
 if __name__ == "__main__":
   from hat.app.standard import mlp

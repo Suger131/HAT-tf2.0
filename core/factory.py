@@ -78,16 +78,13 @@ class Factory(object):
       save
   """
   def __init__(self, *args, **kwargs):
-    # self.model = config.get('model')
-    # self.data = config.get('data')
-    # self.batch_size = config.get('batch_size')
-    # self.epochs = config.get('epochs')
-    # self.step = config.get('step')
-    # # self._store = _Store()
-    # self.record = record.Record(self.model, self.batch_size,
-    #     config.get('save_dir'))
+    self.model = None
+    self.data = None
+    self.batch_size = 0
+    self.epochs = 0
+    self.step = 0
+    self.record = None
     del args, kwargs
-    # log.info(f'package size: {self.record.len}', name=__name__)
   
   # Built-in method
 
@@ -102,13 +99,15 @@ class Factory(object):
   # Public method
 
   def init(self):
-    self.model = config.get('model')
+    self.model = config.get('model').model
     self.data = config.get('data')
     self.batch_size = config.get('batch_size')
     self.epochs = config.get('epochs')
     self.step = config.get('step')
-    self.record = record.Record(self.model, self.batch_size,
-        config.get('save_dir'))
+    if self.step:
+      self.record = record.Record()
+    else:
+      self.record = record.Record(extra_byte=len(bytes(0))) # extra info is epoch
 
   def run(self):
     try:
@@ -132,7 +131,7 @@ class Factory(object):
           self.batch_size)
       # mid_output_layers = nn.get_layer_output_name(self.model)
       # mid_weight_layers = nn.get_layer_weight_name(self.model)
-      def train_core(step, max_step):
+      def train_core(step, max_step, epoch=None):
         # train_x, train_y = dg.__getitem__(0)
         train_x, train_y = next(dg)
         result = self.model.train_on_batch(train_x, train_y)
@@ -161,23 +160,30 @@ class Factory(object):
         #     writer.writerow(self._store.norm(result))
         
         # self._store.update_train(result)
-        self.record.update(step, train_x, result)
+        if epoch:
+          self.record.update(step, train_x, result, epoch=epoch)
+        else:
+          self.record.update(step, train_x, result)
         if step % config.get('step_per_log') == 0 or step == max_step:
           # results = self._store.get_summary()
-          results = self.record.get_summary()
-          log.info(
-              f'Step: {step}/{max_step}, ' \
-              f'loss: {results[0]:.4f}, ' \
-              f'accuracy: {results[1]:.4f}',
-              name=__name__)
+          results = self.record.summary()
+          step_log = [
+              f'Step: {step}/{max_step}, ',
+              f'loss: {results[0]:.4f}, ',
+              f'accuracy: {results[1]:.4f}']
+          if epoch:
+            step_log = [f'Epoch: {epoch}, '] + step_log
+          log.info(''.join(step_log), name=__name__)
       
       if self.step:
-        tf.keras.backend.set_learning_phase(1)
+        self.record.on_train_begin(learning_phase=1)
+        # tf.keras.backend.set_learning_phase(1)
         for i in range(self.step):
           train_core(i + 1, self.step)
         log.info(f"Step Over.", name=__name__)
-        self.record.gen_package()
-        tf.keras.backend.set_learning_phase(0)
+        self.record.on_train_end(learning_phase=0)
+        # self.record.gen_package()
+        # tf.keras.backend.set_learning_phase(0)
       else:
         for ep in range(self.epochs):
           log.info(f"Epoch: {ep+1}/{self.epochs} Train",
