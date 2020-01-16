@@ -59,6 +59,7 @@ class Generator(object):
       shuffle=True,
       aug=None,
       **kwargs):
+    log.info(f"Loading Generator", name=__name__)
     self.x = x
     self.y = y
     self.batch_size = batch_size

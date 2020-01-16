@@ -183,8 +183,8 @@ SUFFIX_SETTING = {
     'log': '.log',
     'pic': '.png',
     'mod': '.h5',
-    'history': '.h5',
-    'meta': '.meta'}
+    'his': '.h5',
+    'm5': '.m5'}
 
 
 INIT_SETTING = {
@@ -200,8 +200,11 @@ INIT_SETTING = {
     'maxbyte': 2 ** 31,
     'suffix': SUFFIX_SETTING,
     'import_tuple': (project, 'app'),
-    'history_dir': 'history',
-    'history_dtype': 'float16'}
+    'his_dir': 'history',
+    'his_dtype': 'float16'}
+
+
+# his -> history
 
 
 def get(name):

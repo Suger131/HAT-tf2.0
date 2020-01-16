@@ -4,6 +4,8 @@
 
 - 重新安排业务逻辑
   + core重新安排，app分离
+  + 使用Abstract Class
+  + 使用h5py存储中间数据
   
 ## 参与者
 

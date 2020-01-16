@@ -185,6 +185,7 @@ class Factory(object):
         # self.record.gen_package()
         # tf.keras.backend.set_learning_phase(0)
       else:
+        self.record.on_train_begin()
         for ep in range(self.epochs):
           log.info(f"Epoch: {ep+1}/{self.epochs} Train",
               name=__name__)
@@ -206,6 +207,7 @@ class Factory(object):
               f"accuracy: {val_result[1]:.4f}, " \
               f"loss: {val_result[0]:.4f}",
               name=__name__)
+        self.record.on_train_end()
       log.info(f"Train Stop", name=__name__)
     cost_time = util.get_cost_time(inner_train)[0]
     log.info(f"Train cost time: {cost_time}", name=__name__)
