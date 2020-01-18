@@ -60,9 +60,6 @@ class Callback(object):
   def on_batch_end(self, *args, **kwargs):
     pass
 
-  on_step_begin = on_batch_begin
-  on_step_end = on_batch_end
-
 
 class Keras_Network(object):
   """Keras Network

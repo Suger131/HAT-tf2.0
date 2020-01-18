@@ -11,11 +11,10 @@
 """
 
 
-if __name__ == "__main__":
-  import hat
-  hat.config.init('')
-  hat.factory.init()
-  hat.factory.run()
-  # F = hat.Factory()
-  # F.run()
+import hat
+
+
+hat.config.init('')
+hat.factory.init()
+hat.factory.run()
 

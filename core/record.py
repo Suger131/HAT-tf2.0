@@ -63,30 +63,6 @@ class Record(abc.Callback):
 
   # public method
 
-  def update(self, step, x, result, **kwargs):
-    outputs = {}
-    # step
-    outputs['step'] = step
-    # middle outputs
-    mid_output_layers = nn.get_layer_output_name_full(self.model)
-    for name in mid_output_layers:
-      outputs[name + '_output'] = nn.get_layer_output(
-          self.model, x, name).astype(C.get('his_dtype'))
-    # middle weights
-    mid_weight_layers = nn.get_layer_weight_name(self.model)
-    for name in mid_weight_layers:
-      outputs[name + '_weight'] = nn.get_layer_weight(
-          self.model, name)
-    # metrics
-    outputs['loss'] = float(result[0])
-    outputs['accuracy'] = float(result[1])
-    self.train_loss.append(float(result[0]))
-    self.train_accuracy.append(float(result[1]))
-    # extra info
-    outputs = {**outputs, **kwargs}
-
-    self.write_h5(outputs)
-
   def summary(self):
     outputs = [
         sum(self.train_loss) / len(self.train_loss),
@@ -118,6 +94,30 @@ class Record(abc.Callback):
     if learning_phase is not None:
       nn.set_learning_phase(learning_phase)
     # end_m5
+
+  def on_batch_end(self, step, x, result, **kwargs):
+    outputs = {}
+    # step
+    outputs['step'] = step
+    # middle outputs
+    mid_output_layers = nn.get_layer_output_name_full(self.model)
+    for name in mid_output_layers:
+      outputs[name + '_output'] = nn.get_layer_output(
+          self.model, x, name).astype(C.get('his_dtype'))
+    # middle weights
+    mid_weight_layers = nn.get_layer_weight_name(self.model)
+    for name in mid_weight_layers:
+      outputs[name + '_weight'] = nn.get_layer_weight(
+          self.model, name)
+    # metrics
+    outputs['loss'] = float(result[0])
+    outputs['accuracy'] = float(result[1])
+    self.train_loss.append(float(result[0]))
+    self.train_accuracy.append(float(result[1]))
+    # extra info
+    outputs = {**outputs, **kwargs}
+    # write h5
+    self.write_h5(outputs)
 
   # built-in method
 
@@ -223,7 +223,7 @@ class Record(abc.Callback):
           hf.create_dataset(item, data=np.atleast_1d(batch[item]))
 
   def write_h5(self, batch:dict):
-    package_index = self.batch_index // self.len
+    package_index = int(self.batch_index // self.len)
     h5_name = str(package_index) + self.h5_suffix
     with h5py.File(os.path.join(self.h5_dir, h5_name), 'a') as hf:
       subgroup = hf.create_group(str(self.batch_index))
