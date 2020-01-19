@@ -91,6 +91,7 @@ class Factory(object):
           self.data.train_y,
           self.batch_size)
       def train_core(step, max_step, epoch=None):
+        self.record.on_batch_begin()
         train_x, train_y = next(dg)
         result = self.model.train_on_batch(train_x, train_y)
         if epoch:
@@ -116,15 +117,11 @@ class Factory(object):
       else:
         self.record.on_train_begin()
         for ep in range(self.epochs):
+          self.record.on_epoch_begin()
           log.info(f"Epoch: {ep+1}/{self.epochs} Train",
               name=__name__)
           for i in range(dg.len):
             train_core(i+1, dg.len)
-          # config.model.fit(
-          #     config.data.train_x,
-          #     config.data.train_y,
-          #     config.batch_size,
-          #     epochs=1)
           log.info(f"Epoch: {ep+1}/{self.epochs} Val",
               name=__name__)
           val_result = self.model.evaluate(
@@ -136,6 +133,7 @@ class Factory(object):
               f"accuracy: {val_result[1]:.4f}, " \
               f"loss: {val_result[0]:.4f}",
               name=__name__)
+          self.record.on_epoch_end()
         self.record.on_train_end()
       log.info(f"Train Stop", name=__name__)
     cost_time = util.get_cost_time(inner_train)[0]
