@@ -17,42 +17,239 @@ __all__ = [
 import gzip
 import os
 import pickle
+from random import shuffle
 
+import h5py
 import numpy as np
 from PIL import Image
 
 from hat import __config__ as C
 from hat.dataset import util
+from hat.core import log
 
-# def _shuffle(inputs, islist=True):
-#   """_shuffle
 
-#     Description:
-#       Shuffle the datas/labels
-#       Private method
+def snake_like(name: str):
+  return '_'.join([i.capitalize() for i in name.split(' ')])
 
-#     Args:
-#       inputs: np.array/list, or list/tuple of np.array/list. 
-#       In the latter case, the corresponding elements for each 
-#       item in the list are shuffled together as a whole.
-#       islist: Boolean. The latter case is enabled when the 
-#       value is True. Default is True.
 
-#     Return:
-#       A shuffled np.array/list(depend on argus)
-#   """
-#   from random import shuffle
-#   if islist:
-#     len_ = len(inputs[0])
-#     index = list(range(len_))
-#     shuffle(index)
-#     outputs = [[i[index[j]] for j in range(len_)] for i in inputs]
-#   else:
-#     len_ = len(inputs)
-#     index = list(range(len_))
-#     shuffle(index)
-#     outputs = [inputs[i] for i in index]
-#   return outputs
+class Builder(object):
+  """Builder
+
+    Description:
+      Dataset Builder
+      Build Dataset HDF5 Files from a standard dataset.
+  
+    Args:
+      root: Str. Path of the Dataset.
+      classes_filename: Str, default `classes.txt`. File name of the classes file.
+
+  """
+  def __init__(self,
+      root: str,
+      shape: tuple,
+      mode='ig',
+      minblocks=100,
+      maxbyte=2**30,
+      classes_filename='classes.txt',
+      suffix='.h5',
+      dtype='uint8',
+      compression=False):
+    self.root = root
+    self.shape = shape
+    self.mode = mode
+    self.minblocks = minblocks
+    self.maxbyte = maxbyte
+    self.classes_filename = classes_filename
+    self.suffix = suffix
+    self.dtype = dtype
+    self.compression = compression
+    
+    self.classes_dict = {}
+
+  def build(self):
+    # map of train/val/test folder
+    maps = {
+        'train': 'train',
+        'val': 'val',
+        'test': 'test'}
+    path = {}
+    root_files = os.listdir(self.root)
+    for i in root_files:
+      if i.lower() in ['train', 'val', 'test']:
+        # self.map[i.lower()] = i
+        maps[i.lower()] = i
+    # sub-folders root
+    path['train'] = os.path.join(self.root, maps['train'])
+    path['val'] = os.path.join(self.root, maps['val'])
+    path['test'] = os.path.join(self.root, maps['test'])
+    # class
+    classes_file = os.path.join(self.root, self.classes_filename)
+    if os.path.exists(classes_file):
+      with open(classes_file, 'r') as f:
+        classes = [i.strip() for i in f.readlines()]
+      self.classes_dict = dict(zip(classes, range(len(classes))))
+    else:
+      # transform to Snake like name
+      classes = [snake_like(name) for name in os.listdir(path['train'])]
+      with open(classes_file, 'w') as f:
+        for name in classes:
+          f.write(name + '\n')
+      self.classes_dict = dict(zip(classes, range(len(classes))))
+    # train data part
+    # split the train data into block and shuffle the block
+    if not os.path.exists(path['train']):
+      log.error(f"Train folder is not exist.", name=__name__, exit=True)
+    train = []
+    train_files = []
+    for name in os.listdir(path['train']):
+      name_dict = {}
+      name_dict['name'] = name
+      name_dict['label'] = self.classes_dict[snake_like(name)]
+      name_dict['files'] = os.listdir(os.path.join(path['train'], name))
+      name_dict['len'] = len(name_dict['files'])
+      train.append(name_dict)
+    self.minblocks = min(self.minblocks, min([d['len'] for d in train]))
+    for d in train:
+      value = d['len']
+      alpha = value // self.minblocks
+      beta = value % self.minblocks
+      delta = [alpha + 1] * beta + [alpha] * (self.minblocks - beta)
+      shuffle(delta)
+      d['slice'] = delta
+    for i in range(self.minblocks):
+      block = []
+      for d in train:
+        for j in range(d['slice'].pop(0)):
+          block.append([
+              os.path.join(path['train'], d['name'], d['files'].pop(0)),
+              d['label']])
+      shuffle(block)
+      train_files.extend(block)
+    # val data part
+    if not os.path.exists(path['val']):
+      log.error(f"Val folder is not exist.", name=__name__, exit=True)
+    val_files = []
+    for name in os.listdir(path['val']):
+      label = self.classes_dict[snake_like(name)]
+      for imgname in os.listdir(os.path.join(path['val'], name)):
+        val_files.append([
+            os.path.join(path['val'], name, imgname), label])
+    # test data part
+    # test is special
+    # write file
+    # with open(os.path.join(self.root, 'train_files.txt'), 'w') as f:
+    #   for i in train_files:
+    #     f.write(f'{i[0]}, {i[1]}' + '\n')
+    # write h5
+    # train
+    self.write(train_files, 'train')
+    self.write(val_files, 'val')
+    # train_inx = 0
+    # for inx, i in enumerate(train_files):
+    #   h5_name = os.path.join(self.root, f'train_{train_inx}{self.suffix}')
+    #   with h5py.File(h5_name, 'a') as hf:
+    #     if 'data' in list(hf.keys()):
+    #       data = hf['data']
+    #       label = hf['label']
+    #     else:
+    #       if self.compression:
+    #         data = hf.create_dataset(
+    #             'data',
+    #             shape=(0, *self.shape),
+    #             maxshape=(None, *self.shape),
+    #             dtype=self.dtype,
+    #             compression='gzip',
+    #             compression_opts=5)
+    #       else:
+    #         data = hf.create_dataset(
+    #             'data',
+    #             shape=(0, *self.shape),
+    #             maxshape=(None, *self.shape),
+    #             dtype=self.dtype)
+    #       label = hf.create_dataset(
+    #           'label',
+    #           shape=(0, 1),
+    #           maxshape=(None, 1),
+    #           dtype=self.dtype)
+    #     point = data.shape[0]
+    #     data.resize((point + 1, *self.shape))
+    #     label.resize((point + 1, 1))
+    #     data[point] = self.get_img(i[0])
+    #     label[point] = i[1]
+    #   if (inx + 1) % 20 == 0:
+    #     print(f'Photo: {inx + 1} Finished.')
+    #   if os.path.getsize(h5_name) >= self.maxbyte:
+    #     train_inx += 1
+    # print(f'Total Finished')
+
+  def get_img(self, filename):
+    img = Image.open(filename)
+    if img.mode != 'RGB':
+      log.debug(f'Form not correct. {filename}: {img.mode}', 
+          name=__name__)
+      img = img.convert('RGB')
+    
+    if self.mode in ['ignore', 'ig']:
+      return np.array(img, dtype=self.dtype)
+
+    log.error(f'An incorrect mode was passed in: {self.mode}', 
+        name=__name__, exit=True)
+
+  def write(self, filelist, prefix):
+    h5_inx = 0
+    for inx, i in enumerate(filelist):
+      h5_name = os.path.join(self.root, f'{prefix}_{h5_inx}{self.suffix}')
+      with h5py.File(h5_name, 'a') as hf:
+        if 'data' in list(hf.keys()):
+          data = hf['data']
+          label = hf['label']
+        else:
+          if self.compression:
+            data = hf.create_dataset(
+                'data',
+                shape=(0, *self.shape),
+                maxshape=(None, *self.shape),
+                dtype=self.dtype,
+                compression='gzip',
+                compression_opts=5)
+          else:
+            data = hf.create_dataset(
+                'data',
+                shape=(0, *self.shape),
+                maxshape=(None, *self.shape),
+                dtype=self.dtype)
+          label = hf.create_dataset(
+              'label',
+              shape=(0, 1),
+              maxshape=(None, 1),
+              dtype=self.dtype)
+        point = data.shape[0]
+        data.resize((point + 1, *self.shape))
+        label.resize((point + 1, 1))
+        data[point] = self.get_img(i[0])
+        label[point] = i[1]
+      if (inx + 1) % 20 == 0:
+        print(f'{prefix} Photo: {inx + 1} Finished.')
+      if os.path.getsize(h5_name) >= self.maxbyte:
+        h5_inx += 1
+    print(f'{prefix} Finished.')
+
+
+class Reader(object):
+  """Reader
+    
+    Description:
+      Dataset Reader
+      Read the Dataset HDF5 Files.
+  
+  """
+  def __init__(self):
+    pass
+
+
+
+
+
 
 
 class DatasetBuilder(object):
@@ -383,4 +580,8 @@ class DatasetBuilder(object):
           test_x])
     return [train_x, train_y], [val_x, val_y], test_x
 
+
+if __name__ == "__main__":
+  b = Builder('E:\\1-ML\\fruits', (100, 100, 3))
+  b.build()
 
