@@ -55,6 +55,7 @@ class base_vgg(hat.Network):
 
   def args(self):
     self.conv = [64 * (2 ** i) for i in range(5)]
+    hat.config.set('opt', hat.nn.optimizers.SGD(lr=1e-3))
 
   def build(self):
     inputs = self.nn.input(self.input_shape)

@@ -283,6 +283,7 @@ def set(name, value):
 
 
 def test(i=(), o=(), **kwargs):
+  log.init(log_dir=C.get('test_log_dir'))
   data = abc.ClassA()
   data.input_shape = i
   data.output_shape = o

@@ -110,8 +110,17 @@ class Factory(object):
       
       if self.step:
         self.record.on_train_begin(learning_phase=1)
-        for i in range(self.step):
-          train_core(i + 1, self.step)
+        for i in range(1, self.step+1):
+          train_core(i, self.step)
+          if i % config.get('step_per_val') == 0 and i != self.step:
+            # log.info(f"Step: {i} Val", name=__name__)
+            val_result = self.model.evaluate(
+                self.data.val_x,
+                self.data.val_y,
+                batch_size=self.batch_size,
+                verbose=0)
+            log.info(f"Step: {i} Val, loss: {val_result[0]:.4f}" \
+                f", accuracy: {val_result[1]:.4f}", name=__name__)
         log.info(f"Step Over.", name=__name__)
         self.record.on_train_end(learning_phase=0)
       else:

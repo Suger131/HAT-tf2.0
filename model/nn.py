@@ -702,7 +702,7 @@ def resolutionscal2d(
     **kwargs):
   """ResolutionScaling2D"""
   if name is None:
-    name = get_hat_name('resolutionscaling2d', block=block)
+    name = get_hat_name('ResolutionScaling2D', block=block)
   return layer.ResolutionScal2D(
       size=size,
       data_format=data_format,
@@ -720,7 +720,7 @@ def sqeuuezeexcitation(
     **kwargs):
   """SqueezeExcitation"""
   if name is None:
-    name = get_hat_name('se', block=block)
+    name = get_hat_name('SqeuuezeExcitation', block=block)
   return layer.SqueezeExcitation(
       ratio=ratio,
       filters=filters,
@@ -751,7 +751,7 @@ def groupconv2d(
     **kwargs):
   """GroupConv2D"""
   if name is None:
-    name = get_hat_name('groupconv2d', block=block)
+    name = get_hat_name('GroupConv2D', block=block)
   return layer.GroupConv2D(
       group=group,
       filters=filters,
@@ -783,12 +783,92 @@ def addbias(
     **kwargs):
   """AddBias"""
   if name is None:
-    name = get_hat_name('addbias', block=block)
+    name = get_hat_name('AddBias', block=block)
   return layer.AddBias(
       rank=rank,
       data_format=data_format,
       bias_initializer=bias_initializer,
       bias_regularizer=bias_regularizer,
+      bias_constraint=bias_constraint,
+      name=name,
+      **kwargs)
+
+@hat_nn
+def loopdense( 
+    loops: int,
+    units: int,
+    ratio=0.1,
+    activation='relu',
+    use_bias=True, 
+    kernel_initializer='glorot_uniform',
+    bias_initializer='zeros', 
+    kernel_regularizer=None, 
+    bias_regularizer=None,
+    activity_regularizer=None, 
+    kernel_constraint=None, 
+    bias_constraint=None, 
+    name=None,
+    block: Block = None,
+    **kwargs):
+  """Loop version Dense"""
+  if name is None:
+    name = get_hat_name('LoopDense', block=block)
+  return layer.LoopDense(
+      loops=loops,
+      units=units,
+      ratio=ratio,
+      activation=activation,
+      use_bias=use_bias,
+      kernel_initializer=kernel_initializer,
+      bias_initializer=bias_initializer,
+      kernel_regularizer=kernel_regularizer,
+      bias_regularizer=bias_regularizer,
+      activity_regularizer=activity_regularizer,
+      kernel_constraint=kernel_constraint,
+      bias_constraint=bias_constraint,
+      name=name,
+      **kwargs)
+
+@hat_nn
+def loopconv2d(
+    loops: int,
+    filters: int,
+    kernel_size,
+    strides=1,
+    ratio=0.1, 
+    padding='same',
+    data_format=None, 
+    activation=None, 
+    use_bias=True,
+    kernel_initializer='glorot_uniform', 
+    bias_initializer='zeros',
+    kernel_regularizer=None, 
+    bias_regularizer=None, 
+    activity_regularizer=None,
+    kernel_constraint=None, 
+    bias_constraint=None, 
+    name=None,
+    block: Block = None,
+    **kwargs):
+  """Loop Conv2D Layer"""
+  if name is None:
+    name = get_hat_name('LoopConv2D', block=block)
+  return layer.LoopConv2D(
+      loops=loops,
+      filters=filters,
+      kernel_size=kernel_size,
+      strides=strides,
+      ratio=ratio,
+      padding=padding,
+      data_format=data_format,
+      activation=activation,
+      use_bias=use_bias,
+      kernel_initializer=kernel_initializer,
+      bias_initializer=bias_initializer,
+      kernel_regularizer=kernel_regularizer,
+      bias_regularizer=bias_regularizer,
+      activity_regularizer=activity_regularizer,
+      kernel_constraint=kernel_constraint,
       bias_constraint=bias_constraint,
       name=name,
       **kwargs)
@@ -811,7 +891,7 @@ gconv = groupconv2d
 
 # test
 if __name__ == "__main__":
-  x_in = input((28,28,1))
+  x_in = input((28, 28, 1))
   b1 = Block('Stem')
   b2 = Block()
   x = flatten(block=b1)(x_in)

@@ -97,7 +97,7 @@ class GroupConv2D(tf.keras.layers.Layer):
       return outputs
     
     input_shape = input_shape.as_list()
-    channel_axis = self.data_format == 'channels_first' and 1 or -1
+    channel_axis = 1 if self.data_format == 'channels_first' else -1
     channel = input_shape[channel_axis]
     assert channel % self.group == 0, f'[Error] channel cannot be ' \
         f'disencated by group. {channel % self.group}'

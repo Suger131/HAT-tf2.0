@@ -201,12 +201,14 @@ INIT_SETTING = {
     'suffix': SUFFIX_SETTING,
     'import_tuple': (project, 'app'),
     'his_dir': 'history',
-    'his_dtype': 'float16'}
+    'his_dtype': 'float16',
+    'test_log_dir': './unpush/'}
 
 
 # his -> history
 
 
 def get(name):
+  """get config"""
   return INIT_SETTING[name]
 

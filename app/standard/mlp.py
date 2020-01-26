@@ -46,4 +46,9 @@ if __name__ == "__main__":
   hat.config.test((28, 28, 1), (10,))
   mod = mlp()
   mod.summary()
+  import tensorflow as tf
+  tf.keras.utils.plot_model(
+      mod.model,
+      to_file='./unpush/mlp.png',
+      show_shapes=True)
 

@@ -14,8 +14,8 @@ import tensorflow as tf
 from hat.model.util import normalize_tuple
 
 
-class ResolutionScaling2D(tf.keras.layers.Layer):
-  """ResolutionScaling2D
+class ResolutionScal2D(tf.keras.layers.Layer):
+  """ResolutionScal2D
   
     Description:
       None
@@ -78,9 +78,9 @@ class ResolutionScaling2D(tf.keras.layers.Layer):
 # test part
 if __name__ == "__main__":
   x_ = tf.keras.backend.placeholder((None, 8, 8, 16))
-  print(ResolutionScaling2D((6, 6))(x_))
-  print(ResolutionScaling2D((10, 10))(x_))
-  print(ResolutionScaling2D((10, 6))(x_))
-  print(ResolutionScaling2D((10, 10)).\
+  print(ResolutionScal2D((6, 6))(x_))
+  print(ResolutionScal2D((10, 10))(x_))
+  print(ResolutionScal2D((10, 6))(x_))
+  print(ResolutionScal2D((10, 10)).\
         compute_output_shape((None, 6, 6, 1)))
   

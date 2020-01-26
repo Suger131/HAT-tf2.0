@@ -40,7 +40,7 @@ def _check_built(func):
   return log_function
 
 
-def init(log_dir, suffix='.log', filemode='a+', detail=False):
+def init(log_dir, suffix='.log', filemode='a+', detail=True):
   """log.init
 
     Description: 

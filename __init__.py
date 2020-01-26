@@ -13,7 +13,7 @@
     CUDA 10.0.130 (if gpu)
     cuDNN 7.6.5 (if gpu)
     graphviz
-    pydot_ng
+    pydot
     Pillow
     gast 0.2.2 (if tf 1.14+)
 

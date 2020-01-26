@@ -30,6 +30,24 @@ plot_model(model, to_file='LeNet.png')
 
 ### 问题解决
 
+#### 2020.01.26 更新
+
+安装顺序：
+
+```
+安装graphviz.msi
+conda install graphviz
+conda install pydot
+```
+
+不需要再改代码。如果还是报错，可能还需要试试
+
+```
+添加PATH: graphviz/bin
+```
+
+---
+
 参考链接：[issue 3210](https://github.com/keras-team/keras/issues/3210)
 
 ```
@@ -57,3 +75,4 @@ L581
 ### bug原因
 
 最新的pydot中没有`find_graphviz()`函数，而`pydot_ng`还有，因此安装该版本。另外需要修改部分代码，让`pydot`找到`graphviz`目录。
+

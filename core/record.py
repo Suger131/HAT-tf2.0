@@ -17,6 +17,7 @@ import tensorflow as tf
 import h5py
 
 from hat import __config__ as C
+from hat.util import get_ex
 from hat.core import abc
 from hat.core import config
 from hat.core import log
@@ -99,16 +100,17 @@ class Record(abc.Callback):
     outputs = {}
     # step
     outputs['step'] = step
-    # middle outputs
-    mid_output_layers = nn.get_layer_output_name_full(self.model)
-    for name in mid_output_layers:
-      outputs[name + '_output'] = nn.get_layer_output(
-          self.model, x, name).astype(C.get('his_dtype'))
-    # middle weights
-    mid_weight_layers = nn.get_layer_weight_name(self.model)
-    for name in mid_weight_layers:
-      outputs[name + '_weight'] = nn.get_layer_weight(
-          self.model, name)
+    if config.get('is_write_middle_data'):
+      # middle outputs
+      mid_output_layers = nn.get_layer_output_name_full(self.model)
+      for name in mid_output_layers:
+        outputs[name + '_output'] = nn.get_layer_output(
+            self.model, x, name).astype(C.get('his_dtype'))
+      # middle weights
+      mid_weight_layers = nn.get_layer_weight_name(self.model)
+      for name in mid_weight_layers:
+        outputs[name + '_weight'] = nn.get_layer_weight(
+            self.model, name)
     # metrics
     outputs['loss'] = float(result[0])
     outputs['accuracy'] = float(result[1])
@@ -160,6 +162,10 @@ class Record(abc.Callback):
         'xgpu': config.get('xgpu'),
         'xgpu number': config.get('xgpu_num'),
         'dir': config.get('save_dir'),}
+    if not isinstance(configs['opt'], str):
+      configs['opt'] = '_'.join([
+          configs['opt']._name,
+          get_ex(configs['opt']._hyper['learning_rate'])])
     self.m5 = {**self.m5, **configs}
     ########################
     # predict batch bytes
@@ -170,16 +176,18 @@ class Record(abc.Callback):
     took_byte = 0
     # step
     took_byte += sys.getsizeof(0)
-    # middle outputs
-    mid_output_layers = nn.get_layer_output_name_full(self.model)
-    for name in mid_output_layers:
-      took_byte += sys.getsizeof(nn.get_layer_output(self.model, x,
-          name).astype(C.get('his_dtype'))) * self.batch_size
+    if config.get('is_write_middle_data'):
+      # middle outputs
+      mid_output_layers = nn.get_layer_output_name_full(self.model)
+      for name in mid_output_layers:
+        took_byte += sys.getsizeof(nn.get_layer_output(self.model, x,
+            name).astype(C.get('his_dtype'))) * self.batch_size
     # middle weights
     mid_weight_layers = nn.get_layer_weight_name(self.model)
-    for name in mid_weight_layers:
-      for w in nn.get_layer_weight(self.model, name):
-        took_byte += sys.getsizeof(w)
+    if config.get('is_write_middle_data'):
+      for name in mid_weight_layers:
+        for w in nn.get_layer_weight(self.model, name):
+          took_byte += sys.getsizeof(w)
     # metrics
     took_byte += sys.getsizeof(float(0)) * 2
     # extra info
@@ -187,7 +195,6 @@ class Record(abc.Callback):
     # fix gzip
     self.len = self.maxbyte // (took_byte / 4 * 3)
     self.m5['package length'] = self.len
-    # log(debug)
     log.debug(f'package bytes: {took_byte}', name=__name__)
     # init weights
     init_weights = {}
@@ -195,7 +202,7 @@ class Record(abc.Callback):
       init_weights[name + '_weight'] = nn.get_layer_weight(
           self.model, name)
     self.m5['init weight'] = init_weights
-    log.debug(self.m5, name=__name__)
+    # log.debug(self.m5, name=__name__)
     ########################
     # write m5
     ########################
